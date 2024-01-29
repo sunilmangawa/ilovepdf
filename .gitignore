@@ -1,0 +1,17 @@
+# Local development settings
+*.env
+
+# Database
+db.sqlite3
+*.sqlite3
+*.db
+
+# Static files (usually collected with `python manage.py collectstatic`)
+staticfiles/
+
+# Media files (usually uploaded by users)
+media/
+
+# Virtual environment
+ilvenv/
+env/

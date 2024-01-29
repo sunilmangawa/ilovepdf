@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% load blog_tags %}
+
+{% block meta %}
+    {% comment %} {{ post.as_meta }} {% endcomment %}
+    <meta name="description" content="{{post.intro }}">
+    {% comment %} <meta name="description" content="{{ModelMeta.get_intro() }}"> {% endcomment %}
+    {% if post.keywords %}
+        <meta name="keywords" content="pdf, word, django, docx, doc, convert">
+        {% comment %} <meta property="og:keywords" content="{{post.keywords }}"> {% endcomment %}
+    {% endif %}
+    <meta property="og:title" content="{{post.title}}">
+    <meta property="og:type" content="article">
+    <meta property="og:url" content="{{post.slug}}">
+    <meta property="og:description" content="{{post.intro }}">
+    {% if post.image %}<meta property="og:image" content="{{post.image.url}}">
+    <meta property="og:image:width" content="{{post.image.width}}">
+    <meta property="og:image:height" content="{{post.image.height}}">
+    <meta property="og:image:alt" content="{{post.image.alt}}">{% endif %}
+    <meta property="og:site_name" content="Convert any file format">
+
+{% endblock %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block content %}
+<div class="container mt-4">
+
+    <div class="card-body" >
+        <!-- Display the tool content if available -->
+        {% if tool_content %}
+            <div class="tool-section">
+                {{ tool_content|safe }}
+            </div>
+        {% else %}
+            <div class="tool-section" style="margin-top: 10px; padding-top: 1px;">
+                {% if tool_content.tool_template %}
+                    {% include tool_content.tool_template %}
+                {% endif %}
+                <!-- <form method="post" enctype="multipart/form-data" action="{% url 'converter:pdf_to_docx_converter' post.slug %}">
+                    {% csrf_token %}
+                    <input type="file" name="pdf_file" accept=".pdf" required>
+                    <button type="submit">Convert</button>
+                </form>                 -->
+            </div>
+        {% endif %}
+        <br><hr>
+    </div>
+
+    <div class="card">
+        <div class="card-header">
+            <h2 class="card-title">{{ post.title }}</h2>
+            <p class="card-subtitle text-muted">Published {{ post.publish }} by {{ post.author }}</p>
+        </div>
+        {% if post.image %} 
+            <figure>
+                <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.title }}">
+            </figure>
+        {% endif %}
+
+    </div>
+
+    <div class="card-body" >
+        <br><hr>
+        <p class="card-text">{{ post.body|markdown  }}</p>
+    </div>
+
+
+
+    {% comment %} {{ post.body|linebreaks }} {% endcomment %}
+    {% comment %} {{ post.body|markdown }} {% endcomment %}
+
+    <h2>Similar posts</h2>
+    {% for post in similar_posts %}
+        <p>
+            <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
+        </p>
+    {% empty %}
+        There are no similar posts yet.
+    {% endfor %}
+    
+    {% with comments.count as total_comments %}
+        <h2>
+            {{ total_comments }} comment{{ total_comments|pluralize }}
+        </h2>
+    {% endwith %}
+    {% for comment in comments %}
+        <div class="comment">
+            <p class="info">
+                Comment {{ forloop.counter }} by {{ comment.name }}
+                {{ comment.created }}
+            </p>
+            {{ comment.body|linebreaks }}
+        </div>
+    {% empty %}
+        <p>There are no comments.</p>
+    {% endfor %}
+    {% include "blog/includes/comment_form.html" %}
+
+</div><br><hr>
+{% endblock %}

@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% comment %} {% extends "blog/base.html" %} {% endcomment %}
+{% load blog_tags %}
+
+{% block title %}My Blog{% endblock %}
+{% block content %}
+
+    <h1>My Blog</h1>
+    {% if tag %}
+        <h2>Posts tagged with "{{ tag.name }}"</h2>
+    {% endif %}
+
+    <!-- Debug: Print the SQL query in the template -->
+    {% comment %} <p>SQL Query: {{ posts.query }}</p> {% endcomment %}
+    
+
+    {% for post in posts %}
+        <h1>
+            {% comment %} <a href="{% url 'blog:post_detail' post.id %}"> {% endcomment %}
+            {% comment %} <a href="{% url 'blog:post_detail' post.publish.year post.publish.month post.publish.day post.slug %}"> {% endcomment %}
+            <a href="{{ post.get_absolute_url }}">
+                {{ post.title }}
+            </a>
+        </h1>
+        <p class="tags">
+            Tags:
+            {% for tag in post.tags.all %}
+                <a href="{% url 'blog:post_list_by_tag' tag.slug %}">
+                    {{ tag.name }}
+                </a>
+            {% if not forloop.last %}, {% endif %}
+            {% endfor %}
+        </p>        
+        {% comment %} <p class="tags">Tags: {{ post.tags.all|join:", " }}</p> {% endcomment %}
+        <p class="date">
+            Published {{ post.publish }} by {{ post.author }}
+        </p>
+        {% comment %} {{ post.body|truncatewords:30|linebreaks }} {% endcomment %}
+        {{ post.body|markdown|truncatewords_html:30 }}
+    {% endfor %}
+    {% include "pagination.html" with page=posts %}
+    {% comment %} {% include "pagination.html" with page=page_obj %} {% endcomment %}
+{% endblock %}

@@ -1,0 +1,20 @@
+{% comment %} {% load i18n %}
+{% load l10n %} {% endcomment %}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF to DOCX Converter</title>
+    {% comment %} <title>{% trans "PDF to DOCX Converter" %}</title> {% endcomment %}
+</head>
+<body>
+    <div style="margin-top: 1%; padding-top: 1%;">
+        <h1 >PDF to DOCX Converter</h1>
+        <form method="post" enctype="multipart/form-data" action="/tools/pdf_to_docx_converter/">
+            {% csrf_token %}
+            <input type="file" name="pdf_file" accept=".pdf" required>
+            <button type="submit">Convert</button>
+        </form>
+    </div>
+</body>
+</html>
