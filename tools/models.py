@@ -1,6 +1,6 @@
 from django.db import models
-# from parler.models import TranslatableModel, TranslatedFields
-# from django.utils.translation import gettext_lazy as _
+from parler.models import TranslatableModel, TranslatedFields
+from django.utils.translation import gettext_lazy as _
 
 # Create your models here.
 class ToolAttachment(models.Model):

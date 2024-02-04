@@ -1,5 +1,5 @@
 from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import ListView
+from django.views.generic import ListView, DetailView
 from .models import Post, Comment
 from django.http import Http404, HttpResponse
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -10,23 +10,15 @@ from django.db.models import Count
 from django.db import connection 
 from django.core.paginator import Page
 from django.template import TemplateDoesNotExist
+from parler.models import TranslationDoesNotExist
+from parler.utils.context import switch_language
+from django.utils.translation import get_language#, set_current_language
+from django.views.i18n import set_language
 
-# Create your views here.
-# def postList(request):
-#     post = 'All Post will be listed on this page.'
-#     context = {
-#         'post': post
-#     }
-#     return render(request, 'blog/post_list.html', context)
-
-
-# def post_detail(request):
-#     post = 'All Post Detail will be listed on this page.'
-#     context = {
-#         'post': post
-#     }
-#     return render(request, 'blog/post_detail.html', context)
-
+from django.conf import settings
+from django.core.exceptions import ObjectDoesNotExist
+from parler.views import TranslatableSlugMixin
+from django.utils import translation
 
 def post_list(request, tag_slug=None):
     # post_list = Post.published.all().prefetch_related('translations')
@@ -51,24 +43,36 @@ def post_list(request, tag_slug=None):
 
 def post_detail(request, post):
     try:
-        post = get_object_or_404(Post.published, slug=post)
-        # post = get_object_or_404(Post.published, translations__slug=post)
-        # post = Post.published.get(translations__slug=post, status=Post.Status.PUBLISHED)
+        post = Post.published.translated(request.LANGUAGE_CODE).filter(translations__slug=post).first()
+        if post != None:
+            toolattachment = post.toolattachment
+            print('if condition ')
+        else:
+            post = get_object_or_404(Post.published, translations__slug=post)
+            toolattachment = post.toolattachment
     except Post.DoesNotExist:
         raise Http404("Post does not exist")
 
-    toolattachment = post.toolattachment
-    comments = post.comments.filter(active=True)
+    # comments = post.comments.filter(active=True)
+    comments = post.comments.filter(active=True) if hasattr(post, 'comments') else None
     form = CommentForm()
-    post_tags_ids = post.tags.values_list('id', flat=True)
-    similar_posts = Post.published.filter(tags__in=post_tags_ids).exclude(id=post.id)
-    similar_posts = similar_posts.annotate(same_tags=Count('tags')).order_by('-same_tags', '-publish')[:4]
+    # post_tags_ids = post.tags.values_list('id', flat=True)
+    post_tags_ids = post.tags.values_list('id', flat=True) if hasattr(post, 'tags') else []
+    # Check if post is not None before excluding it from similar_posts
+    similar_posts = Post.published.filter(tags__in=post_tags_ids).exclude(id=post.id) if post else None
+    
+    # Additional check for similar_posts
+    similar_posts = similar_posts.annotate(same_tags=Count('tags')).order_by('-same_tags', '-publish')[:4] if similar_posts else []
 
     try:
-        tool_template = f"tools/{toolattachment.function_name}.html"
-        tool_content = render(request, tool_template).content.decode('utf-8')
+        if toolattachment:  # Check if toolattachment is not None
+            tool_template = f"tools/{toolattachment.template_name}.html"
+            tool_content = render(request, tool_template).content.decode('utf-8')
+        else:
+            tool_content = "Template not found: No toolattachment associated."
     except (TemplateDoesNotExist, AttributeError):
         tool_content = f"Template not found CHECK PATH: {tool_template}"
+
 
     return render(
         request,

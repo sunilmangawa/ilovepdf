@@ -1,0 +1,356 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2024-02-03 09:44+0530\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
+"&& n%100<=10 ? 3 : n%100>=11 && n%100<=99 ? 4 : 5;\n"
+
+#: blog/models.py:53
+msgid "category"
+msgstr ""
+
+#: blog/models.py:56
+msgid "title"
+msgstr ""
+
+#: blog/models.py:57
+msgid "slug"
+msgstr ""
+
+#: blog/models.py:58
+msgid "intro"
+msgstr ""
+
+#: blog/models.py:59
+msgid "keywords"
+msgstr ""
+
+#: blog/models.py:60
+msgid "body"
+msgstr ""
+
+#: ilovepdf/settings.py:108
+msgid "Afrikaans"
+msgstr ""
+
+#: ilovepdf/settings.py:109
+msgid "Arabic"
+msgstr ""
+
+#: ilovepdf/settings.py:110
+msgid "Azerbaijani"
+msgstr ""
+
+#: ilovepdf/settings.py:111
+msgid "Bulgarian"
+msgstr ""
+
+#: ilovepdf/settings.py:112
+msgid "Belarusian"
+msgstr ""
+
+#: ilovepdf/settings.py:113
+msgid "Bengali"
+msgstr ""
+
+#: ilovepdf/settings.py:114
+msgid "Breton"
+msgstr ""
+
+#: ilovepdf/settings.py:115
+msgid "Bosnian"
+msgstr ""
+
+#: ilovepdf/settings.py:116
+msgid "Catalan"
+msgstr ""
+
+#: ilovepdf/settings.py:117
+msgid "Czech"
+msgstr ""
+
+#: ilovepdf/settings.py:118
+msgid "Welsh"
+msgstr ""
+
+#: ilovepdf/settings.py:119
+msgid "Danish"
+msgstr ""
+
+#: ilovepdf/settings.py:120
+msgid "German"
+msgstr ""
+
+#: ilovepdf/settings.py:121
+msgid "Greek"
+msgstr ""
+
+#: ilovepdf/settings.py:122
+msgid "English"
+msgstr ""
+
+#: ilovepdf/settings.py:123
+msgid "British English"
+msgstr ""
+
+#: ilovepdf/settings.py:124
+msgid "Esperanto"
+msgstr ""
+
+#: ilovepdf/settings.py:125
+msgid "Spanish"
+msgstr ""
+
+#: ilovepdf/settings.py:126
+msgid "Argentinian Spanish"
+msgstr ""
+
+#: ilovepdf/settings.py:127
+msgid "Mexican Spanish"
+msgstr ""
+
+#: ilovepdf/settings.py:128
+msgid "Nicaraguan Spanish"
+msgstr ""
+
+#: ilovepdf/settings.py:129
+msgid "Venezuelan Spanish"
+msgstr ""
+
+#: ilovepdf/settings.py:130
+msgid "Estonian"
+msgstr ""
+
+#: ilovepdf/settings.py:131
+msgid "Basque"
+msgstr ""
+
+#: ilovepdf/settings.py:132
+msgid "Persian"
+msgstr ""
+
+#: ilovepdf/settings.py:133
+msgid "Finnish"
+msgstr ""
+
+#: ilovepdf/settings.py:134
+msgid "French"
+msgstr ""
+
+#: ilovepdf/settings.py:135
+msgid "Frisian"
+msgstr ""
+
+#: ilovepdf/settings.py:136
+msgid "Irish"
+msgstr ""
+
+#: ilovepdf/settings.py:137
+msgid "Galician"
+msgstr ""
+
+#: ilovepdf/settings.py:138
+msgid "Hebrew"
+msgstr ""
+
+#: ilovepdf/settings.py:139
+msgid "Hindi"
+msgstr ""
+
+#: ilovepdf/settings.py:140
+msgid "Croatian"
+msgstr ""
+
+#: ilovepdf/settings.py:141
+msgid "Hungarian"
+msgstr ""
+
+#: ilovepdf/settings.py:142
+msgid "Interlingua"
+msgstr ""
+
+#: ilovepdf/settings.py:143
+msgid "Indonesian"
+msgstr ""
+
+#: ilovepdf/settings.py:144
+msgid "Icelandic"
+msgstr ""
+
+#: ilovepdf/settings.py:145
+msgid "Italian"
+msgstr ""
+
+#: ilovepdf/settings.py:146
+msgid "Japanese"
+msgstr ""
+
+#: ilovepdf/settings.py:147
+msgid "Georgian"
+msgstr ""
+
+#: ilovepdf/settings.py:148
+msgid "Kazakh"
+msgstr ""
+
+#: ilovepdf/settings.py:149
+msgid "Khmer"
+msgstr ""
+
+#: ilovepdf/settings.py:150
+msgid "Kannada"
+msgstr ""
+
+#: ilovepdf/settings.py:151
+msgid "Korean"
+msgstr ""
+
+#: ilovepdf/settings.py:152
+msgid "Luxembourgish"
+msgstr ""
+
+#: ilovepdf/settings.py:153
+msgid "Lithuanian"
+msgstr ""
+
+#: ilovepdf/settings.py:154
+msgid "Latvian"
+msgstr ""
+
+#: ilovepdf/settings.py:155
+msgid "Macedonian"
+msgstr ""
+
+#: ilovepdf/settings.py:156
+msgid "Malayalam"
+msgstr ""
+
+#: ilovepdf/settings.py:157
+msgid "Mongolian"
+msgstr ""
+
+#: ilovepdf/settings.py:158
+msgid "Norwegian Bokmal"
+msgstr ""
+
+#: ilovepdf/settings.py:159
+msgid "Nepali"
+msgstr ""
+
+#: ilovepdf/settings.py:160
+msgid "Dutch"
+msgstr ""
+
+#: ilovepdf/settings.py:161
+msgid "Norwegian Nynorsk"
+msgstr ""
+
+#: ilovepdf/settings.py:162
+msgid "Punjabi"
+msgstr ""
+
+#: ilovepdf/settings.py:163
+msgid "Polish"
+msgstr ""
+
+#: ilovepdf/settings.py:164
+msgid "Portuguese"
+msgstr ""
+
+#: ilovepdf/settings.py:165
+msgid "Brazilian Portuguese"
+msgstr ""
+
+#: ilovepdf/settings.py:166
+msgid "Romanian"
+msgstr ""
+
+#: ilovepdf/settings.py:167
+msgid "Russian"
+msgstr ""
+
+#: ilovepdf/settings.py:168
+msgid "Slovak"
+msgstr ""
+
+#: ilovepdf/settings.py:169
+msgid "Slovenian"
+msgstr ""
+
+#: ilovepdf/settings.py:170
+msgid "Albanian"
+msgstr ""
+
+#: ilovepdf/settings.py:171
+msgid "Serbian"
+msgstr ""
+
+#: ilovepdf/settings.py:172
+msgid "Serbian Latin"
+msgstr ""
+
+#: ilovepdf/settings.py:173
+msgid "Swedish"
+msgstr ""
+
+#: ilovepdf/settings.py:174
+msgid "Swahili"
+msgstr ""
+
+#: ilovepdf/settings.py:175
+msgid "Tamil"
+msgstr ""
+
+#: ilovepdf/settings.py:176
+msgid "Telugu"
+msgstr ""
+
+#: ilovepdf/settings.py:177
+msgid "Thai"
+msgstr ""
+
+#: ilovepdf/settings.py:178
+msgid "Turkish"
+msgstr ""
+
+#: ilovepdf/settings.py:179
+msgid "Tatar"
+msgstr ""
+
+#: ilovepdf/settings.py:180
+msgid "Udmurt"
+msgstr ""
+
+#: ilovepdf/settings.py:181
+msgid "Ukrainian"
+msgstr ""
+
+#: ilovepdf/settings.py:182
+msgid "Urdu"
+msgstr ""
+
+#: ilovepdf/settings.py:183
+msgid "Vietnamese"
+msgstr ""
+
+#: ilovepdf/settings.py:184
+msgid "Simplified Chinese"
+msgstr ""
+
+#: ilovepdf/settings.py:185
+msgid "Traditional Chinese"
+msgstr ""
