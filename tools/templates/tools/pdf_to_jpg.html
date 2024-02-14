@@ -1,0 +1,26 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load l10n %}
+
+{% block content %}
+    <div class="container text-center" >
+      <h1> PDF to JPG</h1>
+      <hr>
+      <h2>PDF to JPG Convereter Tool Page</h2>
+
+      <div class="container text-center" >
+        <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="/tools/pdf-to-jpg/">
+          {% csrf_token %}
+          
+          <label for="pdf_file">Choose a PDF file:</label>
+          <input class="btn btn-primary" type="file" name="pdf_file" accept=".pdf" required>
+          
+          <br><br>
+          
+          <button class="btn btn-danger btn-lg" type="submit">Convert to JPG</button>
+        </form>
+      </div>
+
+    </div>
+{% endblock %}  
+

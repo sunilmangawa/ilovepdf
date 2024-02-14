@@ -1,24 +1,63 @@
 {% load i18n %}
 {% load custom_filters %}
+{% load static %}
 
-<header>
-    <nav class="navbar navbar-expand-lg bg-body-tertiary">
-            <a class="navbar-brand" href="{% url 'home' %}">iLovePdfConverterOnline</a>
+<header class="header">
+    <nav class="navbar navbar-expand-lg bg-white">
+            <a class="navbar-brand " href="{% url 'home' %}" title="iLovePdfConverterOnline">   
+                {% comment %} <img class="logo" src="{% static '/media/ilovepdfconvertonline.svg' %}" alt="iLovePdfConverterOnline"> {% endcomment %}
+                <svg width="180" height="45" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+                    <!-- Created with SVG-edit - https://github.com/SVG-Edit/svgedit-->
+                    <g class="layer">
+                     <title>Layer 1</title>
+                     <text fill="#000000" font-family="Helvetica" font-size="28" font-weight="bold" id="svg_2" stroke="#000000" stroke-width="0" style="cursor: move;" text-anchor="middle" transform="matrix(1 0 0 0.932416 0 -2.06112)" x="91.15" xml:space="preserve" y="25.35">I   PDF</text>
+                     <text fill="#000000" font-family="Serif" font-size="24" font-weight="bold" id="svg_3" stroke="#000000" stroke-width="0" text-anchor="middle" transform="matrix(1 0 0 1 0 0) matrix(0.988613 0 0 0.932416 -3.03895 -2.06112)" x="94" xml:space="preserve" y="44.45">Converter Online</text>
+                     <path d="m67.41,7c4.83,-11.93 23.75,0 0,15.34c-23.75,-15.34 -4.83,-27.26 0,-15.34z" fill="#FF0000" id="svg_6" stroke="#fcf9f9" transform="matrix(1 0 0 1 0 0)"/>
+                    </g>
+                </svg>
+            </a>
             {% comment %} <a class="navbar-brand" href="{% url 'home' %}">{% trans 'navbar' %}</a> {% endcomment %}
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                <div class="navbar-nav">
+                <div class="navbar-nav ">
                     <a class="nav-link active" aria-current="page" href="{% url 'blog:post_list' %}">Blog</a>
-                    <a class="nav-link active" aria-current="page" href="{% url 'about' %}">About</a>
-                    <a class="nav-link active" aria-current="page" href="{% url 'contactus' %}">Contact</a>
-                    <a class="nav-link active" aria-current="page" href="#">PDf2</a>
-                    <a class="nav-link active" aria-current="page" href="#">2PDf</a>
-                    <a class="nav-link active" aria-current="page" href="#">ExtraPdf</a>
+                    <a class="nav-link active" aria-current="page" href="{% url 'tools:merge_pdf' %}">MergePDF</a>
+                    <a class="nav-link active" aria-current="page" href="{% url 'tools:split_pdf' %}">SplitPDF</a>
+                    <a class="nav-link active" aria-current="page" href="{% url 'tools:compress_pdf' %}">CompressPDF</a>
+                    {% comment %} <a class="nav-link active" aria-current="page" href="{% url 'about' %}">About</a> {% endcomment %}
+                    {% comment %} <a class="nav-link active" aria-current="page" href="{% url 'contactus' %}">Contact</a> {% endcomment %}
                     {% comment %} <a class="nav-link" href="#">{% trans 'navbarfeatures' %}</a> {% endcomment %}
                 </div>
 
+                <div class="dropdown">
+                    <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        To PDF
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <li><a class="dropdown-item" href="{% url 'tools:jpg_to_pdf' %}">JPG to PDF</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:word_to_pdf' %}">WORD to PDF</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:powerpoint_to_pdf' %}">POWERPOINT to PDF</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:excel_to_pdf' %}">EXCEL to PDF</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:html_to_pdf' %}">HTML to PDF</a></li>
+                    </ul>
+                </div>
+
+                <div class="dropdown">
+                    <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                        PDF To
+                    </button>
+                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_jpg' %}">PDF to JPG</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_word' %}">PDF to WORD</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_powerpoint' %}">PDF to POWERPOINT</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_excel' %}">PDF to EXCEL</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_html' %}">PDF to HTML</a></li>
+                    </ul>
+                </div>
+
+                
                 <div class="dropdown me-auto">
                     {% get_current_language as CURRENT_LANGUAGE %}
                     {% get_available_languages as AVAILABLE_LANGUAGES %}

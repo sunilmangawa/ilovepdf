@@ -25,9 +25,11 @@ class PostAdmin(TranslatableAdmin):
 
     def get_form(self, request, obj=None, **kwargs):
         form = super().get_form(request, obj, **kwargs)
-        with switch_language(obj, 'en'):
-            for field in ['title', 'slug', 'author', 'toolattachment', 'intro', 'keywords', 'tags', 'image', 'body','publish', 'status']:
-                form.base_fields[field].widget.attrs['value'] = getattr(obj, field) #not getting value from TextField
+        if obj is not None:
+            with switch_language(obj, 'en'):
+                for field in ['title', 'slug', 'author', 'toolattachment', 'intro', 'keywords', 'tags', 'image', 'body','publish', 'status']:
+                    # form.base_fields[field].widget.attrs['placeholder'] = getattr(obj, field)
+                    form.base_fields[field].widget.attrs['value'] = getattr(obj, field) #not getting value from TextField
         return form
 
 

@@ -14,8 +14,9 @@ SECRET_KEY = 'django-insecure-okkh^d15@u5+lhc=tbb_^uxlb^f&9b)fe$&agsi!dmei@o2r@_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost','127.0.0.1','127.0.0.1:8000','127.0.0.1:8000/blog/']
 
+SITE_ID = 1
 
 # Application definition
 
@@ -25,6 +26,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'django.contrib.sites',
+    'django.contrib.sitemaps',
     'django.contrib.staticfiles',
     'core.apps.CoreConfig',
     'blog.apps.BlogConfig',
@@ -188,7 +191,7 @@ LANGUAGES = [
 PARLER_DEFAULT_LANGUAGE_CODE = 'en'
 
 PARLER_LANGUAGES = {
-    None : (
+    1 : (
         {'code' : 'af'},
         {'code' : 'ar'},
         {'code' : 'az'},
@@ -298,7 +301,7 @@ MEDIA_ROOT = BASE_DIR / 'media'
 
 LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]
 
-
+# APPEND_SLASH=False
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 

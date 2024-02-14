@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}
+
+
+{% block content %}
+  <div class="container text-center bg-body-secondary" >
+    <h1>Word to PDF Converter</h1>
+    <form method="post" enctype="multipart/form-data" action="/tools/word-to-pdf/">
+        {% csrf_token %}
+        <label for="file">Select a Word file (DOCX, DOC, or TXT):</label>
+        <input type="file" id="file" name="file" accept=".docx,.doc,.txt">
+        <br>
+        <button type="submit">Convert to PDF</button>
+    </form>
+    {% comment %} <form method="post" enctype="multipart/form-data" action="/tools/download">
+        {% csrf_token %}
+        <input type="hidden" name="file_name" value="{{ file_name }}">
+        <label for="file">Select a Word file (DOCX, DOC, or TXT):</label>
+        <input type="file" id="file" name="file" accept=".docx,.doc,.txt">
+        <br>
+        <button type="submit">Convert to PDF</button>
+    </form> {% endcomment %}
+
+
+    <script>
+        // Handle submission and potential errors
+    </script>
+    </div>
+
+{% endblock %}  
+

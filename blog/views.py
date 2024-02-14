@@ -46,7 +46,6 @@ def post_detail(request, post):
         post = Post.published.translated(request.LANGUAGE_CODE).filter(translations__slug=post).first()
         if post != None:
             toolattachment = post.toolattachment
-            print('if condition ')
         else:
             post = get_object_or_404(Post.published, translations__slug=post)
             toolattachment = post.toolattachment

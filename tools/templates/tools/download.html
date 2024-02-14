@@ -1,0 +1,14 @@
+<!-- tools/templates/tools/download.html -->
+<!DOCTYPE html>
+<html>
+<head>
+    <title>PDF Download</title>
+</head>
+<body>
+    <h1>PDF Download Page</h1>
+    <p>Your file is ready for download:</p>
+    {% comment %} <a href="/tools/download/{{ file_name }}" download><button>Download PDF</button></a> {% endcomment %}
+    {% comment %} <a href="{% url 'download' file_name=file_name %}" download><button>Download PDF</button></a>{% endcomment %}
+    <a href="/tools/download/{{ file_name }}" download><button>Download PDF</button></a> 
+</body>
+</html>

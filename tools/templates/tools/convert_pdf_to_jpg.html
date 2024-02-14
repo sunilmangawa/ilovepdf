@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Convert PDF to JPG</title>
+</head>
+<body>
+
+  <h2>Convert PDF to JPG</h2>
+
+  {% comment %} <form method="post" enctype="multipart/form-data" action="{% url 'convert-pdf-to-jpg' %}"> {% endcomment %}
+  <form method="post" enctype="multipart/form-data" action="/tools/convert-pdf-to-jpg/">
+    {% csrf_token %}
+    
+    <label for="pdf_file">Choose a PDF file:</label>
+    <input type="file" name="pdf_file" accept=".pdf" required>
+    
+    <br>
+    
+    <button type="submit">Convert to JPG</button>
+  </form>
+
+</body>
+</html>
