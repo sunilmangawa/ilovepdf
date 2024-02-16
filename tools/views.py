@@ -358,17 +358,6 @@ def excel_to_pdf_View(request):
     return render(request, 'tools/excel_to_pdf.html')
 
 
-
-
-
-
-
-
-
-
-
-
-
 def html_to_pdf_View(request):
     return render(request, template_name='tools/html_to_pdf.html')
 
@@ -435,8 +424,6 @@ def pdf_to_word_View(request):
         except Exception as e:
             return HttpResponse(f"Conversion failed. Error: {str(e)}")
     return render(request, 'tools/pdf_to_word.html')
-
-
 
 
 def pdf_to_powerpoint_View(request):

@@ -9,7 +9,7 @@
                 <svg width="180" height="45" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
                     <!-- Created with SVG-edit - https://github.com/SVG-Edit/svgedit-->
                     <g class="layer">
-                     <title>Layer 1</title>
+                     <title>iLovePdfConverterOnline</title>
                      <text fill="#000000" font-family="Helvetica" font-size="28" font-weight="bold" id="svg_2" stroke="#000000" stroke-width="0" style="cursor: move;" text-anchor="middle" transform="matrix(1 0 0 0.932416 0 -2.06112)" x="91.15" xml:space="preserve" y="25.35">I   PDF</text>
                      <text fill="#000000" font-family="Serif" font-size="24" font-weight="bold" id="svg_3" stroke="#000000" stroke-width="0" text-anchor="middle" transform="matrix(1 0 0 1 0 0) matrix(0.988613 0 0 0.932416 -3.03895 -2.06112)" x="94" xml:space="preserve" y="44.45">Converter Online</text>
                      <path d="m67.41,7c4.83,-11.93 23.75,0 0,15.34c-23.75,-15.34 -4.83,-27.26 0,-15.34z" fill="#FF0000" id="svg_6" stroke="#fcf9f9" transform="matrix(1 0 0 1 0 0)"/>
@@ -22,10 +22,10 @@
             </button>
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav ">
-                    <a class="nav-link active" aria-current="page" href="{% url 'blog:post_list' %}">Blog</a>
-                    <a class="nav-link active" aria-current="page" href="{% url 'tools:merge_pdf' %}">MergePDF</a>
-                    <a class="nav-link active" aria-current="page" href="{% url 'tools:split_pdf' %}">SplitPDF</a>
-                    <a class="nav-link active" aria-current="page" href="{% url 'tools:compress_pdf' %}">CompressPDF</a>
+                    <a class="nav-link active" aria-current="page" href="{% url 'blog:post_list' %}">{% trans 'Blog'%}</a>
+                    <a class="nav-link active" aria-current="page" href="{% url 'tools:merge_pdf' %}">{% trans 'MergePDF'%}</a>
+                    <a class="nav-link active" aria-current="page" href="{% url 'tools:split_pdf' %}">{% trans 'SplitPDF'%}</a>
+                    <a class="nav-link active" aria-current="page" href="{% url 'tools:compress_pdf' %}">{% trans 'CompressPDF'%}</a>
                     {% comment %} <a class="nav-link active" aria-current="page" href="{% url 'about' %}">About</a> {% endcomment %}
                     {% comment %} <a class="nav-link active" aria-current="page" href="{% url 'contactus' %}">Contact</a> {% endcomment %}
                     {% comment %} <a class="nav-link" href="#">{% trans 'navbarfeatures' %}</a> {% endcomment %}
@@ -64,9 +64,9 @@
                     {% get_language_info_list for AVAILABLE_LANGUAGES as languages %}
                 
                     <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        Change languages
+                        {% trans 'Change languages' %}
                     </button>
-                    <ul class="dropdown-menu">
+                    <ul class="dropdown-menu" style="max-height: 500px; overflow-y: auto;">
                         {% for language in languages %}
                         <li>
                             <form method="post" action="{% url 'set_language' %}">

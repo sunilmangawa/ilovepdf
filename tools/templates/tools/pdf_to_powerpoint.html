@@ -3,14 +3,29 @@
 
 
 {% block content %}
-  <div class="container text-center bg-body-secondary" >
-    <h1> PDF to PowerPoint</h1>
-    <hr>
-    <div class="container">
-      <h2>PDF to PowerPoint Convereter Page Content</h2>
-      <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid">
+  <div class="container" >
+    <h1> PDF to PowerPoint Slideshows</h1>
+    <hr><br>
+    <div class="container ">
+      <h2>You can Convert your PDF into WORD documents with Full accuracy & Formatting.</h2>
+      {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
 
+      <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="/tools/convert-pdf-to-ppt-pptx/">
+        {% csrf_token %}
+        <label for="pdf_file" class="btn btn-custom btn-lg">
+          <span id="file-label"><h1>Select PDF File</h1></span>
+          <input id="pdf_file" class="visually-hidden" type="file" name="pdf_file" accept=".pdf" required onchange="updateFileName(this)">
+        </label>                
+        <br><p>or Drop PDF here<br><br>
+        <button class="btn btn-danger btn-lg" type="submit">Convert to PPT/PPTX</button>
+      </form>
     </div>
+    <script>
+      function updateFileName(input) {
+          var fileName = input.files[0].name;
+          document.getElementById('file-label').innerText = fileName;
+      }
+    </script>
   </div>
 
 {% endblock %}  

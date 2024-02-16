@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-03 09:44+0530\n"
-"PO-Revision-Date: 2024-02-03 04:09+0000\n"
+"POT-Creation-Date: 2024-02-16 20:45+0530\n"
+"PO-Revision-Date: 2024-02-16 15:18+0000\n"
 "Last-Translator:   <sunilmangawa@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
@@ -43,317 +43,467 @@ msgstr ""
 msgid "body"
 msgstr ""
 
-#: ilovepdf/settings.py:108
+#: core/templates/core/home.html:5
+msgid "herohomeh1"
+msgstr ""
+"All tools will be available for you to Edit or Convert to PDF and vice-"
+"versa."
+
+#: core/templates/core/home.html:6
+msgid "herohomeh2"
+msgstr "Play with converting and editing tools for PDFs, at Just on Click."
+
+#: core/templates/core/home.html:7
+msgid "herohomeh3"
+msgstr ""
+"All Convert and Edition tools are 100% FREE and easy to use in just a few "
+"clicks."
+
+#: core/templates/core/home.html:21
+msgid "homecard merge pdf"
+msgstr "Merge PDF"
+
+#: core/templates/core/home.html:22
+msgid "homecardtext merge pdf"
+msgstr ""
+"Combine PDFs in the sequence you want with the easiest PDF merger Tool on "
+"\"I Love PDF Converter Online\"."
+
+#: core/templates/core/home.html:37
+msgid "homecard split pdf"
+msgstr "Split PDF"
+
+#: core/templates/core/home.html:38
+msgid "homecardtext split pdf"
+msgstr ""
+"Split PDF as you want, each page, random pages, just in clicks with easy PDF"
+" split converter tool online."
+
+#: core/templates/core/home.html:53
+msgid "homecard compress pdf"
+msgstr "Compress PDF"
+
+#: core/templates/core/home.html:54
+msgid "homecardtext compress pdf"
+msgstr ""
+"Reduce file size of PDF without losing quality and content of you PDF."
+
+#: core/templates/core/home.html:69
+msgid "homecard pdf to word"
+msgstr "PDF to Word"
+
+#: core/templates/core/home.html:70
+msgid "homecardtext pdf to word"
+msgstr ""
+"PDF to Word is best converter online which can convert whole book with 100% "
+"quality and formatting."
+
+#: core/templates/core/home.html:85
+msgid "homecard pdf to ppt"
+msgstr "PDF to PowerPoint "
+
+#: core/templates/core/home.html:86
+msgid "homecardtext pdf to ppt"
+msgstr "Convert your PDF into PPT and PPTX slideshows easily to edit them."
+
+#: core/templates/core/home.html:101
+msgid "homecard pdf to excel"
+msgstr "PDF to Excel"
+
+#: core/templates/core/home.html:102
+msgid "homecardtext pdf to excel"
+msgstr ""
+"Convert PDF to Excel and get data to Spreadsheet to make changes easily."
+
+#: core/templates/core/home.html:117
+msgid "homecard word to pdf"
+msgstr "Word to PDF"
+
+#: core/templates/core/home.html:118
+msgid "homecardtext word to pdf"
+msgstr "Get PDF from DOC and DOCX files by converting them to PDF."
+
+#: core/templates/core/home.html:133
+msgid "homecard ppt to pdf"
+msgstr "Powerpoint to PDF"
+
+#: core/templates/core/home.html:134
+msgid "homecardtext ppt to pdf"
+msgstr ""
+"If you want to PDF of Powerpoint Slideshow file, here is the online convert "
+"tool for Powerpoint to PDF."
+
+#: core/templates/core/home.html:149
+msgid "homecard excel to pdf"
+msgstr "Excel to PDF"
+
+#: core/templates/core/home.html:150
+msgid "homecardtext excel to pdf"
+msgstr ""
+"Convert Excel spreadsheet to PDF just in easy way without losing quality and"
+" formatting."
+
+#: core/templates/core/home.html:165
+msgid "homecard pdf to jpg"
+msgstr "PDF TO JPG"
+
+#: core/templates/core/home.html:166
+msgid "homecardtext pdf to jpg"
+msgstr ""
+"Convert pages of PDF file in to images with easy PDF to JPG image convert "
+"tool."
+
+#: core/templates/core/home.html:181
+msgid "homecard jpg to pdf"
+msgstr "JPG to PDF"
+
+#: core/templates/core/home.html:182
+msgid "homecardtext jpg to pdf"
+msgstr ""
+"Convert any JPG image into a PDF file. Also you can merger converted files "
+"with Merge PDF tool."
+
+#: core/templates/core/home.html:197
+msgid "homecard html to pdf"
+msgstr "HTML to PDF"
+
+#: core/templates/core/home.html:198
+msgid "homecardtext html to pdf"
+msgstr ""
+"Convert HTML webpages to PDF. Just enter the URL of the page and convert it "
+"to PDF file. "
+
+#: ilovepdf/settings.py:111
 msgid "Afrikaans"
 msgstr ""
 
-#: ilovepdf/settings.py:109
+#: ilovepdf/settings.py:112
 msgid "Arabic"
 msgstr ""
 
-#: ilovepdf/settings.py:110
+#: ilovepdf/settings.py:113
 msgid "Azerbaijani"
 msgstr ""
 
-#: ilovepdf/settings.py:111
+#: ilovepdf/settings.py:114
 msgid "Bulgarian"
 msgstr ""
 
-#: ilovepdf/settings.py:112
+#: ilovepdf/settings.py:115
 msgid "Belarusian"
 msgstr ""
 
-#: ilovepdf/settings.py:113
+#: ilovepdf/settings.py:116
 msgid "Bengali"
 msgstr ""
 
-#: ilovepdf/settings.py:114
+#: ilovepdf/settings.py:117
 msgid "Breton"
 msgstr ""
 
-#: ilovepdf/settings.py:115
+#: ilovepdf/settings.py:118
 msgid "Bosnian"
 msgstr ""
 
-#: ilovepdf/settings.py:116
+#: ilovepdf/settings.py:119
 msgid "Catalan"
 msgstr ""
 
-#: ilovepdf/settings.py:117
+#: ilovepdf/settings.py:120
 msgid "Czech"
 msgstr ""
 
-#: ilovepdf/settings.py:118
+#: ilovepdf/settings.py:121
 msgid "Welsh"
 msgstr ""
 
-#: ilovepdf/settings.py:119
+#: ilovepdf/settings.py:122
 msgid "Danish"
 msgstr ""
 
-#: ilovepdf/settings.py:120
+#: ilovepdf/settings.py:123
 msgid "German"
 msgstr ""
 
-#: ilovepdf/settings.py:121
+#: ilovepdf/settings.py:124
 msgid "Greek"
 msgstr ""
 
-#: ilovepdf/settings.py:122
+#: ilovepdf/settings.py:125
 msgid "English"
 msgstr ""
 
-#: ilovepdf/settings.py:123
+#: ilovepdf/settings.py:126
 msgid "British English"
 msgstr ""
 
-#: ilovepdf/settings.py:124
+#: ilovepdf/settings.py:127
 msgid "Esperanto"
 msgstr ""
 
-#: ilovepdf/settings.py:125
+#: ilovepdf/settings.py:128
 msgid "Spanish"
 msgstr ""
 
-#: ilovepdf/settings.py:126
+#: ilovepdf/settings.py:129
 msgid "Argentinian Spanish"
 msgstr ""
 
-#: ilovepdf/settings.py:127
+#: ilovepdf/settings.py:130
 msgid "Mexican Spanish"
 msgstr ""
 
-#: ilovepdf/settings.py:128
+#: ilovepdf/settings.py:131
 msgid "Nicaraguan Spanish"
 msgstr ""
 
-#: ilovepdf/settings.py:129
+#: ilovepdf/settings.py:132
 msgid "Venezuelan Spanish"
 msgstr ""
 
-#: ilovepdf/settings.py:130
+#: ilovepdf/settings.py:133
 msgid "Estonian"
 msgstr ""
 
-#: ilovepdf/settings.py:131
+#: ilovepdf/settings.py:134
 msgid "Basque"
 msgstr ""
 
-#: ilovepdf/settings.py:132
+#: ilovepdf/settings.py:135
 msgid "Persian"
 msgstr ""
 
-#: ilovepdf/settings.py:133
+#: ilovepdf/settings.py:136
 msgid "Finnish"
 msgstr ""
 
-#: ilovepdf/settings.py:134
+#: ilovepdf/settings.py:137
 msgid "French"
 msgstr ""
 
-#: ilovepdf/settings.py:135
+#: ilovepdf/settings.py:138
 msgid "Frisian"
 msgstr ""
 
-#: ilovepdf/settings.py:136
+#: ilovepdf/settings.py:139
 msgid "Irish"
 msgstr ""
 
-#: ilovepdf/settings.py:137
+#: ilovepdf/settings.py:140
 msgid "Galician"
 msgstr ""
 
-#: ilovepdf/settings.py:138
+#: ilovepdf/settings.py:141
 msgid "Hebrew"
 msgstr ""
 
-#: ilovepdf/settings.py:139
+#: ilovepdf/settings.py:142
 msgid "Hindi"
 msgstr ""
 
-#: ilovepdf/settings.py:140
+#: ilovepdf/settings.py:143
 msgid "Croatian"
 msgstr ""
 
-#: ilovepdf/settings.py:141
+#: ilovepdf/settings.py:144
 msgid "Hungarian"
 msgstr ""
 
-#: ilovepdf/settings.py:142
+#: ilovepdf/settings.py:145
 msgid "Interlingua"
 msgstr ""
 
-#: ilovepdf/settings.py:143
+#: ilovepdf/settings.py:146
 msgid "Indonesian"
 msgstr ""
 
-#: ilovepdf/settings.py:144
+#: ilovepdf/settings.py:147
 msgid "Icelandic"
 msgstr ""
 
-#: ilovepdf/settings.py:145
+#: ilovepdf/settings.py:148
 msgid "Italian"
 msgstr ""
 
-#: ilovepdf/settings.py:146
+#: ilovepdf/settings.py:149
 msgid "Japanese"
 msgstr ""
 
-#: ilovepdf/settings.py:147
+#: ilovepdf/settings.py:150
 msgid "Georgian"
 msgstr ""
 
-#: ilovepdf/settings.py:148
+#: ilovepdf/settings.py:151
 msgid "Kazakh"
 msgstr ""
 
-#: ilovepdf/settings.py:149
+#: ilovepdf/settings.py:152
 msgid "Khmer"
 msgstr ""
 
-#: ilovepdf/settings.py:150
+#: ilovepdf/settings.py:153
 msgid "Kannada"
 msgstr ""
 
-#: ilovepdf/settings.py:151
+#: ilovepdf/settings.py:154
 msgid "Korean"
 msgstr ""
 
-#: ilovepdf/settings.py:152
+#: ilovepdf/settings.py:155
 msgid "Luxembourgish"
 msgstr ""
 
-#: ilovepdf/settings.py:153
+#: ilovepdf/settings.py:156
 msgid "Lithuanian"
 msgstr ""
 
-#: ilovepdf/settings.py:154
+#: ilovepdf/settings.py:157
 msgid "Latvian"
 msgstr ""
 
-#: ilovepdf/settings.py:155
+#: ilovepdf/settings.py:158
 msgid "Macedonian"
 msgstr ""
 
-#: ilovepdf/settings.py:156
+#: ilovepdf/settings.py:159
 msgid "Malayalam"
 msgstr ""
 
-#: ilovepdf/settings.py:157
+#: ilovepdf/settings.py:160
 msgid "Mongolian"
 msgstr ""
 
-#: ilovepdf/settings.py:158
+#: ilovepdf/settings.py:161
 msgid "Norwegian Bokmal"
 msgstr ""
 
-#: ilovepdf/settings.py:159
+#: ilovepdf/settings.py:162
 msgid "Nepali"
 msgstr ""
 
-#: ilovepdf/settings.py:160
+#: ilovepdf/settings.py:163
 msgid "Dutch"
 msgstr ""
 
-#: ilovepdf/settings.py:161
+#: ilovepdf/settings.py:164
 msgid "Norwegian Nynorsk"
 msgstr ""
 
-#: ilovepdf/settings.py:162
+#: ilovepdf/settings.py:165
 msgid "Punjabi"
 msgstr ""
 
-#: ilovepdf/settings.py:163
+#: ilovepdf/settings.py:166
 msgid "Polish"
 msgstr ""
 
-#: ilovepdf/settings.py:164
+#: ilovepdf/settings.py:167
 msgid "Portuguese"
 msgstr ""
 
-#: ilovepdf/settings.py:165
+#: ilovepdf/settings.py:168
 msgid "Brazilian Portuguese"
 msgstr ""
 
-#: ilovepdf/settings.py:166
+#: ilovepdf/settings.py:169
 msgid "Romanian"
 msgstr ""
 
-#: ilovepdf/settings.py:167
+#: ilovepdf/settings.py:170
 msgid "Russian"
 msgstr ""
 
-#: ilovepdf/settings.py:168
+#: ilovepdf/settings.py:171
 msgid "Slovak"
 msgstr ""
 
-#: ilovepdf/settings.py:169
+#: ilovepdf/settings.py:172
 msgid "Slovenian"
 msgstr ""
 
-#: ilovepdf/settings.py:170
+#: ilovepdf/settings.py:173
 msgid "Albanian"
 msgstr ""
 
-#: ilovepdf/settings.py:171
+#: ilovepdf/settings.py:174
 msgid "Serbian"
 msgstr ""
 
-#: ilovepdf/settings.py:172
+#: ilovepdf/settings.py:175
 msgid "Serbian Latin"
 msgstr ""
 
-#: ilovepdf/settings.py:173
+#: ilovepdf/settings.py:176
 msgid "Swedish"
 msgstr ""
 
-#: ilovepdf/settings.py:174
+#: ilovepdf/settings.py:177
 msgid "Swahili"
 msgstr ""
 
-#: ilovepdf/settings.py:175
+#: ilovepdf/settings.py:178
 msgid "Tamil"
 msgstr ""
 
-#: ilovepdf/settings.py:176
+#: ilovepdf/settings.py:179
 msgid "Telugu"
 msgstr ""
 
-#: ilovepdf/settings.py:177
+#: ilovepdf/settings.py:180
 msgid "Thai"
 msgstr ""
 
-#: ilovepdf/settings.py:178
+#: ilovepdf/settings.py:181
 msgid "Turkish"
 msgstr ""
 
-#: ilovepdf/settings.py:179
+#: ilovepdf/settings.py:182
 msgid "Tatar"
 msgstr ""
 
-#: ilovepdf/settings.py:180
+#: ilovepdf/settings.py:183
 msgid "Udmurt"
 msgstr ""
 
-#: ilovepdf/settings.py:181
+#: ilovepdf/settings.py:184
 msgid "Ukrainian"
 msgstr ""
 
-#: ilovepdf/settings.py:182
+#: ilovepdf/settings.py:185
 msgid "Urdu"
 msgstr ""
 
-#: ilovepdf/settings.py:183
+#: ilovepdf/settings.py:186
 msgid "Vietnamese"
 msgstr ""
 
-#: ilovepdf/settings.py:184
+#: ilovepdf/settings.py:187
 msgid "Simplified Chinese"
 msgstr ""
 
-#: ilovepdf/settings.py:185
+#: ilovepdf/settings.py:188
 msgid "Traditional Chinese"
 msgstr ""
+
+#: templates/navbar.html:27
+msgid "Blog"
+msgstr "Blog"
+
+#: templates/navbar.html:28
+msgid "MergePDF"
+msgstr "MergePDF"
+
+#: templates/navbar.html:29
+msgid "SplitPDF"
+msgstr "SplitPDF"
+
+#: templates/navbar.html:30
+msgid "CompressPDF"
+msgstr "CompressPDF"
+
+#: templates/navbar.html:72
+msgid "Change languages"
+msgstr "Change Language"
 
 #~ msgid "function_name"
 #~ msgstr "function_name"

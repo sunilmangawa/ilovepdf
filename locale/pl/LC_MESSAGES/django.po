@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2024-02-03 09:44+0530\n"
+"POT-Creation-Date: 2024-02-16 20:45+0530\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -44,314 +44,442 @@ msgstr ""
 msgid "body"
 msgstr ""
 
-#: ilovepdf/settings.py:108
-msgid "Afrikaans"
+#: core/templates/core/home.html:5
+msgid "herohomeh1"
 msgstr ""
 
-#: ilovepdf/settings.py:109
-msgid "Arabic"
+#: core/templates/core/home.html:6
+msgid "herohomeh2"
 msgstr ""
 
-#: ilovepdf/settings.py:110
-msgid "Azerbaijani"
+#: core/templates/core/home.html:7
+msgid "herohomeh3"
+msgstr ""
+
+#: core/templates/core/home.html:21
+msgid "homecard merge pdf"
+msgstr ""
+
+#: core/templates/core/home.html:22
+msgid "homecardtext merge pdf"
+msgstr ""
+
+#: core/templates/core/home.html:37
+msgid "homecard split pdf"
+msgstr ""
+
+#: core/templates/core/home.html:38
+msgid "homecardtext split pdf"
+msgstr ""
+
+#: core/templates/core/home.html:53
+msgid "homecard compress pdf"
+msgstr ""
+
+#: core/templates/core/home.html:54
+msgid "homecardtext compress pdf"
+msgstr ""
+
+#: core/templates/core/home.html:69
+msgid "homecard pdf to word"
+msgstr ""
+
+#: core/templates/core/home.html:70
+msgid "homecardtext pdf to word"
+msgstr ""
+
+#: core/templates/core/home.html:85
+msgid "homecard pdf to ppt"
+msgstr ""
+
+#: core/templates/core/home.html:86
+msgid "homecardtext pdf to ppt"
+msgstr ""
+
+#: core/templates/core/home.html:101
+msgid "homecard pdf to excel"
+msgstr ""
+
+#: core/templates/core/home.html:102
+msgid "homecardtext pdf to excel"
+msgstr ""
+
+#: core/templates/core/home.html:117
+msgid "homecard word to pdf"
+msgstr ""
+
+#: core/templates/core/home.html:118
+msgid "homecardtext word to pdf"
+msgstr ""
+
+#: core/templates/core/home.html:133
+msgid "homecard ppt to pdf"
+msgstr ""
+
+#: core/templates/core/home.html:134
+msgid "homecardtext ppt to pdf"
+msgstr ""
+
+#: core/templates/core/home.html:149
+msgid "homecard excel to pdf"
+msgstr ""
+
+#: core/templates/core/home.html:150
+msgid "homecardtext excel to pdf"
+msgstr ""
+
+#: core/templates/core/home.html:165
+msgid "homecard pdf to jpg"
+msgstr ""
+
+#: core/templates/core/home.html:166
+msgid "homecardtext pdf to jpg"
+msgstr ""
+
+#: core/templates/core/home.html:181
+msgid "homecard jpg to pdf"
+msgstr ""
+
+#: core/templates/core/home.html:182
+msgid "homecardtext jpg to pdf"
+msgstr ""
+
+#: core/templates/core/home.html:197
+msgid "homecard html to pdf"
+msgstr ""
+
+#: core/templates/core/home.html:198
+msgid "homecardtext html to pdf"
 msgstr ""
 
 #: ilovepdf/settings.py:111
-msgid "Bulgarian"
+msgid "Afrikaans"
 msgstr ""
 
 #: ilovepdf/settings.py:112
-msgid "Belarusian"
+msgid "Arabic"
 msgstr ""
 
 #: ilovepdf/settings.py:113
-msgid "Bengali"
+msgid "Azerbaijani"
 msgstr ""
 
 #: ilovepdf/settings.py:114
-msgid "Breton"
+msgid "Bulgarian"
 msgstr ""
 
 #: ilovepdf/settings.py:115
-msgid "Bosnian"
+msgid "Belarusian"
 msgstr ""
 
 #: ilovepdf/settings.py:116
-msgid "Catalan"
+msgid "Bengali"
 msgstr ""
 
 #: ilovepdf/settings.py:117
-msgid "Czech"
+msgid "Breton"
 msgstr ""
 
 #: ilovepdf/settings.py:118
-msgid "Welsh"
+msgid "Bosnian"
 msgstr ""
 
 #: ilovepdf/settings.py:119
-msgid "Danish"
+msgid "Catalan"
 msgstr ""
 
 #: ilovepdf/settings.py:120
-msgid "German"
+msgid "Czech"
 msgstr ""
 
 #: ilovepdf/settings.py:121
-msgid "Greek"
+msgid "Welsh"
 msgstr ""
 
 #: ilovepdf/settings.py:122
-msgid "English"
+msgid "Danish"
 msgstr ""
 
 #: ilovepdf/settings.py:123
-msgid "British English"
+msgid "German"
 msgstr ""
 
 #: ilovepdf/settings.py:124
-msgid "Esperanto"
+msgid "Greek"
 msgstr ""
 
 #: ilovepdf/settings.py:125
-msgid "Spanish"
+msgid "English"
 msgstr ""
 
 #: ilovepdf/settings.py:126
-msgid "Argentinian Spanish"
+msgid "British English"
 msgstr ""
 
 #: ilovepdf/settings.py:127
-msgid "Mexican Spanish"
+msgid "Esperanto"
 msgstr ""
 
 #: ilovepdf/settings.py:128
-msgid "Nicaraguan Spanish"
+msgid "Spanish"
 msgstr ""
 
 #: ilovepdf/settings.py:129
-msgid "Venezuelan Spanish"
+msgid "Argentinian Spanish"
 msgstr ""
 
 #: ilovepdf/settings.py:130
-msgid "Estonian"
+msgid "Mexican Spanish"
 msgstr ""
 
 #: ilovepdf/settings.py:131
-msgid "Basque"
+msgid "Nicaraguan Spanish"
 msgstr ""
 
 #: ilovepdf/settings.py:132
-msgid "Persian"
+msgid "Venezuelan Spanish"
 msgstr ""
 
 #: ilovepdf/settings.py:133
-msgid "Finnish"
+msgid "Estonian"
 msgstr ""
 
 #: ilovepdf/settings.py:134
-msgid "French"
+msgid "Basque"
 msgstr ""
 
 #: ilovepdf/settings.py:135
-msgid "Frisian"
+msgid "Persian"
 msgstr ""
 
 #: ilovepdf/settings.py:136
-msgid "Irish"
+msgid "Finnish"
 msgstr ""
 
 #: ilovepdf/settings.py:137
-msgid "Galician"
+msgid "French"
 msgstr ""
 
 #: ilovepdf/settings.py:138
-msgid "Hebrew"
+msgid "Frisian"
 msgstr ""
 
 #: ilovepdf/settings.py:139
-msgid "Hindi"
+msgid "Irish"
 msgstr ""
 
 #: ilovepdf/settings.py:140
-msgid "Croatian"
+msgid "Galician"
 msgstr ""
 
 #: ilovepdf/settings.py:141
-msgid "Hungarian"
+msgid "Hebrew"
 msgstr ""
 
 #: ilovepdf/settings.py:142
-msgid "Interlingua"
+msgid "Hindi"
 msgstr ""
 
 #: ilovepdf/settings.py:143
-msgid "Indonesian"
+msgid "Croatian"
 msgstr ""
 
 #: ilovepdf/settings.py:144
-msgid "Icelandic"
+msgid "Hungarian"
 msgstr ""
 
 #: ilovepdf/settings.py:145
-msgid "Italian"
+msgid "Interlingua"
 msgstr ""
 
 #: ilovepdf/settings.py:146
-msgid "Japanese"
+msgid "Indonesian"
 msgstr ""
 
 #: ilovepdf/settings.py:147
-msgid "Georgian"
+msgid "Icelandic"
 msgstr ""
 
 #: ilovepdf/settings.py:148
-msgid "Kazakh"
+msgid "Italian"
 msgstr ""
 
 #: ilovepdf/settings.py:149
-msgid "Khmer"
+msgid "Japanese"
 msgstr ""
 
 #: ilovepdf/settings.py:150
-msgid "Kannada"
+msgid "Georgian"
 msgstr ""
 
 #: ilovepdf/settings.py:151
-msgid "Korean"
+msgid "Kazakh"
 msgstr ""
 
 #: ilovepdf/settings.py:152
-msgid "Luxembourgish"
+msgid "Khmer"
 msgstr ""
 
 #: ilovepdf/settings.py:153
-msgid "Lithuanian"
+msgid "Kannada"
 msgstr ""
 
 #: ilovepdf/settings.py:154
-msgid "Latvian"
+msgid "Korean"
 msgstr ""
 
 #: ilovepdf/settings.py:155
-msgid "Macedonian"
+msgid "Luxembourgish"
 msgstr ""
 
 #: ilovepdf/settings.py:156
-msgid "Malayalam"
+msgid "Lithuanian"
 msgstr ""
 
 #: ilovepdf/settings.py:157
-msgid "Mongolian"
+msgid "Latvian"
 msgstr ""
 
 #: ilovepdf/settings.py:158
-msgid "Norwegian Bokmal"
+msgid "Macedonian"
 msgstr ""
 
 #: ilovepdf/settings.py:159
-msgid "Nepali"
+msgid "Malayalam"
 msgstr ""
 
 #: ilovepdf/settings.py:160
-msgid "Dutch"
+msgid "Mongolian"
 msgstr ""
 
 #: ilovepdf/settings.py:161
-msgid "Norwegian Nynorsk"
+msgid "Norwegian Bokmal"
 msgstr ""
 
 #: ilovepdf/settings.py:162
-msgid "Punjabi"
+msgid "Nepali"
 msgstr ""
 
 #: ilovepdf/settings.py:163
-msgid "Polish"
+msgid "Dutch"
 msgstr ""
 
 #: ilovepdf/settings.py:164
-msgid "Portuguese"
+msgid "Norwegian Nynorsk"
 msgstr ""
 
 #: ilovepdf/settings.py:165
-msgid "Brazilian Portuguese"
+msgid "Punjabi"
 msgstr ""
 
 #: ilovepdf/settings.py:166
-msgid "Romanian"
+msgid "Polish"
 msgstr ""
 
 #: ilovepdf/settings.py:167
-msgid "Russian"
+msgid "Portuguese"
 msgstr ""
 
 #: ilovepdf/settings.py:168
-msgid "Slovak"
+msgid "Brazilian Portuguese"
 msgstr ""
 
 #: ilovepdf/settings.py:169
-msgid "Slovenian"
+msgid "Romanian"
 msgstr ""
 
 #: ilovepdf/settings.py:170
-msgid "Albanian"
+msgid "Russian"
 msgstr ""
 
 #: ilovepdf/settings.py:171
-msgid "Serbian"
+msgid "Slovak"
 msgstr ""
 
 #: ilovepdf/settings.py:172
-msgid "Serbian Latin"
+msgid "Slovenian"
 msgstr ""
 
 #: ilovepdf/settings.py:173
-msgid "Swedish"
+msgid "Albanian"
 msgstr ""
 
 #: ilovepdf/settings.py:174
-msgid "Swahili"
+msgid "Serbian"
 msgstr ""
 
 #: ilovepdf/settings.py:175
-msgid "Tamil"
+msgid "Serbian Latin"
 msgstr ""
 
 #: ilovepdf/settings.py:176
-msgid "Telugu"
+msgid "Swedish"
 msgstr ""
 
 #: ilovepdf/settings.py:177
-msgid "Thai"
+msgid "Swahili"
 msgstr ""
 
 #: ilovepdf/settings.py:178
-msgid "Turkish"
+msgid "Tamil"
 msgstr ""
 
 #: ilovepdf/settings.py:179
-msgid "Tatar"
+msgid "Telugu"
 msgstr ""
 
 #: ilovepdf/settings.py:180
-msgid "Udmurt"
+msgid "Thai"
 msgstr ""
 
 #: ilovepdf/settings.py:181
-msgid "Ukrainian"
+msgid "Turkish"
 msgstr ""
 
 #: ilovepdf/settings.py:182
-msgid "Urdu"
+msgid "Tatar"
 msgstr ""
 
 #: ilovepdf/settings.py:183
-msgid "Vietnamese"
+msgid "Udmurt"
 msgstr ""
 
 #: ilovepdf/settings.py:184
-msgid "Simplified Chinese"
+msgid "Ukrainian"
 msgstr ""
 
 #: ilovepdf/settings.py:185
+msgid "Urdu"
+msgstr ""
+
+#: ilovepdf/settings.py:186
+msgid "Vietnamese"
+msgstr ""
+
+#: ilovepdf/settings.py:187
+msgid "Simplified Chinese"
+msgstr ""
+
+#: ilovepdf/settings.py:188
 msgid "Traditional Chinese"
+msgstr ""
+
+#: templates/navbar.html:27
+msgid "Blog"
+msgstr ""
+
+#: templates/navbar.html:28
+msgid "MergePDF"
+msgstr ""
+
+#: templates/navbar.html:29
+msgid "SplitPDF"
+msgstr ""
+
+#: templates/navbar.html:30
+msgid "CompressPDF"
+msgstr ""
+
+#: templates/navbar.html:72
+msgid "Change languages"
 msgstr ""
