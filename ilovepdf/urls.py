@@ -7,10 +7,14 @@ from django.urls import path, include
 from django.views.i18n import set_language
 from django.contrib.sitemaps.views import sitemap
 from blog.sitemaps import PostSitemap
+from core.sitemaps import CoreSitemap
+from tools.sitemaps import ToolsSitemap
 from django.views.generic.base import TemplateView
 
 sitemaps = {
     'posts': PostSitemap,
+    'core': CoreSitemap,
+    'tools': ToolsSitemap,    
 }
 
 urlpatterns = i18n_patterns(

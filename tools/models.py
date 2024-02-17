@@ -7,12 +7,6 @@ class ToolAttachment(models.Model):
     function_name = models.CharField(max_length=50, unique=True, blank=True, null=True, default=None, help_text="Unique identifier for the tool's function")
     template_name = models.CharField(max_length=100, blank=True, null=True, default=None, help_text="Template path for the tool's function")
 
-# class ToolAttachment(TranslatableModel):    
-#     translation = TranslatedFields(
-#         function_name = models.CharField(_('function_name'), max_length=50, unique=True, help_text="Unique identifier for the tool's function"),
-#         template_name = models.CharField( _('template_name'), max_length=100, help_text="Template path for the tool's function")
-#     )
-
 
     class Meta:
         verbose_name = 'tool'
@@ -20,3 +14,10 @@ class ToolAttachment(models.Model):
 
     def __str__(self):
         return self.function_name
+
+# class ToolAttachment(TranslatableModel):    
+#     translation = TranslatedFields(
+#         function_name = models.CharField(_('function_name'), max_length=50, unique=True, help_text="Unique identifier for the tool's function"),
+#         template_name = models.CharField( _('template_name'), max_length=100, help_text="Template path for the tool's function")
+#     )
+
