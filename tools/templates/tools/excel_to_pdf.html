@@ -5,10 +5,18 @@
 {% block content %}
   <div class="container text-center bg-body-secondary" >
     <h1>Excel to PDF Converter</h1>
-        <form method="post" enctype="multipart/form-data" action="/tools/excel-to-pdf/">
+    <hr><br>
+    <h2>You can Convert your Excel files into PDF documents.</h2>
+    <br>
+    <div class="container text-center" >
+        <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="/tools/excel-to-pdf/">
             {% csrf_token %}
-            <input type="file" name="excel_file"><br><br>
-            <button type="submit">Convert to PDF</button>
+            <label for="excel_file" class="btn btn-custom btn-lg">
+                <span id="file-label"><h1>Select Excel File</h1></span>
+                <input id="excel_file" type="file" name="excel_file" accept=".xls, .xlsx" ><br><br>
+            </label>                
+            <br><p>or Drop Excel file here<br><br>
+            <button class="btn btn-danger btn-lg" type="submit">Convert to PDF</button>
         </form>
 
     </div>
