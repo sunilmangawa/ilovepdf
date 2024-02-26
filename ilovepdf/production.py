@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-okkh^d15@u5+lhc=tbb_^uxlb^f&9b)fe$&agsi!dmei@o2r@_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1','127.0.0.1:8000','127.0.0.1:8000/blog/']
+ALLOWED_HOSTS = ['*']
 
 SITE_ID = 1
 
@@ -296,7 +296,7 @@ USE_TZ = True
 
 # MEDIA_URL = 'media/'
 # MEDIA_ROOT = BASE_DIR / 'media'
-STATIC_URL = '/python/static/'
+STATIC_URL = '/static/'
 STATIC_ROOT = '/usr/local/lsws/Example/html/ilovepdf/static'
 
 MEDIA_URL = '/python/media/'

@@ -9,7 +9,15 @@
     <hr>
     <div class="container">
       <h2>JPG to PDF Convereter Page Content</h2>
-      <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid">
+      {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
+    <!-- tools/templates/jpg_to_pdf.html -->
+
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <input type="file" name="images" accept="image/jpg, image/jpeg, image/png" multiple required>
+        <button type="submit">Convert</button>
+    </form>
+
     </div>
   </div>
 {% endblock %}  

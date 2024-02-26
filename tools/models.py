@@ -21,3 +21,6 @@ class ToolAttachment(models.Model):
 #         template_name = models.CharField( _('template_name'), max_length=100, help_text="Template path for the tool's function")
 #     )
 
+class ConvertedPDF(models.Model):
+    pdf_file = models.FileField(upload_to='pdfs/')
+    uploaded_at = models.DateTimeField(auto_now_add=True)

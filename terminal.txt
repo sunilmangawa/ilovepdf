@@ -1,0 +1,168 @@
+
+ * Documentation:  https://help.ubuntu.com
+ * Management:     https://landscape.canonical.com
+ * Support:        https://ubuntu.com/advantage
+
+ * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
+   just raised the bar for easy, resilient and secure K8s cluster deployment.
+
+   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
+
+This message is shown once a day. To disable it please create the
+/home/coder/.hushlogin file.
+Python 3.12.1 (main, Dec 10 2023, 15:07:36) [GCC 11.4.0] on linux
+Type "help", "copyright", "credits" or "license" for more information.
+coder@code:~$ wget -O find_uno.py https://gist.githubusercontent.com/regebro/036da022dc7d5241a0ee97efdf1458eb/raw/find_uno.py python3 find_uno.py
+--2024-02-25 04:49:46--  https://gist.githubusercontent.com/regebro/036da022dc7d5241a0ee97efdf1458eb/raw/find_uno.py
+Resolving gist.githubusercontent.com (gist.githubusercontent.com)... 185.199.111.133, 185.199.108.133, 185.199.109.133, ...
+Connecting to gist.githubusercontent.com (gist.githubusercontent.com)|185.199.111.133|:443... connected.
+HTTP request sent, awaiting response... 200 OK
+Length: 2156 (2.1K) [text/plain]
+Saving to: ‘find_uno.py’
+
+find_uno.py                          100%[====================================================================>]   2.11K  --.-KB/s    in 0.001s
+
+2024-02-25 04:49:49 (2.86 MB/s) - ‘find_uno.py’ saved [2156/2156]
+
+--2024-02-25 04:49:49--  http://python3/
+Resolving python3 (python3)... failed: Name or service not known.
+wget: unable to resolve host address ‘python3’
+--2024-02-25 04:49:50--  http://find_uno.py/
+Resolving find_uno.py (find_uno.py)... failed: Name or service not known.
+wget: unable to resolve host address ‘find_uno.py’
+FINISHED --2024-02-25 04:49:51--
+Total wall clock time: 4.6s
+Downloaded: 1 files, 2.1K in 0.001s (2.86 MB/s)
+coder@code:~$ python3 -V
+Python 3.12.1
+coder@code:~$ python -V
+Traceback (most recent call last):
+  File "/usr/lib/command-not-found", line 28, in <module>
+    from CommandNotFound import CommandNotFound
+  File "/usr/lib/python3/dist-packages/CommandNotFound/CommandNotFound.py", line 19, in <module>
+    from CommandNotFound.db.db import SqliteDatabase
+  File "/usr/lib/python3/dist-packages/CommandNotFound/db/db.py", line 5, in <module>
+    import apt_pkg
+ModuleNotFoundError: No module named 'apt_pkg'
+coder@code:~$ pwd
+/home/coder
+coder@code:~$ cd projects/
+coder@code:~/projects$ sudo dpkg -i wkhtmltox_0.12.6.1-2.jammy_amd64.deb
+[sudo] password for coder:
+Sorry, try again.
+[sudo] password for coder:
+Sorry, try again.
+[sudo] password for coder:
+Selecting previously unselected package wkhtmltox.
+dpkg: considering removing wkhtmltopdf in favour of wkhtmltox ...
+dpkg: yes, will remove wkhtmltopdf in favour of wkhtmltox
+(Reading database ... 61033 files and directories currently installed.)
+Preparing to unpack wkhtmltox_0.12.6.1-2.jammy_amd64.deb ...
+Unpacking wkhtmltox (1:0.12.6.1-2.jammy) ...
+Removing wkhtmltopdf (0.12.6-2), to allow configuration of wkhtmltox (1:0.12.6.1-2.jammy) ...
+dpkg: dependency problems prevent configuration of wkhtmltox:
+ wkhtmltox depends on xfonts-75dpi; however:
+  Package xfonts-75dpi is not installed.
+
+dpkg: error processing package wkhtmltox (--install):
+ dependency problems - leaving unconfigured
+Processing triggers for man-db (2.10.2-1) ...
+Errors were encountered while processing:
+ wkhtmltox
+coder@code:~/projects$ sudo dpkg -i wkhtmltox_0.12.6.1-2.jammy_amd64.deb
+[sudo] password for coder:
+Sorry, try again.
+[sudo] password for coder:
+(Reading database ... 61045 files and directories currently installed.)
+Preparing to unpack wkhtmltox_0.12.6.1-2.jammy_amd64.deb ...
+Unpacking wkhtmltox (1:0.12.6.1-2.jammy) over (1:0.12.6.1-2.jammy) ...
+dpkg: dependency problems prevent configuration of wkhtmltox:
+ wkhtmltox depends on xfonts-75dpi; however:
+  Package xfonts-75dpi is not installed.
+
+dpkg: error processing package wkhtmltox (--install):
+ dependency problems - leaving unconfigured
+Processing triggers for man-db (2.10.2-1) ...
+Errors were encountered while processing:
+ wkhtmltox
+coder@code:~/projects$ sudo apt-get install xfonts-75dpi
+Reading package lists... Done
+Building dependency tree... Done
+Reading state information... Done
+The following packages were automatically installed and are no longer required:
+  geoclue-2.0 glib-networking glib-networking-common glib-networking-services iio-sensor-proxy libavahi-glib1
+  libdouble-conversion3 libevdev2 libinput-bin libinput10 libjson-glib-1.0-0 libjson-glib-1.0-common libmbim-glib4
+  libmbim-proxy libmd4c0 libmm-glib0 libmtdev1 libnotify4 libpcre2-16-0 libproxy1v5 libqmi-glib5 libqmi-proxy
+  libqt5core5a libqt5dbus5 libqt5gui5 libqt5network5 libqt5positioning5 libqt5printsupport5 libqt5qml5 libqt5qmlmodels5
+  libqt5quick5 libqt5sensors5 libqt5svg5 libqt5webchannel5 libqt5webkit5 libqt5widgets5 libsoup2.4-1 libsoup2.4-common
+  libtcl8.6 libwacom-bin libwacom-common libwacom9 libwoff1 libxcb-icccm4 libxcb-image0 libxcb-keysyms1
+  libxcb-render-util0 libxcb-util1 libxcb-xinerama0 libxcb-xinput0 libxcb-xkb1 libxkbcommon-x11-0 modemmanager
+  qt5-gtk-platformtheme qttranslations5-l10n tcl tcl8.6 usb-modeswitch usb-modeswitch-data
+Use 'sudo apt autoremove' to remove them.
+The following NEW packages will be installed:
+  xfonts-75dpi
+0 upgraded, 1 newly installed, 0 to remove and 66 not upgraded.
+1 not fully installed or removed.
+Need to get 3365 kB of archives.
+After this operation, 3778 kB of additional disk space will be used.
+Get:1 http://archive.ubuntu.com/ubuntu jammy/universe amd64 xfonts-75dpi all 1:1.0.4+nmu1.1 [3365 kB]
+Fetched 3365 kB in 6s (547 kB/s)
+Selecting previously unselected package xfonts-75dpi.
+(Reading database ... 61045 files and directories currently installed.)
+Preparing to unpack .../xfonts-75dpi_1%3a1.0.4+nmu1.1_all.deb ...
+Unpacking xfonts-75dpi (1:1.0.4+nmu1.1) ...
+Setting up xfonts-75dpi (1:1.0.4+nmu1.1) ...
+Setting up wkhtmltox (1:0.12.6.1-2.jammy) ...
+Processing triggers for fontconfig (2.13.1-4.2ubuntu5) ...
+Processing triggers for libc-bin (2.35-0ubuntu3.5) ...
+/sbin/ldconfig.real: /usr/lib/wsl/lib/libcuda.so.1 is not a symbolic link
+
+coder@code:~/projects$ sudo dpkg --configure wkhtmltox
+dpkg: error processing package wkhtmltox (--configure):
+ package wkhtmltox is already installed and configured
+Errors were encountered while processing:
+ wkhtmltox
+coder@code:~/projects$ sudo dpkg -i wkhtmltox_0.12.6.1-2.jammy_amd64.deb
+(Reading database ... 61417 files and directories currently installed.)
+Preparing to unpack wkhtmltox_0.12.6.1-2.jammy_amd64.deb ...
+Unpacking wkhtmltox (1:0.12.6.1-2.jammy) over (1:0.12.6.1-2.jammy) ...
+Setting up wkhtmltox (1:0.12.6.1-2.jammy) ...
+Processing triggers for man-db (2.10.2-1) ...
+Processing triggers for libc-bin (2.35-0ubuntu3.5) ...
+/sbin/ldconfig.real: /usr/lib/wsl/lib/libcuda.so.1 is not a symbolic link
+
+coder@code:~/projects$ sudo apt update
+Hit:1 http://archive.ubuntu.com/ubuntu jammy InRelease
+Get:2 http://archive.ubuntu.com/ubuntu jammy-updates InRelease [119 kB]
+Get:3 http://security.ubuntu.com/ubuntu jammy-security InRelease [110 kB]
+Get:4 https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy InRelease [18.1 kB]
+Hit:5 http://archive.ubuntu.com/ubuntu jammy-backports InRelease
+Get:6 https://ppa.launchpadcontent.net/deadsnakes/ppa/ubuntu jammy/main amd64 Packages [24.1 kB]
+Get:7 http://archive.ubuntu.com/ubuntu jammy-updates/main amd64 Packages [1412 kB]
+Get:8 http://archive.ubuntu.com/ubuntu jammy-updates/restricted amd64 Packages [1490 kB]
+Get:9 http://archive.ubuntu.com/ubuntu jammy-updates/universe amd64 Packages [1049 kB]
+Fetched 4222 kB in 7s (613 kB/s)
+Traceback (most recent call last):
+  File "/usr/lib/cnf-update-db", line 3, in <module>
+    import apt_pkg
+ModuleNotFoundError: No module named 'apt_pkg'
+Reading package lists... Error!
+E: Problem executing scripts APT::Update::Post-Invoke-Success 'if /usr/bin/test -w /var/lib/command-not-found/ -a -e /usr/lib/cnf-update-db; then /usr/lib/cnf-update-db > /dev/null; fi'
+E: Sub-process returned an error code
+E: Unable to parse package file /var/lib/apt/lists/security.ubuntu.com_ubuntu_dists_jammy-security_universe_i18n_Translation-en (1)
+W: You may want to run apt-get update to correct these problems
+E: The package cache file is corrupted
+coder@code:~/projects$ ls -l /usr/lib/wsl/lib/libcuda.so.1
+-r-xr-xr-x 1 root root 141464 Oct  1  2021 /usr/lib/wsl/lib/libcuda.so.1
+coder@code:~/projects$ ls -l /usr/lib/wsl/lib/libcuda.so*
+-r-xr-xr-x 1 root root 141464 Oct  1  2021 /usr/lib/wsl/lib/libcuda.so
+-r-xr-xr-x 1 root root 141464 Oct  1  2021 /usr/lib/wsl/lib/libcuda.so.1
+-r-xr-xr-x 1 root root 141464 Oct  1  2021 /usr/lib/wsl/lib/libcuda.so.1.1
+
+
+
+
+***************************************************************************************
+
+
+

@@ -14,7 +14,7 @@ from django.views.generic.base import TemplateView
 sitemaps = {
     'posts': PostSitemap,
     'core': CoreSitemap,
-    'tools': ToolsSitemap,    
+    'tools': ToolsSitemap,
 }
 
 urlpatterns = i18n_patterns(

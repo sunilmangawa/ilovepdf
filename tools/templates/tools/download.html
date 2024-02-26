@@ -2,13 +2,58 @@
 <!DOCTYPE html>
 <html>
 <head>
+    <title>Download Merged PDF</title>
+</head>
+<body>
+    <h1>Download Merged PDF</h1>
+    {% comment %} <a href="{% url 'merge_and_download' %}">Download</a> {% endcomment %}
+
+    <a href="{{ pdf_object.pdf_file.url }}" download>Download PDF</a>
+</body>
+</html>
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Download PDF</title>
+</head>
+<body>
+    <a href="{% url 'download_pdf' %}" download><button>Download Merged PDF</button></a>
+</body>
+</html> {% endcomment %}
+
+
+
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Download PDF</title>
+</head>
+<body>
+    <a href="{{ merged_pdf_path }}" download>Download Merged PDF</a>
+</body>
+</html> {% endcomment %}
+
+
+
+
+
+{% comment %} <!DOCTYPE html>
+<html>
+<head>
     <title>PDF Download</title>
 </head>
 <body>
     <h1>PDF Download Page</h1>
     <p>Your file is ready for download:</p>
-    {% comment %} <a href="/tools/download/{{ file_name }}" download><button>Download PDF</button></a> {% endcomment %}
-    {% comment %} <a href="{% url 'download' file_name=file_name %}" download><button>Download PDF</button></a>{% endcomment %}
+    <a href="/tools/download/{{ file_name }}" download><button>Download PDF</button></a>
+    <a href="{% url 'download' file_name=file_name %}" download><button>Download PDF</button></a>
     <a href="/tools/download/{{ file_name }}" download><button>Download PDF</button></a> 
 </body>
-</html>
+</html> {% endcomment %}

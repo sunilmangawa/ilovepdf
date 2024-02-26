@@ -9,7 +9,18 @@
       <hr>
     <div class="container">
       <h2>HTML to PDF Convereter Page Content</h2>
-      <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid">
+      {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
+
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="url">Enter URL:</label>
+        <input type="text" name="url" id="url"><br><br>
+        
+        <label for="html_file">Upload HTML file:</label>
+        <input type="file" name="html_file" id="html_file"><br><br>
+        
+        <input type="submit" value="Convert">
+      </form>
 
     </div>
   </div>
