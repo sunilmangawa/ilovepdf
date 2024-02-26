@@ -14,3 +14,7 @@ media/
 
 # Virtual environment
 ilvenv/
+
+*.pyc
+
+*Zone.Identifier
