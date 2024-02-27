@@ -36,6 +36,7 @@ INSTALLED_APPS = [
     'ckeditor',
     'rosetta',
     'parler',
+    'django_celery_beat',
 
 
 ]
@@ -317,3 +318,17 @@ CKEDITOR_CONFIGS = {
     },
 }
 
+# for django-celery-beat
+CELERY_BROKER_URL = 'redis://localhost:6379'  # Or your preferred broker
+CELERY_RESULT_BACKEND = 'redis://localhost:6379' 
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'  # Set to your timezone
+
+CELERY_BEAT_SCHEDULE = {
+    'delete_expired_pdfs': {
+        'task': 'tools.tasks.delete_old_pdfs',
+        'schedule': 60,  # Run every minute change to 3600 for hourly 
+    },
+}

@@ -1,4 +1,4 @@
-# tools/word_to_pdf_converter.py
+# tools/topdf/word_to_pdf_converter.py
 import os
 from docxtopdf import convert
 

@@ -273,34 +273,80 @@ def img_to_pdf(request):
     return render(request, 'tools/imgtopdf.html')
 
 
+# def word_to_pdf_View(request):
+#     if request.method == 'POST' and request.FILES.get('word_file'):
+#         word_file = request.FILES['word_file']
+#         print(f'word_file: {word_file}')
+#         temp_file_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', word_file.name)
+#         print(f'temp_file_path: {temp_file_path}')
+#         # Save the uploaded Word file
+#         with open(temp_file_path, 'wb') as temp_file:
+#             for chunk in word_file.chunks():
+#                 temp_file.write(chunk)
+
+#         # Generate the output PDF file path
+#         output_pdf_path = temp_file_path.replace('.docx', '.pdf').replace('.doc', '.pdf').replace('.txt', '.pdf')
+#         # Generate the output PDF file path (with renaming)
+#         # output_file_name = word_file.name.replace(' ', '_')  # Replace spaces with underscores
+#         # output_pdf_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', output_file_name.replace('.docx', '.pdf').replace('.doc', '.pdf').replace('.txt', '.pdf'))       
+
+#         # Generate the output PDF file name (with renaming)
+#         output_file_name = word_file.name.replace(' ', '_')  # Replace spaces with underscores
+#         output_pdf_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', output_file_name.replace('.docx', '.pdf').replace('.doc', '.pdf').replace('.txt', '.pdf'))      
+       
+#         # Keep the original temp_file_path 
+#         temp_file_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', word_file.name)
+#         print(f'output_pdf_path: {output_pdf_path}')
+#         print(f'temp_file_path: {temp_file_path}')
+
+#         # Convert the Word file to PDF
+#         convert_word_to_pdf(temp_file_path, output_pdf_path)
+
+#         # Clean up temporary files
+#         clean_temp_files(temp_file_path)
+
+#         # Serve the PDF file for download
+#         with open(output_pdf_path, 'rb') as pdf_file:
+#             response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+#             # response['Content-Disposition'] = f'attachment; filename={os.path.basename(output_pdf_path)}'
+#             response['Content-Disposition'] = f'attachment; filename={output_file_name}' 
+#             return response
+
+#     return render(request, 'tools/word_to_pdf.html')
+
 def word_to_pdf_View(request):
     if request.method == 'POST' and request.FILES.get('word_file'):
         word_file = request.FILES['word_file']
-        temp_file_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', word_file.name)
-        
-        # Save the uploaded Word file
+
+        # Generate a unique temporary file name (optional)
+        import uuid 
+        temp_filename = f"{uuid.uuid4()}.docx"
+        temp_file_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', temp_filename)
+
+        # Save the uploaded Word file to the media directory
         with open(temp_file_path, 'wb') as temp_file:
             for chunk in word_file.chunks():
                 temp_file.write(chunk)
 
-        # Generate the output PDF file path
-        output_pdf_path = temp_file_path.replace('.docx', '.pdf').replace('.doc', '.pdf').replace('.txt', '.pdf')
-        
-        # Convert the Word file to PDF
-        convert_word_to_pdf(temp_file_path, output_pdf_path)
+        # Generate the output PDF file name (with renaming)
+        output_file_name = word_file.name.replace(' ', '_').replace('.docx', '.pdf').replace('.doc', '.pdf').replace('.txt', '.pdf')
+        output_pdf_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', output_file_name)
 
-        # Clean up temporary files
+        # Convert the Word file to PDF 
+        convert_word_to_pdf(temp_file_path, output_pdf_path) 
+
+        # Clean up temporary file
         clean_temp_files(temp_file_path)
 
         # Serve the PDF file for download
         with open(output_pdf_path, 'rb') as pdf_file:
             response = HttpResponse(pdf_file.read(), content_type='application/pdf')
-            response['Content-Disposition'] = f'attachment; filename={os.path.basename(output_pdf_path)}'
+            response['Content-Disposition'] = f'attachment; filename={output_file_name}'
             return response
 
     return render(request, 'tools/word_to_pdf.html')
 
-
+    
 def powerpoint_to_pdf_View(request):
     return render(request, template_name='tools/powerpoint_to_pdf.html')
 
