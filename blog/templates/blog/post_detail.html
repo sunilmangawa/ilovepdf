@@ -1,13 +1,20 @@
 {% extends "base.html" %}
 {% load blog_tags %}
+{% load meta %}
+{% comment %} <meta property="og:title" content="{{meta.translation__title }}" /> {% endcomment %}
+<meta property="og:title" content="{{ meta.title }}" /> 
+<meta name="description" content="{{ meta.description }}" />
+<meta name="keywords" content="{{ meta.keywords }}" />   
+{% if meta.image %}
+    <meta property="og:image" content="{{ meta.image.url }}" />  
+{% endif %}
 
-{% block meta %}
-    {% comment %} {{ post.as_meta }} {% endcomment %}
-    <meta name="description" content="{{post.intro }}">
-    {% comment %} <meta name="description" content="{{ModelMeta.get_intro() }}"> {% endcomment %}
+
+{% comment %} {% block meta %}
+    {{ post.as_meta }}
+    <meta name="description" content="{{meta.translation__intro }}">
     {% if post.keywords %}
-        <meta name="keywords" content="pdf, word, django, docx, doc, convert">
-        {% comment %} <meta property="og:keywords" content="{{post.keywords }}"> {% endcomment %}
+        <meta name="keywords" content={{meta.keywords}}>
     {% endif %}
     <meta property="og:title" content="{{post.title}}">
     <meta property="og:type" content="article">
@@ -19,8 +26,8 @@
     <meta property="og:image:alt" content="{{post.image.alt}}">{% endif %}
     <meta property="og:site_name" content="Convert any file format">
 
-{% endblock %}
-{% block title %}{{ post.title }}{% endblock %}
+{% endblock %} {% endcomment %}
+{% block title %}{{ meta.title }}{% endblock %}
 {% block content %}
 <div class="container mt-4">
 

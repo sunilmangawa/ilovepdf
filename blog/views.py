@@ -20,6 +20,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from parler.views import TranslatableSlugMixin
 from django.utils import translation
 
+
 def post_list(request, tag_slug=None):
     # post_list = Post.published.all().prefetch_related('translations')
     post_list = Post.published.all()
@@ -49,6 +50,13 @@ def post_detail(request, post):
         else:
             post = get_object_or_404(Post.published, translations__slug=post)
             toolattachment = post.toolattachment
+        meta = post.as_meta()  # Generate meta data
+        print(f'meta: {meta}')
+        print(f'meta type: {type(post)}')
+        print(f'post: {post}')
+        print(f'post type: {type(post)}')
+        print(f'meta.title: {meta.title}')
+
     except Post.DoesNotExist:
         raise Http404("Post does not exist")
 
@@ -76,7 +84,7 @@ def post_detail(request, post):
     return render(
         request,
         'blog/post_detail.html',
-        {'post': post, 'comments': comments, 'form': form, 'similar_posts': similar_posts, 'tool_content': tool_content}
+        {'post': post, 'comments': comments, 'form': form, 'similar_posts': similar_posts, 'tool_content': tool_content, 'meta':meta}
     )
 
 
@@ -94,4 +102,64 @@ def post_comment(request, post_id):
         # Save the comment to the database
         comment.save()
     return render(request, 'blog/post/comment.html',{'post': post,'form': form,'comment': comment})
+
+# def get_schema(self, context=None):
+#     return {
+#         'name': self.object.title(),
+#         'keywords': self.object.get_keywords(),
+#         'description': self.object.get_description(),
+#         'image': self.object.get_image_full_url(),
+#         # 'articleBody': self.object.text,
+#         # 'articleSection': self.object.get_categories(),
+#         # 'author': self.object.get_schema_author(),
+#         # 'copyrightYear': self.object.date_published.year,
+#         # 'dateCreated': self.object.get_date(),
+#         # 'dateModified': self.object.get_date(),
+#         # 'datePublished': self.object.date_published(),
+#         # 'headline': self.object.abstract[:50],
+#         # 'url': self.object.get_full_url(),
+#         # 'mainEntityOfPage': self.object.get_full_url(),
+#         # 'publisher': self.object.get_site(),
+#     }
+
+
+
+# 100% working
+# def post_detail(request, post):
+#     try:
+#         post = Post.published.translated(request.LANGUAGE_CODE).filter(translations__slug=post).first()
+#         if post != None:
+#             toolattachment = post.toolattachment
+#         else:
+#             post = get_object_or_404(Post.published, translations__slug=post)
+#             toolattachment = post.toolattachment
+#     except Post.DoesNotExist:
+#         raise Http404("Post does not exist")
+
+#     # comments = post.comments.filter(active=True)
+#     comments = post.comments.filter(active=True) if hasattr(post, 'comments') else None
+#     form = CommentForm()
+#     # post_tags_ids = post.tags.values_list('id', flat=True)
+#     post_tags_ids = post.tags.values_list('id', flat=True) if hasattr(post, 'tags') else []
+#     # Check if post is not None before excluding it from similar_posts
+#     similar_posts = Post.published.filter(tags__in=post_tags_ids).exclude(id=post.id) if post else None
+    
+#     # Additional check for similar_posts
+#     similar_posts = similar_posts.annotate(same_tags=Count('tags')).order_by('-same_tags', '-publish')[:4] if similar_posts else []
+
+#     try:
+#         if toolattachment:  # Check if toolattachment is not None
+#             tool_template = f"tools/{toolattachment.template_name}.html"
+#             tool_content = render(request, tool_template).content.decode('utf-8')
+#         else:
+#             tool_content = "Template not found: No toolattachment associated."
+#     except (TemplateDoesNotExist, AttributeError):
+#         tool_content = f"Template not found CHECK PATH: {tool_template}"
+
+
+#     return render(
+#         request,
+#         'blog/post_detail.html',
+#         {'post': post, 'comments': comments, 'form': form, 'similar_posts': similar_posts, 'tool_content': tool_content}
+#     )
 

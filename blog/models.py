@@ -12,6 +12,9 @@ from django.utils.translation import gettext_lazy as _
 from parler.models import TranslatableModel, TranslatedFields, TranslatableManager  #TranslatableQuerySet
 from parler.managers import TranslatableQuerySet
 from tools.models import ToolAttachment
+from meta.models import ModelMeta
+# from parler.views.LanguageChoiceMixin import get_current_language
+
 
 class Category(models.Model):
     name = models.CharField(max_length=50, blank=True, null=True, default=None)
@@ -23,14 +26,18 @@ class Category(models.Model):
     def __str__(self):
         return self.name
 
-def validate_comma_separated_words(value):
-    words = value.split(',')
-    for word in words:
-        word = word.strip()
-        if not word:
-            raise ValidationError('Enter at least one keyword.')
+# 100 
+# def validate_comma_separated_words(value):
+#     words = value.split(',')
+#     for word in words:
+#         word = word.strip()
+#         if not word:
+#             raise ValidationError('Enter at least one keyword.')
 # Create your models here.
-
+def validate_comma_separated_words(value):
+    words = [word.strip() for word in value.split(',') if word.strip()]
+    if not words:
+        raise ValidationError('Enter at least one keyword.')    
 
 def image_upload_path(instance, filename):
     """Renames uploaded image with the instance's slug."""
@@ -42,7 +49,7 @@ class PublishedManager(TranslatableQuerySet):
     def get_queryset(self):
         return super().get_queryset().filter(status=Post.Status.PUBLISHED).select_related('translations')
 
-class Post(TranslatableModel):
+class Post(ModelMeta,TranslatableModel):
 
     class Status(models.TextChoices):
         DRAFT = 'DF', 'Draft'
@@ -56,7 +63,7 @@ class Post(TranslatableModel):
         title=models.CharField(_('title'), max_length=60),
         slug=models.SlugField(_('slug'), max_length=250),#, unique_for_date='publish'
         intro=models.TextField(_('intro'), blank=False, max_length=160),
-        keywords=models.TextField(_('keywords'), validators=[validate_comma_separated_words]),
+        keywords=models.TextField(_('keywords')),
         body=RichTextField(_('body'), config_name='awesome_ckeditor'),
     )
 
@@ -93,6 +100,59 @@ class Post(TranslatableModel):
             self.slug = slugify(self.title)
         super().save(*args, **kwargs)
 
+    _metadata = {
+        'title': 'get_meta_title',
+        'description': 'get_meta_description',
+        'image': 'get_meta_image',
+        'keywords': 'get_meta_keywords',
+
+    }
+    def get_meta_title(self):
+        lang_code = self.get_current_language() 
+        try:
+            return self.safe_translation_getter('title', language_code=lang_code)
+        except AttributeError:
+            return None  
+
+    def get_meta_description(self):
+        lang_code = self.get_current_language()
+        try:
+            return self.safe_translation_getter('intro', language_code=lang_code) 
+        except AttributeError:
+            return None 
+
+            
+    def get_meta_keywords(self):
+        lang_code = self.get_current_language()
+        try:
+            keywords = self.safe_translation_getter('keywords', language_code=lang_code)
+            clean_keywords = set(keywords.split(','))  # Remove duplicates, join into string
+            return clean_keywords
+        except AttributeError:
+            return None 
+
+
+    def get_meta_image(self):
+        if self.image:
+            return self.image.url
+
+    # _schema = {
+    #     'name': 'title',
+    #     'keywords': 'get_keywords',
+    #     'description': 'get_description',
+    #     'image': 'get_meta_image',
+        # 'articleBody': 'body',
+        # 'articleSection': 'get_categories',
+        # 'author': 'get_schema_author',
+        # 'copyrightYear': 'copyright_year',
+        # 'dateCreated': 'get_date',
+        # 'dateModified': 'get_date',
+        # 'datePublished': 'date_published',
+        # 'headline': 'headline',
+        # 'url': 'get_full_url',
+        # 'mainEntityOfPage': 'get_full_url',
+        # 'publisher': 'get_site',
+    # }
 
 
 class Comment(models.Model):

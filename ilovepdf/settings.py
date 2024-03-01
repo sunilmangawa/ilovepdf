@@ -36,7 +36,11 @@ INSTALLED_APPS = [
     'ckeditor',
     'rosetta',
     'parler',
+    
     'django_celery_beat',
+    'meta',
+
+    
 
 
 ]
@@ -331,4 +335,24 @@ CELERY_BEAT_SCHEDULE = {
         'task': 'tools.tasks.delete_old_pdfs',
         'schedule': 60,  # Run every minute change to 3600 for hourly 
     },
+}
+
+
+META_SITE_PROTOCOL = 'https'
+META_SITE_DOMAIN = '127.0.0.1'
+META_SITE_NAME = 'ilovepdfconverteronline'
+META_INCLUDE_KEYWORDS = ['pdf', 'converter', 'convert', 'online']
+# META_SITE_TYPE = 
+# META_DEFAULT_KEYWORDS = 
+# META_IMAGE_URL = 
+# META_USE_OG_PROPERTIES = 
+# META_USE_TWITTER_PROPERTIES = 
+# META_USE_SCHEMAORG_PROPERTIES = 
+# META_USE_TITLE_TAG = 
+# META_USE_SITES = 
+# META_OG_NAMESPACES = 
+# META_OG_SECURE_URL_ITEMS = 
+META_NAMESPACES = {
+    'og': 'http://ilovepdfconverteronline/',  # Your preferred Open Graph prefix
+    # ... other namespaces if needed ...
 }

@@ -1,28 +1,36 @@
 {% load i18n %}
 {% load blog_tags %}
 {% load static %}
+{% load meta %}
+
 <!doctype html>
 <html>
+  {% comment %} prefix="og: http://127.0.0.1/" {% endcomment %}
+  {% comment %} {% meta_namespaces_schemaorg %}> {% endcomment %}
 {% comment %} <html lang="en" dir="{% trans 'dir' %}"> {% endcomment %}
 
   <head>
+    {% comment %} {% meta_namespaces %} {% endcomment %}
+    {{ meta_namespaces }}
+    {% include 'meta/meta.html' %}
+
 
     <!-- Google tag (gtag.js) -->
-    <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKFD04WBN4"></script>
+    {% comment %} <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKFD04WBN4"></script>
     <script>
       window.dataLayer = window.dataLayer || [];
-      function gtag(){dataLayer.push(arguments);}
+      function gtag(){dataLayer.push(arguments)};
       gtag('js', new Date());
 
       gtag('config', 'G-ZKFD04WBN4');   
-    </script>
+    </script> {% endcomment %}
 
     <!-- Google Tag Manager -->
-    <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
+    {% comment %} <script>(function(w,d,s,l,i){w[l]=w[l]||[];w[l].push({'gtm.start':
       new Date().getTime(),event:'gtm.js'});var f=d.getElementsByTagName(s)[0],
       j=d.createElement(s),dl=l!='dataLayer'?'&l='+l:'';j.async=true;j.src=
       'https://www.googletagmanager.com/gtm.js?id='+i+dl;f.parentNode.insertBefore(j,f);
-      })(window,document,'script','dataLayer','GTM-TVG252XZ');</script>
+      })(window,document,'script','dataLayer','GTM-TVG252XZ');</script> {% endcomment %}
       <!-- End Google Tag Manager -->
 
     <meta charset="utf-8">
@@ -35,7 +43,7 @@
   <body  class="text-center bg-body-secondary">
 
     <!-- Google Tag Manager (noscript) -->
-    <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TVG252XZ" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript>
+    {% comment %} <noscript><iframe src="https://www.googletagmanager.com/ns.html?id=GTM-TVG252XZ" height="0" width="0" style="display:none;visibility:hidden"></iframe></noscript> {% endcomment %}
     <!-- End Google Tag Manager (noscript) -->
     
     {% include 'navbar.html' %}
