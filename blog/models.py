@@ -105,8 +105,14 @@ class Post(ModelMeta,TranslatableModel):
         'description': 'get_meta_description',
         'image': 'get_meta_image',
         'keywords': 'get_meta_keywords',
-
+        'author' : 'get_meta_author',
+        'og:title': 'get_meta_title',
+        'og:description': 'get_meta_description',
+        'og:image': 'get_meta_image',  
+        'og:type': 'article',  # Adjust the type if needed
+    
     }
+
     def get_meta_title(self):
         lang_code = self.get_current_language() 
         try:
@@ -136,23 +142,18 @@ class Post(ModelMeta,TranslatableModel):
         if self.image:
             return self.image.url
 
-    # _schema = {
-    #     'name': 'title',
-    #     'keywords': 'get_keywords',
-    #     'description': 'get_description',
-    #     'image': 'get_meta_image',
-        # 'articleBody': 'body',
-        # 'articleSection': 'get_categories',
-        # 'author': 'get_schema_author',
-        # 'copyrightYear': 'copyright_year',
-        # 'dateCreated': 'get_date',
-        # 'dateModified': 'get_date',
-        # 'datePublished': 'date_published',
-        # 'headline': 'headline',
-        # 'url': 'get_full_url',
-        # 'mainEntityOfPage': 'get_full_url',
-        # 'publisher': 'get_site',
-    # }
+    def get_meta_author(self):
+        if self.author:
+            return self.author  # Or other suitable author representation
+        return None
+
+    _schema = {
+        'name': 'get_meta_title',
+        'keywords': 'get_meta_keywords',
+        'description': 'get_meta_description',
+        'image': 'get_meta_image',
+        'author': 'get_meta_author',
+    }
 
 
 class Comment(models.Model):

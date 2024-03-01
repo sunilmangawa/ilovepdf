@@ -19,6 +19,7 @@ from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
 from parler.views import TranslatableSlugMixin
 from django.utils import translation
+from meta.views import Meta
 
 
 def post_list(request, tag_slug=None):
@@ -56,6 +57,11 @@ def post_detail(request, post):
         print(f'post: {post}')
         print(f'post type: {type(post)}')
         print(f'meta.title: {meta.title}')
+        print(f'meta.author: {meta.author}')
+        # meta = Meta(
+        #     extra_props = {'viewport': 'width=device-width, initial-scale=1.0, minimum-scale=1.0'},
+        #     extra_custom_props=[('http-equiv', 'Content-Type', 'text/html; charset=UTF-8'),]
+        # )
 
     except Post.DoesNotExist:
         raise Http404("Post does not exist")
@@ -87,6 +93,17 @@ def post_detail(request, post):
         {'post': post, 'comments': comments, 'form': form, 'similar_posts': similar_posts, 'tool_content': tool_content, 'meta':meta}
     )
 
+def get_schema(self, context=None):
+    return {
+        'name': self.object.get_meta_title(),
+        'keywords': self.object.get_meta_keywords(),
+        'description': self.object.get_meta_description(),
+        'image': self.object.get_meta_image(),
+        'author': self.object.get_meta_author(),
+    }
+
+
+
 
 @require_POST
 def post_comment(request, post_id):
@@ -103,24 +120,6 @@ def post_comment(request, post_id):
         comment.save()
     return render(request, 'blog/post/comment.html',{'post': post,'form': form,'comment': comment})
 
-# def get_schema(self, context=None):
-#     return {
-#         'name': self.object.title(),
-#         'keywords': self.object.get_keywords(),
-#         'description': self.object.get_description(),
-#         'image': self.object.get_image_full_url(),
-#         # 'articleBody': self.object.text,
-#         # 'articleSection': self.object.get_categories(),
-#         # 'author': self.object.get_schema_author(),
-#         # 'copyrightYear': self.object.date_published.year,
-#         # 'dateCreated': self.object.get_date(),
-#         # 'dateModified': self.object.get_date(),
-#         # 'datePublished': self.object.date_published(),
-#         # 'headline': self.object.abstract[:50],
-#         # 'url': self.object.get_full_url(),
-#         # 'mainEntityOfPage': self.object.get_full_url(),
-#         # 'publisher': self.object.get_site(),
-#     }
 
 
 
