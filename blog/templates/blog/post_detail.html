@@ -1,27 +1,22 @@
 {% extends "base.html" %}
 {% load blog_tags %}
 {% load meta %}
+{% extends "django_check_seo/default.html" %}
+{% block seo_aside %}
 {% block meta %} 
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
 
-    <!-- <meta property="og:title" content="{{meta.translation__title }}" /> -->
-    <meta property="og:title" content="{{ meta.title }}" /> 
-    <meta property="og:type" content="article" />
-    <!-- <meta property="og:url" content="{{meta.url}}" /> -->
-    <meta property="og:image" content="{{ meta.image }}" />
-
-    <meta name="description" content="{{ meta.description }}" />
-    <meta name="keywords" content="{{ meta.keywords }}" />  
-    <meta name="author" content="{{ meta.author }}" />  
-    {% if meta.image %}
-        <meta property="og:image" content="{{ meta.image.url }}" />  
-    {% endif %}
+    <meta name="author" content="{{ meta.author }}">  
+    <link rel="canonical" href="{{meta.url}}">
+        
 {% endblock%}
 
+{% comment %} {% block extrahead %}
+{% endblock extrahead %} {% endcomment %}
 
-{% block title %}{{ meta.title }}{% endblock %}
+{% block title %}{{ post.title }}{% endblock %}
 {% block content %}
 <div class="container mt-4">
 
@@ -98,3 +93,4 @@
 
 </div><br><hr>
 {% endblock %}
+{% endblock seo_aside %}

@@ -109,7 +109,12 @@ class Post(ModelMeta,TranslatableModel):
         'og:title': 'get_meta_title',
         'og:description': 'get_meta_description',
         'og:image': 'get_meta_image',  
-        'og:type': 'article',  # Adjust the type if needed
+        'og:type': 'website',  # Adjust the type if needed
+        'og:url': 'get_absolute_url',  # Function for the canonical URL
+        'og:site_name': 'ilovepdfconverteronline',  # Set your site name
+        # 'twitter:card': 'summary_large_image',  # Adjust if needed 
+        # 'twitter:site': '@your_twitter_handle',   # Optional
+        # 'twitter:creator': '@post_author_handle',  # Optional
     
     }
 
@@ -119,6 +124,15 @@ class Post(ModelMeta,TranslatableModel):
             return self.safe_translation_getter('title', language_code=lang_code)
         except AttributeError:
             return None  
+
+    # def get_meta_url(self):
+    #     # lang_code = self.get_current_language() 
+    #     # try:
+    #     #     return self.safe_translation_getter('slug', language_code=lang_code)
+    #     # except AttributeError:
+    #     #     return None  
+    #     return self.slug
+
 
     def get_meta_description(self):
         lang_code = self.get_current_language()
@@ -148,11 +162,14 @@ class Post(ModelMeta,TranslatableModel):
         return None
 
     _schema = {
+        '@context': 'https://schema.org',
+        '@type': 'website',
         'name': 'get_meta_title',
         'keywords': 'get_meta_keywords',
         'description': 'get_meta_description',
         'image': 'get_meta_image',
         'author': 'get_meta_author',
+        'url': 'get_absolute_url',
     }
 
 

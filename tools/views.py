@@ -49,7 +49,7 @@ from openpyxl import load_workbook
 from pypdf import PdfWriter
 import pdfkit
 import requests
-
+from meta.views import Meta
 
 
 def merge_pdf_view(request):
@@ -168,6 +168,17 @@ def convert_pdf_to_jpg_view(request):
                 response['Content-Disposition'] = f'attachment; filename={os.path.basename(zip_file_path)}'
                 return response
 
+    meta = Meta(
+        title='iLovePdfConverterOnline - PDF to JPG| JPEG Image',
+        description='Convert PDF in to JPG| JPEG Image file. PDF will be converted to Image.',
+        keywords=['png', 'image', 'jpg', 'jpeg'],
+        og_title='iLovePdfConverterOnline - PDF to JPG| JPEG Image',
+        og_description='Convert PDF in to JPG| JPEG Image file. PDF will be converted to Image.',
+
+    )
+
+    context = {'meta': meta}
+
     return render(request, 'convert_pdf_to_jpg.html')
 
 
@@ -194,12 +205,21 @@ def convert_pdf_to_ppt_pptx_view(request):
         response['Content-Disposition'] = 'attachment; filename="output_slides.zip"'
         return response
 
+    meta = Meta(
+        title='iLovePdfConverterOnline - PDF to JPG| JPEG Image',
+        description='Convert PDF in to JPG| JPEG Image file. PDF will be converted to Image.',
+        keywords=['png', 'image', 'jpg', 'jpeg'],
+        og_title='iLovePdfConverterOnline - PDF to JPG| JPEG Image',
+        og_description='Convert PDF in to JPG| JPEG Image file. PDF will be converted to Image.',
+
+    )
+
+    context = {'meta': meta}
+
+
     return render(request, 'tools/pdf_to_ppt_pptx.html')
 
 
-
-# def jpg_to_pdf_View(request):
-#     return render(request, template_name='tools/jpg_to_pdf.html')
 
 def jpg_to_pdf_View(request):
     if request.method == 'POST' and request.FILES.getlist('images'):
@@ -232,6 +252,17 @@ def jpg_to_pdf_View(request):
         os.rmdir(temp_directory)
 
         return response
+    meta = Meta(
+        title='iLovePdfConverterOnline - JPG/JPEG Image to PDF',
+        description='Convert JPG/JPEG Image file in to PDF. Image will be converted to PDF.',
+        keywords=['png', 'image', 'jpg', 'jpeg'],
+        og_title='iLovePdfConverterOnline - JPG/JPEG Image to PDF',
+        og_description='Convert JPG/JPEG Image file in to PDF. Image will be converted to PDF',
+
+    )
+
+    context = {'meta': meta}
+
 
     return render(request, 'tools/jpg_to_pdf.html')
 
@@ -269,50 +300,19 @@ def img_to_pdf(request):
         os.rmdir(temp_directory)
 
         return response
+    meta = Meta(
+        title='iLovePdfConverterOnline - Image to PDF',
+        description='Convert image file (jpg, jpeg, png) to PDF file format',
+        keywords=['png', 'image', 'jpg', 'jpeg'],
+        og_title='iLovePdfConverterOnline - Image to PDF',
+        og_description='Convert image file (jpg, jpeg, png) to PDF file format',
+
+    )
+
+    context = {'meta': meta}
 
     return render(request, 'tools/imgtopdf.html')
 
-
-# def word_to_pdf_View(request):
-#     if request.method == 'POST' and request.FILES.get('word_file'):
-#         word_file = request.FILES['word_file']
-#         print(f'word_file: {word_file}')
-#         temp_file_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', word_file.name)
-#         print(f'temp_file_path: {temp_file_path}')
-#         # Save the uploaded Word file
-#         with open(temp_file_path, 'wb') as temp_file:
-#             for chunk in word_file.chunks():
-#                 temp_file.write(chunk)
-
-#         # Generate the output PDF file path
-#         output_pdf_path = temp_file_path.replace('.docx', '.pdf').replace('.doc', '.pdf').replace('.txt', '.pdf')
-#         # Generate the output PDF file path (with renaming)
-#         # output_file_name = word_file.name.replace(' ', '_')  # Replace spaces with underscores
-#         # output_pdf_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', output_file_name.replace('.docx', '.pdf').replace('.doc', '.pdf').replace('.txt', '.pdf'))       
-
-#         # Generate the output PDF file name (with renaming)
-#         output_file_name = word_file.name.replace(' ', '_')  # Replace spaces with underscores
-#         output_pdf_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', output_file_name.replace('.docx', '.pdf').replace('.doc', '.pdf').replace('.txt', '.pdf'))      
-       
-#         # Keep the original temp_file_path 
-#         temp_file_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', word_file.name)
-#         print(f'output_pdf_path: {output_pdf_path}')
-#         print(f'temp_file_path: {temp_file_path}')
-
-#         # Convert the Word file to PDF
-#         convert_word_to_pdf(temp_file_path, output_pdf_path)
-
-#         # Clean up temporary files
-#         clean_temp_files(temp_file_path)
-
-#         # Serve the PDF file for download
-#         with open(output_pdf_path, 'rb') as pdf_file:
-#             response = HttpResponse(pdf_file.read(), content_type='application/pdf')
-#             # response['Content-Disposition'] = f'attachment; filename={os.path.basename(output_pdf_path)}'
-#             response['Content-Disposition'] = f'attachment; filename={output_file_name}' 
-#             return response
-
-#     return render(request, 'tools/word_to_pdf.html')
 
 def word_to_pdf_View(request):
     if request.method == 'POST' and request.FILES.get('word_file'):
@@ -344,7 +344,17 @@ def word_to_pdf_View(request):
             response['Content-Disposition'] = f'attachment; filename={output_file_name}'
             return response
 
-    return render(request, 'tools/word_to_pdf.html')
+    meta = Meta(
+        title='iLovePdfConverterOnline - Word to PDF',
+        description='Convert word document file (doc, docx) to PDF file format',
+        keywords=['word', 'microsoft word', 'doc', 'docx', 'docxtopdf'],
+        og_title='iLovePdfConverterOnline - Word to PDF',
+        og_description='Convert word document file (doc, docx) to PDF file format',
+
+    )
+
+    context = {'meta': meta}
+    return render(request, 'tools/word_to_pdf.html', context)
 
     
 def powerpoint_to_pdf_View(request):
@@ -393,6 +403,16 @@ def excel_to_pdf_View(request):
 
 # working 100%
 def html_to_pdf_view(request):
+    meta = Meta(
+        title='iLovePdfConverterOnline - HTML to PDF',
+        description='Convert HTML file or URL to PDF.',
+        keywords=['html', 'url', 'urls', 'links', 'file', 'download'],
+        og_title='iLovePdfConverterOnline - HTML to PDF',
+        og_description='Convert HTML file or URL to PDF.',
+    )
+
+    context = {'meta': meta}
+
     if request.method == 'POST':
         if 'url' in request.POST:
             url = request.POST['url']
@@ -417,7 +437,7 @@ def html_to_pdf_view(request):
                 else:
                     return HttpResponse("Invalid Request")
     else:
-        return render(request, 'tools/html_to_pdf.html')
+        return render(request, 'tools/html_to_pdf.html', context)
 
 
 
@@ -450,8 +470,18 @@ def pdf_to_jpg_View(request):
                 response = HttpResponse(zip_file.read(), content_type='application/zip')
                 response['Content-Disposition'] = f'attachment; filename={os.path.basename(zip_file_path)}'
                 return response
+    meta = Meta(
+        title='iLovePdfConverterOnline - PDF to JPEG',
+        description='Convert PDF file in to JPEG image. PDF pages will be converted to images.',
+        keywords=['png', 'image', 'jpg', 'jpeg'],
+        og_title='iLovePdfConverterOnline - PDF to JPEG',
+        og_description='Convert PDF file in to JPEG image. PDF pages will be converted to images.',
 
-    return render(request, 'tools/pdf_to_jpg.html')
+    )
+
+    context = {'meta': meta}
+
+    return render(request, 'tools/pdf_to_jpg.html', context)
 
 
 
@@ -481,7 +511,19 @@ def pdf_to_word_View(request):
                 return HttpResponse(f"Conversion failed. Error: {error_message}")
         except Exception as e:
             return HttpResponse(f"Conversion failed. Error: {str(e)}")
-    return render(request, 'tools/pdf_to_word.html')
+    
+    meta = Meta(
+        title='iLovePdfConverterOnline - PDF to Word Document',
+        description='Convert PDF file in to to Word Document. PDF pages will be converted to editable text with same Formatting.',
+        keywords=['word', 'ms word', 'doc', 'docx'],
+        og_title='iLovePdfConverterOnline - PDF to Word Document',
+        og_description='Convert PDF file in to to Word Document. PDF pages will be converted to editable text with same Formatting.',
+
+    )
+
+    context = {'meta': meta}
+
+    return render(request, 'tools/pdf_to_word.html', context)
 
 
 def pdf_to_powerpoint_View(request):

@@ -1,9 +1,11 @@
 {% extends 'base.html' %}
 {% load static %}
 
+{% block title%} Word to PDF Converter {% endblock %}
+
 {% block content %}
-<div class="container">
-    <h1>Word to PDF Converter</h1>
+<div class="container poppins-regular">
+    <h1 class="roboto-bold">Word to PDF Converter</h1>
     <hr><br>
     <h2>You can Convert your WORD documents into PDF with Full accuracy & Formatting.</h2>
     <br>
@@ -11,7 +13,7 @@
         <form id="word-to-pdf-form" class="form-control align-items-center p-5 mt-5" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <label for="word_file" class="btn btn-custom btn-lg">
-                <span id="file-label"><h1>Select DOC, DOCX WORD File</h1></span>
+                <span id="file-label"><h1>Upload WORD File</h1></span>
                 <input id="word_file" class="visually-hidden" type="file" name="word_file" accept=".docx,.doc,.txt" required onchange="updateFileName(this)">
             </label>
             <br><p>or Drop WORD File here<br><br>

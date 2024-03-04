@@ -24,6 +24,8 @@ urlpatterns = i18n_patterns(
 
     path('rosetta/', include('rosetta.urls')),
 
+    path("django-check-seo/", include("django_check_seo.urls")),
+
     path('', include('core.urls')),
     path('', include('blog.urls', namespace='blog')),
     path('tools/', include('tools.urls')),

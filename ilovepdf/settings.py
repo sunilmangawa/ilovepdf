@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-okkh^d15@u5+lhc=tbb_^uxlb^f&9b)fe$&agsi!dmei@o2r@_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1','127.0.0.1:8000','127.0.0.1:8000/blog/']
+ALLOWED_HOSTS = ['localhost','127.0.0.1','127.0.0.1:8000','127.0.0.1:8000/blog/', 'testserver']
 
 SITE_ID = 1
 
@@ -39,9 +39,7 @@ INSTALLED_APPS = [
     
     'django_celery_beat',
     'meta',
-
-    
-
+    'django_check_seo',
 
 ]
 
@@ -75,7 +73,6 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = 'ilovepdf.wsgi.application'
-
 
 # Database
 # https://docs.djangoproject.com/en/5.0/ref/settings/#databases
@@ -281,14 +278,11 @@ PARLER_LANGUAGES = {
     }
 }
 
-
-
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
 
 USE_TZ = True
-
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
@@ -340,19 +334,25 @@ CELERY_BEAT_SCHEDULE = {
 
 META_SITE_PROTOCOL = 'http'
 META_SITE_DOMAIN = '127.0.0.1:8000'
-META_SITE_NAME = 'ilovepdfconverteronline'
+META_SITE_NAME = 'iLovePdfConverterOnline | Online Tools for PDF Docs Excel Image PowerPoint HTML etc. files in clicks'
 META_INCLUDE_KEYWORDS = ['pdf', 'converter', 'convert', 'online']
-META_SITE_TYPE = 'article'
+META_SITE_TYPE = 'website'
 # META_DEFAULT_KEYWORDS = 
 # META_IMAGE_URL = 
 META_USE_OG_PROPERTIES = True
 # META_USE_TWITTER_PROPERTIES = 
 META_USE_SCHEMAORG_PROPERTIES = True
-# META_USE_TITLE_TAG = 
+META_USE_TITLE_TAG = True
 # META_USE_SITES = 
 # META_OG_NAMESPACES = 
-# META_OG_SECURE_URL_ITEMS = 
+# META_OG_SECURE_URL_ITEMS =        
 META_NAMESPACES = {
     'og': 'http://ilovepdfconverteronline/',  # Your preferred Open Graph prefix
     # ... other namespaces if needed ...
+}
+
+# The basic config (used by default) is located in django-check-seo/conf/settings.py
+DJANGO_CHECK_SEO_SETTINGS = {
+    "internal_links": 25,
+    "meta_title_length": [15,30],
 }
