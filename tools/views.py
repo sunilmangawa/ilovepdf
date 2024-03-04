@@ -344,12 +344,14 @@ def word_to_pdf_View(request):
             response['Content-Disposition'] = f'attachment; filename={output_file_name}'
             return response
 
+    # all_keywords = ['word', 'pdf',  'convert', 'doc', 'docx', 'online converter']
     meta = Meta(
-        title='iLovePdfConverterOnline - Word to PDF',
-        description='Convert word document file (doc, docx) to PDF file format',
+        title='Word to PDF converter',
+        description='iLovePdfConverterOnline Convert word document file (doc, docx) to PDF file format',
         keywords=['word', 'microsoft word', 'doc', 'docx', 'docxtopdf'],
-        og_title='iLovePdfConverterOnline - Word to PDF',
-        og_description='Convert word document file (doc, docx) to PDF file format',
+        # keywords=', '.join(all_keywords),
+        og_title='Word to PDF converter',
+        og_description='iLovePdfConverterOnline Convert word document file (doc, docx) to PDF file format',
 
     )
 

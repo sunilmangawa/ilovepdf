@@ -1,11 +1,14 @@
 from django.db import models
 from parler.models import TranslatableModel, TranslatedFields
 from django.utils.translation import gettext_lazy as _
+from ckeditor.fields import RichTextField
+from ckeditor_uploader.fields import RichTextUploadingField
 
 # Create your models here.
 class ToolAttachment(models.Model):
     function_name = models.CharField(max_length=50, unique=True, blank=True, null=True, default=None, help_text="Unique identifier for the tool's function")
     template_name = models.CharField(max_length=100, blank=True, null=True, default=None, help_text="Template path for the tool's function")
+    # body=RichTextField(config_name='awesome_ckeditor')
 
 
     class Meta:

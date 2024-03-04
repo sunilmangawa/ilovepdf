@@ -13,7 +13,7 @@
         <form id="word-to-pdf-form" class="form-control align-items-center p-5 mt-5" method="post" enctype="multipart/form-data">
             {% csrf_token %}
             <label for="word_file" class="btn btn-custom btn-lg">
-                <span id="file-label"><h1>Upload WORD File</h1></span>
+                <span id="file-label"><b>Upload WORD File</b></span>
                 <input id="word_file" class="visually-hidden" type="file" name="word_file" accept=".docx,.doc,.txt" required onchange="updateFileName(this)">
             </label>
             <br><p>or Drop WORD File here<br><br>

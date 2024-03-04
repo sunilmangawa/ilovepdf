@@ -14,7 +14,7 @@ SECRET_KEY = 'django-insecure-okkh^d15@u5+lhc=tbb_^uxlb^f&9b)fe$&agsi!dmei@o2r@_
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost','127.0.0.1','127.0.0.1:8000','127.0.0.1:8000/blog/', 'testserver']
+ALLOWED_HOSTS = ['localhost','127.0.0.1','127.0.0.1:8000','127.0.0.1:8000/blog/', 'testserver', 'www.testserver']
 
 SITE_ID = 1
 
@@ -30,6 +30,9 @@ INSTALLED_APPS = [
     'django.contrib.sitemaps',
     'django.contrib.staticfiles',
     'core.apps.CoreConfig',
+
+    'django_check_seo',
+
     'blog.apps.BlogConfig',
     'tools.apps.ToolsConfig',
     'taggit',
@@ -39,7 +42,6 @@ INSTALLED_APPS = [
     
     'django_celery_beat',
     'meta',
-    'django_check_seo',
 
 ]
 

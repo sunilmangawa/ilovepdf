@@ -37,9 +37,9 @@
     {% block meta %} {% endblock%}
     <!-- <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1"> -->
-    <title>
+    {% comment %} <title>
       {% block title %} {% endblock %}
-    </title>  
+    </title>   {% endcomment %}
     {% for tag in meta.schemaorg_tags %}
       <script type='application/ld+json'>{{ tag.jsonld|safe }}</script>
     {% endfor %}
