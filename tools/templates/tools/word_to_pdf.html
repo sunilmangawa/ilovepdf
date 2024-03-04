@@ -20,6 +20,14 @@
             <button class="btn btn-danger btn-lg" type="submit">Convert to PDF</button>
         </form>
     </div>
+    <div class="container">
+        {% if tool_attachment %} 
+        <div class="tool-body">
+             {{ tool_attachment.body|safe }} 
+        </div>
+       <br>
+        {% endif %}
+    </div>
 </div>
 
 <script>

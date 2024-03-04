@@ -355,7 +355,8 @@ def word_to_pdf_View(request):
 
     )
 
-    context = {'meta': meta}
+    tool_attachment = ToolAttachment.objects.get(function_name='word_to_pdf_View')
+    context = {'meta': meta, 'tool_attachment': tool_attachment}     
     return render(request, 'tools/word_to_pdf.html', context)
 
     

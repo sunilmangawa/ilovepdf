@@ -8,7 +8,7 @@ from ckeditor_uploader.fields import RichTextUploadingField
 class ToolAttachment(models.Model):
     function_name = models.CharField(max_length=50, unique=True, blank=True, null=True, default=None, help_text="Unique identifier for the tool's function")
     template_name = models.CharField(max_length=100, blank=True, null=True, default=None, help_text="Template path for the tool's function")
-    # body=RichTextField(config_name='awesome_ckeditor')
+    body=RichTextField(blank=True, null=True, default=None, config_name='awesome_ckeditor')
 
 
     class Meta:
