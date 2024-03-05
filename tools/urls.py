@@ -18,6 +18,7 @@ urlpatterns = [
 
 
     path('split-pdf/', views.split_pdf_View, name='split_pdf'),
+    
     path('compress-pdf/', views.compress_pdf_View, name='compress_pdf'),
 
     # To PDF ...Conversion 

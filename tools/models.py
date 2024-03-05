@@ -27,3 +27,8 @@ class ToolAttachment(models.Model):
 class ConvertedPDF(models.Model):
     pdf_file = models.FileField(upload_to='pdfs/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
+
+
+# class MergedPDF(models.Model):
+#     merged_file = models.FileField(upload_to="merged_pdfs/")
+#     timestamp = models.DateTimeField(auto_now_add=True)

@@ -8,7 +8,22 @@
     <hr>
     <div class="container">
       <h2>Split PDF Page Content</h2>
-      <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid">
+      <!-- <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> -->
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <label for="page_numbers">Page Numbers (separated by comma or dash for range):</label><br>
+        <input type="text" id="page_numbers" name="page_numbers"><br><br>
+        <button type="submit">Split</button>
+      </form>
+      {% if output_files %}
+      <h3>Output Files:</h3>
+      <ul>
+          {% for file in output_files %}
+          <li><a href="{{ file }}">{{ file }}</a></li>
+          {% endfor %}
+      </ul>
+      {% endif %}
 
     </div>
   </div>

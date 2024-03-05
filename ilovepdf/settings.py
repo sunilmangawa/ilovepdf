@@ -336,7 +336,7 @@ CELERY_BEAT_SCHEDULE = {
 
 META_SITE_PROTOCOL = 'http'
 META_SITE_DOMAIN = '127.0.0.1:8000'
-META_SITE_NAME = 'iLovePdfConverterOnline | Online Tools for PDF Docs Excel Image PowerPoint HTML etc. files in clicks'
+META_SITE_NAME = 'iLovePdfConverterOnline | Online Convert and Edit Tools for PDF Docs Excel Image PowerPoint HTML etc. files in clicks'
 META_INCLUDE_KEYWORDS = ['pdf', 'converter', 'convert', 'online']
 META_SITE_TYPE = 'website'
 # META_DEFAULT_KEYWORDS = 

@@ -5,10 +5,11 @@ from meta.views import Meta
 
 def home(request):
     meta = Meta(
-        title='iLovePdfConverterOnline - Homepage',
-        description='Online Tools for PDF Docs Excel Image PowerPoint HTML etc. files in clicks',
+        title='Convert & Edit tools for  PDF, Docs & Images',
+        description='Online Convert and Edit Tools for PDF Docs Excel Image PowerPoint HTML etc. files in clicks',
+        keywords = ['word', 'image', 'powerpoint', 'power-point', 'excel'],
         og_title='iLovePdfConverterOnline - Homepage',
-        og_description='Online Tools for PDF Docs Excel Image PowerPoint HTML etc. files in clicks', 
+        og_description='Online Convert and Edit Tools for PDF Docs Excel Image PowerPoint HTML etc. files in clicks', 
         # ... other meta tags as needed
     ) 
 

@@ -28,11 +28,13 @@ import docxtopdf
 import tempfile
 from django.conf import settings
 from django.utils.text import slugify
-from .extra.merge_pdf import merge_pdfs
+# from .extra.merge_pdf import merge_pdfs
+# from .extra.merger_pdf import merge_pdfs
+from .extra.split_pdf import split_pdf_by_page
 
 from django.core.files.storage import FileSystemStorage
 from django.urls import reverse
-from .forms import PDFUploadForm
+from .forms import PDFUploadForm, UploadFileForm
 import tempfile
 from django.core.files.base import File
 
@@ -50,17 +52,141 @@ from pypdf import PdfWriter
 import pdfkit
 import requests
 from meta.views import Meta
+from django.core.files.storage import default_storage
+from django.views.decorators.csrf import csrf_exempt
+from PyPDF2 import PdfMerger
+import zipfile
+from django.utils.encoding import smart_str
 
+# def merge_pdf_view(request):
+#     context = {
+#     }
+#     return render(request, template_name='tools/merge_pdf.html')
+
+
+# @csrf_exempt  # Use this decorator cautiously
+# def merge_pdf_view(request):
+#         # Handle GET requests
+#     if request.method == "GET":
+#         return render(request, 'tools/merge_pdf.html')
+#     elif request.method == "POST":
+#         files = request.FILES.getlist('pdf_files')
+#         if not files:
+#             return HttpResponse("No files uploaded.", status=400)
+
+#         merger = PdfMerger()
+#         temp_files = []
+
+#         try:
+#             for file in files:
+#                 # Save the file temporarily
+#                 temp_path = default_storage.save("tmp/" + file.name, file)
+#                 full_temp_path = default_storage.path(temp_path)
+#                 temp_files.append(full_temp_path)
+
+#                 # Add the file to the merger
+#                 merger.append(full_temp_path)
+
+#             # Create a response
+#             response = HttpResponse(content_type='application/pdf')
+#             response['Content-Disposition'] = 'attachment; filename="merged_file.pdf"'
+
+#             # Write the merged PDF to the response
+#             merger.write(response)
+#             merger.close()
+
+#             return response
+
+#         except Exception as e:
+#             # Handle errors if something goes wrong
+#             return HttpResponse(str(e), status=500)
+
+#         finally:
+#             # Cleanup: Make sure to delete temporary files
+#             for temp_file in temp_files:
+#                 try:
+#                     if os.path.exists(temp_file):
+#                         os.remove(temp_file)
+#                 except Exception as cleanup_error:
+#                     print(f"Error cleaning up file {temp_file}: {cleanup_error}")
+
+#     else:
+#         # If the method is not POST, return an error
+#         return HttpResponse("Method not allowed", status=405)
 
 def merge_pdf_view(request):
-    context = {
-    }
-    return render(request, template_name='tools/merge_pdf.html')
+    if request.method == "POST":
+        files = request.FILES.getlist('pdf_files')
+        if len(files) == 0:
+            return HttpResponse("No files uploaded.", status=400)
 
+        merger = PdfMerger()
+        try:
+            # Iterate through files in the order they were uploaded
+            for file in files:
+                merger.append(file)
+
+            # Create a response
+            response = HttpResponse(content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename="merged_file.pdf"'
+
+            # Write the merged PDF to the response
+            merger.write(response)
+            merger.close()
+
+            return response
+
+        except Exception as e:
+            # Handle errors if something goes wrong
+            return HttpResponse(str(e), status=500)
+
+    else:
+        return render(request, 'tools/merge_pdf.html')
+
+
+
+def download_pdf(request):
+    # This view will serve the merged PDF; 
+    # implement according to how you store or pass the merged PDF file
+    pass
+
+
+# def split_pdf_View(request):
+#     context = {
+#     }
+#     return render(request, template_name='tools/split_pdf.html')
+ #99% working
+# def split_pdf_View(request):
+#     if request.method == 'POST':
+#         form = UploadFileForm(request.POST, request.FILES)
+#         if form.is_valid():
+#             file = request.FILES['file']
+#             page_numbers = request.POST.get('page_numbers', '')
+#             output_files = split_pdf_by_page(file, page_numbers)
+#             return render(request, 'tools/split_pdf.html', {'form': form, 'output_files': output_files})
+#     else:
+#         form = UploadFileForm()
+#     return render(request, 'tools/split_pdf.html', {'form': form})
+
+# 100% working
 def split_pdf_View(request):
-    context = {
-    }
-    return render(request, template_name='tools/split_pdf.html')
+    if request.method == 'POST':
+        form = UploadFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            file = request.FILES['file']
+            page_numbers = request.POST.get('page_numbers', '')
+            output_files = split_pdf_by_page(file, page_numbers)
+            # Serve the files for download
+            response = HttpResponse(content_type='application/zip')
+            zip_file = zipfile.ZipFile(response, 'w')
+            for output_file in output_files:
+                zip_file.write(output_file, os.path.basename(output_file))
+            zip_file.close()
+            response['Content-Disposition'] = f'attachment; filename={smart_str(file.name)}.zip'
+            return response
+    else:
+        form = UploadFileForm()
+    return render(request, 'tools/split_pdf.html', {'form': form})
 
 def compress_pdf_View(request):
     context = {
