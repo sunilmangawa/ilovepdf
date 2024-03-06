@@ -44,6 +44,7 @@ from django.shortcuts import render, redirect
 from django.core.files.storage import FileSystemStorage
 from .models import ConvertedPDF
 from .topdf.imgtopdf import convert_to_pdf
+from .topdf.powerpoint_to_pdf_converter import convert_ppt_to_pdf
 
 import img2pdf
 
@@ -486,8 +487,44 @@ def word_to_pdf_View(request):
     return render(request, 'tools/word_to_pdf.html', context)
 
     
+# def powerpoint_to_pdf_View(request):
+#     return render(request, template_name='tools/powerpoint_to_pdf.html')
+
+# def powerpoint_to_pdf_View(request):
+#     if request.method == 'POST' and request.FILES.get('ppt_file'):
+#         ppt_file = request.FILES['ppt_file']
+#         pdf_path = convert_ppt_to_pdf(ppt_file)
+
+#         with open(pdf_path, 'rb') as pdf_file:
+#             response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+#             response['Content-Disposition'] = 'attachment; filename="converted.pdf"'
+#             return response
+
+#     return render(request, 'tools/powerpoint_to_pdf.html')
+
+
 def powerpoint_to_pdf_View(request):
-    return render(request, template_name='tools/powerpoint_to_pdf.html')
+    if request.method == 'POST' and request.FILES.get('ppt_file'):
+        ppt_file = request.FILES['ppt_file']
+
+        # Save the uploaded file temporarily
+        with open(os.path.join(settings.MEDIA_ROOT, 'temp.pptx'), 'wb+') as temp_file:
+            for chunk in ppt_file.chunks():
+                temp_file.write(chunk)
+
+        # Convert the temporary file to PDF
+        pdf_path = convert_ppt_to_pdf(os.path.join(settings.MEDIA_ROOT, 'temp.pptx'))
+
+        # Delete the temporary file
+        os.remove(os.path.join(settings.MEDIA_ROOT, 'temp.pptx'))
+
+        # Return the PDF file as a response
+        with open(pdf_path, 'rb') as pdf_file:
+            response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename="converted.pdf"'
+            return response
+
+    return render(request, 'tools/powerpoint_to_pdf.html')
 
 # def excel_to_pdf_View(request):
 #     return render(request, template_name='tools/excel_to_pdf.html')
