@@ -11,6 +11,8 @@ from core.sitemaps import CoreSitemap
 from tools.sitemaps import ToolsSitemap
 from django.views.generic.base import TemplateView
 
+
+
 sitemaps = {
     'posts': PostSitemap,
     'core': CoreSitemap,

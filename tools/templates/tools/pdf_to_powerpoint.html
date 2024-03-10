@@ -7,10 +7,10 @@
     <h1> PDF to PowerPoint Slideshows</h1>
     <hr><br>
     <div class="container ">
-      <h2>You can Convert your PDF into WORD documents with Full accuracy & Formatting.</h2>
-      {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
+      <h2>You can Convert your PDF into PowerPoint Slide documents with Full accuracy & Formatting.</h2>
+      <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid">
 
-      <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="/tools/convert-pdf-to-ppt-pptx/">
+      {% comment %} <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="/tools/pdf_to_powerpoint/">
         {% csrf_token %}
         <label for="pdf_file" class="btn btn-custom btn-lg">
           <span id="file-label"><h1>Select PDF File</h1></span>
@@ -18,14 +18,14 @@
         </label>                
         <br><p>or Drop PDF here<br><br>
         <button class="btn btn-danger btn-lg" type="submit">Convert to PPT/PPTX</button>
-      </form>
+      </form> {% endcomment %}
     </div>
-    <script>
+    {% comment %} <script>
       function updateFileName(input) {
           var fileName = input.files[0].name;
           document.getElementById('file-label').innerText = fileName;
       }
-    </script>
+    </script> {% endcomment %}
   </div>
 
 {% endblock %}  

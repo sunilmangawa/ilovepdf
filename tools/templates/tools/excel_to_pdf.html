@@ -8,7 +8,9 @@
     <hr><br>
     <h2>You can Convert your Excel files into PDF documents.</h2>
     <br>
-    <div class="container text-center" >
+    <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid">
+
+    {% comment %} <div class="container text-center" >
         <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="/tools/excel-to-pdf/">
             {% csrf_token %}
             <label for="excel_file" class="btn btn-custom btn-lg">
@@ -20,23 +22,5 @@
         </form>
 
     </div>
-
+ {% endcomment %}
 {% endblock %}  
-
-{% comment %} 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Excel to PDF Converter</title>
-</head>
-<body>
-    <h1>Excel to PDF Converter</h1>
-    <form method="post" enctype="multipart/form-data" action="/tools/excel-to-pdf/">
-        {% csrf_token %}
-        <input type="file" name="file" accept=".xlsx, .xls, .ods" required>
-        <button type="submit">Convert to PDF</button>
-    </form>
-</body>
-</html> {% endcomment %}

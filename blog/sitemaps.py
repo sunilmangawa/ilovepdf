@@ -7,6 +7,7 @@ class PostSitemap(Sitemap):
 
     def items(self):
         return Post.published.all()
+        # return Post.objects.order_by('published')
         
     def lastmod(self, obj):
         return obj.updated

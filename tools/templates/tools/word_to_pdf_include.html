@@ -1,4 +1,4 @@
-{% extends 'base.html' %}
+{% extends 'base2.html' %}
 {% load static %}
 
 {% block title%} Word to PDF Converter {% endblock %}
@@ -10,7 +10,7 @@
     <h2>You can Convert your WORD documents into PDF with Full accuracy & Formatting.</h2>
     <br>
     <div class="container">
-        <form id="word-to-pdf-form" class="form-control align-items-center p-5 mt-5" method="post" enctype="multipart/form-data">
+        <form id="word-to-pdf-form" class="form-control align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="{% url 'tools:word_to_pdf_include' %}">
             {% csrf_token %}
             <label for="word_file" class="btn btn-custom btn-lg">
                 <span id="file-label"><b>Upload WORD File</b></span>

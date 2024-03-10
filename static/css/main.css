@@ -186,8 +186,8 @@
 
 
 .btn-custom {
-    background-color: #fd7e14;
-    border-color: #fd7e14;
+    background-color: #fa573c;
+    border-color: #fa573c;
     color: #fff;
     margin: 0px 0px 12px;
     padding: 24px 32px;
@@ -205,3 +205,33 @@
     font-weight: bold;
     src: local('DevLys'), url('../static/fonts/DevLys010Normal.ttf') format("truetype");
   }
+
+.full-screen {
+  min-height: 100vh;
+}
+/* .full-screen {
+height: 90vh;
+width: 100vw;
+background-color: #f0f0f0;
+} */
+body, html {
+  height: 100%; 
+  margin: 0;
+}
+
+.content-wrapper {
+  min-height: calc(100vh); /*footer height */
+  display: flex; 
+  flex-direction: column; 
+}
+
+.card-footer {
+  /* position: fixed; */
+  /* bottom: 0; */
+  width: 100%;
+}
+
+.ht-adjust{
+  height: auto;
+  min-height: 60vh;
+}

@@ -1,0 +1,35 @@
+{% extends 'base.html' %}
+{% block content %}
+<div class="content-wrapper">
+
+    <div class="container text-center" >
+      <h1> Contact Us </h1>
+    </div>
+    <hr>
+    <div class="container" style="height:auto; min-height:60vh;" style="height:auto; min-height:60vh;">
+      <h2>If you have any query, bug report suggestion, tool/feature requirement, please conctact on: </h2>
+      <h3>Email: <a href="mailto:ilovepdfconvertonline@gmail.com">ilovepdfsconvertertonline@gmail.com</a>
+    </div>
+
+    <div class="card-footer text-body-secondary bg-light border-success p-5 mt-auto fs-5 text">
+      <div class="container text-center">
+        <div class="row">
+          <div class="col">
+            <a href="{% url 'core:about_us' %}" title="About Us" style="text-decoration: none; color: black;">About Us</a>
+          </div>
+          <div class="col">
+            <a href="{% url 'core:contact_us' %}" title="Contact Us" style="text-decoration: none; color: black;">Contact Us</a>
+          </div>
+          <div class="col">
+            <a href="{% url 'core:terms_and_condition' %}" title="Terms and Condition" style="text-decoration: none; color: black;">Terms and Condition</a>
+          </div>
+          <div class="col">
+            <a href="{% url 'core:privacy_policy' %}" title="Privacy Policy" style="text-decoration: none; color: black;">Privacy Policy</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+</div>
+
+{% endblock %}  

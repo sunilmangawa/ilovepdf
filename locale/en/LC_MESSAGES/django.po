@@ -9,8 +9,8 @@ msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
 "POT-Creation-Date: 2024-02-16 20:45+0530\n"
-"PO-Revision-Date: 2024-02-16 15:18+0000\n"
-"Last-Translator:   <sunilmangawa@gmail.com>\n"
+"PO-Revision-Date: 2024-03-08 20:52+0000\n"
+"Last-Translator: Sunil Mangawa <sunilmangawa@gmail.com>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "Language: \n"
 "MIME-Version: 1.0\n"
@@ -21,27 +21,27 @@ msgstr ""
 
 #: blog/models.py:53
 msgid "category"
-msgstr ""
+msgstr "Category"
 
 #: blog/models.py:56
 msgid "title"
-msgstr ""
+msgstr "Title"
 
 #: blog/models.py:57
 msgid "slug"
-msgstr ""
+msgstr "Slug"
 
 #: blog/models.py:58
 msgid "intro"
-msgstr ""
+msgstr "Meta Description"
 
 #: blog/models.py:59
 msgid "keywords"
-msgstr ""
+msgstr "Keywords"
 
 #: blog/models.py:60
 msgid "body"
-msgstr ""
+msgstr "Post Content"
 
 #: core/templates/core/home.html:5
 msgid "herohomeh1"
@@ -56,7 +56,7 @@ msgstr "Play with converting and editing tools for PDFs, at Just on Click."
 #: core/templates/core/home.html:7
 msgid "herohomeh3"
 msgstr ""
-"All Convert and Edition tools are 100% FREE and easy to use in just a few "
+"All Convert and Editing tools are 100% FREE and easy to use in just a few "
 "clicks."
 
 #: core/templates/core/home.html:21

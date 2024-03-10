@@ -1,0 +1,33 @@
+{% extends 'base2.html' %}
+{% load static %}
+
+
+{% block content %}
+    <div class="container text-center bg-body-secondary" >
+      <h1> HTML to PDF </h1>
+
+      <hr><br>
+    <div class="container text-center">
+      <h2>HTML to PDF Convereter Page Content</h2>
+      {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
+
+      <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="{% url 'tools:html_to_pdf_include' %}">
+        {% csrf_token %}
+        <label for="url"  class="btn btn-success btn-md">
+          <span id=""><h3>Enter URL:</h3></span>
+        </label>
+        <input type="text" name="url" id="url" style="border-color: crimson; border-radius: 3%;"><br><br>
+        <hr><h3 class="text-center">OR</h3><hr>
+        <label for="html_file"  class="btn btn-custom btn-md">
+          <span id="file-label">
+            <h3>Upload HTML file:</h3>
+          </span>
+          <input id="html_file" type="file" name="html_file">
+        </label>
+        <br><p>or Drop HTML file here<br><hr>
+        <input class="btn btn-custom btn-lg"type="submit" value="Convert">
+      </form>
+
+    </div>
+  </div>
+{% endblock %}  

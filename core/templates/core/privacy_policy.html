@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block content %}
+    <div class="content-wrapper">
+
+        <div class="container text-center" >
+            <h1> Privacy Policy </h1>
+        </div>
+        <hr>
+        <div class="container"  style="height:auto; min-height:60vh;">
+            <ul style="text-align:left">
+                <li>iLovePdfConverterOnline.com don't ask for personal data and currenly doesn't have user account concept for registration.</li><br>
+                <li>All tools on website are free to use.</li><br>
+                <li>No Premium Service Support available.</li><br>
+                <li>Uploaded files are not stored on server.</li><br>
+                <li>Temperory files are instantly removed from server as user close the session.</li>
+
+            </ul>
+        </div>
+
+        <div class="card-footer text-body-secondary bg-light border-success p-2 mt-auto fs-6 text">
+            <div class="container text-center">
+              <div class="row">
+                <div class="col">
+                  <a href="{% url 'core:about_us' %}" title="About Us" style="text-decoration: none; color: black;">About Us</a>
+                </div>
+                <div class="col">
+                  <a href="{% url 'core:contact_us' %}" title="Contact Us" style="text-decoration: none; color: black;">Contact Us</a>
+                </div>
+                <div class="col">
+                  <a href="{% url 'core:terms_and_condition' %}" title="Terms and Condition" style="text-decoration: none; color: black;">Terms and Condition</a>
+                </div>
+                <div class="col">
+                  <a href="{% url 'core:privacy_policy' %}" title="Privacy Policy" style="text-decoration: none; color: black;">Privacy Policy</a>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+{% endblock %}  

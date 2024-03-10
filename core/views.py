@@ -19,16 +19,16 @@ def home(request):
 
 def about(request):
     meta = Meta(
-        title='iLovePdfConverterOnline - About',
+        title='iLovePdfConverterOnline - About Us',
         description='Aboust us page for iLovePdfConverterOnline.com. We provide convert tools for PDF to convert into Word, Image, PowerPoint, Excel file types and also reverser conversion tools are also available to convert Word, Image, PowerPoint, Excel, HTML to PDF file type. ilovepdfconveronline.com also provide some extrad daily office PDF documentation tools Merge PDF, Split PDF, Compress PDF, Rotate PDF, and etc. to provide you husstle free documentation work and make your day. ',
         author='iLovePdfConverterOnline',
-        og_title='iLovePdfConverterOnline - About',
+        og_title='iLovePdfConverterOnline - About Us',
         og_description='Aboust us page for iLovePdfConverterOnline.com. We provide convert tools for PDF.', 
         # ... other meta tags as needed
     ) 
 
     context = {'meta': meta}
-    return render(request, 'core/about.html', context)
+    return render(request, 'core/about_us.html', context)
 
 def contactus(request):
     meta = Meta(
@@ -41,7 +41,7 @@ def contactus(request):
     ) 
 
     context = {'meta': meta}
-    return render(request, 'core/contactus.html', context)
+    return render(request, 'core/contact_us.html', context)
 
 def termscondition(request):
     meta = Meta(
@@ -55,4 +55,17 @@ def termscondition(request):
 
     context = {'meta': meta}
     return render(request, 'core/terms_and_condition.html', context)
+
+def privacypolicy(request):
+    meta = Meta(
+        title='iLovePdfConverterOnline - Privacy Policy',
+        description='Privacy Policy page of iLovePdfConverterOnline.com.',
+        author='iLovePdfConverterOnline',
+        og_title='iLovePdfConverterOnline - Privacy Policy',
+        og_description='Privacy Policy page for iLovePdfConverterOnline.com.', 
+        # ... other meta tags as needed
+    ) 
+
+    context = {'meta': meta}
+    return render(request, 'core/privacy_policy.html', context)
 

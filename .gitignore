@@ -17,5 +17,5 @@ ilvenv/
 
 #pyc files
 *.pyc
-
+*.cpy
 *Zone.Identifier

@@ -4,7 +4,7 @@
 
 <header class="header roboto">
     <nav class="navbar navbar-expand-lg bg-white">
-            <a class="navbar-brand " href="{% url 'home' %}" title="iLovePdfConverterOnline">   
+            <a class="navbar-brand " href="{% url 'core:home' %}" title="iLovePdfConverterOnline">   
                 {% comment %} <img class="logo" src="{% static '/media/ilovepdfconvertonline.svg' %}" alt="iLovePdfConverterOnline"> {% endcomment %}
                 <svg width="180" height="45" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
                     <!-- Created with SVG-edit - https://github.com/SVG-Edit/svgedit-->
@@ -36,7 +36,7 @@
                         To PDF
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <li><a class="dropdown-item" href="{% url 'tools:jpg_to_pdf' %}">JPG to PDF</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:image_to_pdf' %}">JPG to PDF</a></li>
                         <li><a class="dropdown-item" href="{% url 'tools:word_to_pdf' %}">WORD to PDF</a></li>
                         <li><a class="dropdown-item" href="{% url 'tools:powerpoint_to_pdf' %}">POWERPOINT to PDF</a></li>
                         <li><a class="dropdown-item" href="{% url 'tools:excel_to_pdf' %}">EXCEL to PDF</a></li>
@@ -49,7 +49,7 @@
                         PDF To
                     </button>
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_jpg' %}">PDF to JPG</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_image' %}">PDF to JPG</a></li>
                         <li><a class="dropdown-item" href="{% url 'tools:pdf_to_word' %}">PDF to WORD</a></li>
                         <li><a class="dropdown-item" href="{% url 'tools:pdf_to_powerpoint' %}">PDF to POWERPOINT</a></li>
                         <li><a class="dropdown-item" href="{% url 'tools:pdf_to_excel' %}">PDF to EXCEL</a></li>

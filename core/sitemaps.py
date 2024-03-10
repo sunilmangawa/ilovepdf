@@ -9,8 +9,8 @@ class CoreSitemap(Sitemap):
 
     def items(self):
         # Return a list of URL names you want to include in the sitemap
-        return ['home', 'about', 'contactus']
+        return ['core:home', 'core:about_us', 'core:contact_us', 'core:terms_and_condition', 'core:privacy_policy']
 
-    def location(self, item):
+    def location(self, items):
         # Generate the absolute URL for a given URL name
-        return reverse(item)
+        return reverse(items)

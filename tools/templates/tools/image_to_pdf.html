@@ -1,26 +1,36 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load meta %}
+{% load blog_tags %}
 
 
 {% block content %}
   <div class="container text-center bg-body-secondary" >
-    <h1> JPG to PDF </h1>
+    <h1> JPG | JPEG | PNG to PDF </h1>
     <hr><br>
     <h2>You can Convert your JPG, JPEG, PNG Image files into PDF documents with Full accuracy & Formatting.</h2>
     <div class="container text-center">
       {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
     <!-- tools/templates/jpg_to_pdf.html -->
 
-    <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data">
+    <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="">
         {% csrf_token %}
         <label for="image_file" class="btn btn-custom btn-md">
-          <span id="file-label"><h1>Select Image File</h1></span>        
+          <span id="file-label"><h2>Select Image File</h2></span>        
         <input id="image_file" type="file" name="images" accept="image/jpg, image/jpeg, image/png" multiple required>
       </label>                
-      <br><p>or Drop JPFG | JPG | PNG here<br><br>        
+      <br><p><b>or Drop JPFG | JPG | PNG here</b><br><br>        
         <button class="btn btn-danger btn-lg" type="submit">Convert</button>
     </form>
 
     </div>
   </div>
+
+  <div class="container mt-3 text-start">
+    <div class="card-body bg-light p-5">
+        {{tool_attachment.body|markdown}}
+    </div>
+  </div>
+
+
 {% endblock %}  

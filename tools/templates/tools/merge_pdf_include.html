@@ -1,7 +1,5 @@
-{% extends 'base.html' %}
+{% extends 'base2.html' %}
 {% load static %}
-{% load meta %}
-{% load blog_tags %}
 
 {% block title%} Merge PDF Files  {% endblock %}
 
@@ -27,7 +25,7 @@
         <h2>You can merge PDF with Full accuracy just in click.</h2>
         <br>
         <div class="container">
-            <form id="upload-form" class="form-control align-items-center p-5 mt-5" action="/tools/merge-pdf/" method="post" enctype="multipart/form-data">
+            <form id="upload-form" class="form-control align-items-center p-5 mt-5" action="{% url 'tools:merge_pdf_include' %}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div id="file-inputs">
                     <div id="input-0" class="file-input">
@@ -35,7 +33,7 @@
                         <input type="file" name="pdf_files" id="pdf_file_0" accept="application/pdf" required><br>
                     </div>
                 </div><br><hr>
-                <button type="button" class="btn btn-danger btn-lg" id="add-file-btn">Add more PDF</button>
+                <button type="button" class="btn btn-danger btn-lg" id="add-file-btn">Add Another File</button>
                 <button type="submit" class="btn btn-danger btn-lg">Upload and Merge</button>
             </form>
         </div>
@@ -69,11 +67,5 @@
         </script>
 
     </div>
-    <div class="container mt-3 text-start">
-        <div class="card-body bg-light p-5">
-            {{tool_attachment.body|markdown}}
-        </div>
-    </div>
-
     <!-- <script src="{% static 'js/merge_pdf.js' %}"></script> -->
 {% endblock %}

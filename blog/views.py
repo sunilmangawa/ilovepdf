@@ -1,25 +1,28 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.views.generic import ListView, DetailView
-from .models import Post, Comment
-from django.http import Http404, HttpResponse
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from .forms import CommentForm
-from django.views.decorators.http import require_POST
-from taggit.models import Tag
-from django.db.models import Count
-from django.db import connection 
-from django.core.paginator import Page
-from django.template import TemplateDoesNotExist
-from parler.models import TranslationDoesNotExist
-from parler.utils.context import switch_language
-from django.utils.translation import get_language#, set_current_language
-from django.views.i18n import set_language
-
 from django.conf import settings
 from django.core.exceptions import ObjectDoesNotExist
-from parler.views import TranslatableSlugMixin
+from django.core.paginator import Page
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+# from django.core.serializers import serialize
+
+from django.db import connection 
+from django.db.models import Count
+from django.http import Http404, HttpResponse, JsonResponse
+from django.shortcuts import render, get_object_or_404, redirect
+from django.template import TemplateDoesNotExist
 from django.utils import translation
+from django.utils.translation import get_language#, set_current_language
+from django.views.decorators.http import require_POST
+from django.views.generic import ListView, DetailView
+from django.views.i18n import set_language
 from meta.views import Meta
+from parler.models import TranslationDoesNotExist
+from parler.utils.context import switch_language
+from parler.views import TranslatableSlugMixin
+from taggit.models import Tag
+
+from .forms import CommentForm
+
+from .models import Post, Comment
 
 
 def post_list(request, tag_slug=None):
@@ -43,6 +46,19 @@ def post_list(request, tag_slug=None):
     return render(request, 'blog/post_list.html', {'posts': posts, 'tag': tag_slug, 'count': count})
 
 
+# def post_json(request):
+#     # Adjust the query as needed, e.g., using .all() for all posts or .filter() for specific ones.
+#     posts = Post.objects.all()  
+#     # Serialize the queryset
+#     data = serialize('json', posts)
+#     # Return an HttpResponse with JSON content
+#     return JsonResponse(data, safe=False)
+
+# def post_json_custom(request):
+#     posts = Post.objects.all()
+#     posts_list = list(posts.values('title', 'slug', 'intro'))  # Example fields
+#     return JsonResponse({'posts': posts_list}, safe=False)
+
 def post_detail(request, post):
     try:
         post = Post.published.translated(request.LANGUAGE_CODE).filter(translations__slug=post).first()
@@ -53,14 +69,14 @@ def post_detail(request, post):
             toolattachment = post.toolattachment
         meta = post.as_meta()  # Generate meta data
         meta.url = post.slug
-        print(f'meta: {meta}')
-        print(f'meta type: {type(post)}')
-        print(f'post: {post}')
-        print(f'post type: {type(post)}')
-        print(f'meta.title: {meta.title}')
-        print(f'meta.author: {meta.author}')
-        print(f'meta.url: {meta.url}')
-        print(f'meta.sitename: {meta.site_name}')
+        # print(f'meta: {meta}')
+        # print(f'meta type: {type(post)}')
+        # print(f'post: {post}')
+        # print(f'post type: {type(post)}')
+        # print(f'meta.title: {meta.title}')
+        # print(f'meta.author: {meta.author}')
+        # print(f'meta.url: {meta.url}')
+        # print(f'meta.sitename: {meta.site_name}')
         # meta = Meta(
         #     extra_props = {'viewport': 'width=device-width, initial-scale=1.0, minimum-scale=1.0'},
         #     extra_custom_props=[('http-equiv', 'Content-Type', 'text/html; charset=UTF-8'),]
@@ -88,7 +104,6 @@ def post_detail(request, post):
             tool_content = "Template not found: No toolattachment associated."
     except (TemplateDoesNotExist, AttributeError):
         tool_content = f"Template not found CHECK PATH: {tool_template}"
-
 
     return render(
         request,

@@ -18,17 +18,8 @@ class ToolAttachment(models.Model):
     def __str__(self):
         return self.function_name
 
-# class ToolAttachment(TranslatableModel):    
-#     translation = TranslatedFields(
-#         function_name = models.CharField(_('function_name'), max_length=50, unique=True, help_text="Unique identifier for the tool's function"),
-#         template_name = models.CharField( _('template_name'), max_length=100, help_text="Template path for the tool's function")
-#     )
 
 class ConvertedPDF(models.Model):
     pdf_file = models.FileField(upload_to='pdfs/')
     uploaded_at = models.DateTimeField(auto_now_add=True)
 
-
-# class MergedPDF(models.Model):
-#     merged_file = models.FileField(upload_to="merged_pdfs/")
-#     timestamp = models.DateTimeField(auto_now_add=True)
