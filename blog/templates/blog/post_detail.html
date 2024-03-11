@@ -5,14 +5,11 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
-
     <meta name="author" content="{{ meta.author }}">  
     <link rel="canonical" href="{{meta.url}}">
         
 {% endblock%}
-
-{% comment %} {% block extrahead %}
-{% endblock extrahead %} {% endcomment %}
+<!-- {% block extrahead %}{% endblock extrahead %} -->
 
 {% block title %}{{ post.title }}{% endblock %}
 {% block content %}
@@ -29,7 +26,8 @@
                 {% if tool_content.tool_template %}
                     {% include tool_content.tool_template %}
                 {% endif %}
-                <form method="post" enctype="multipart/form-data" action="{% url 'tools:pdf_to_docx_converter' post.slug %}">
+                <!-- <form method="post" enctype="multipart/form-data" action="{% url 'tools:pdf_to_docx_converter' post.slug %}"> -->
+                <form method="post" enctype="multipart/form-data" action="{% url 'tools:{{tool_content.tool_template}}' post.slug %}">
                     {% csrf_token %}
                     <input type="file" name="pdf_file" accept=".pdf" required>
                     <button type="submit">Convert</button>

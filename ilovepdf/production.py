@@ -12,7 +12,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-okkh^d15@u5+lhc=tbb_^uxlb^f&9b)fe$&agsi!dmei@o2r@_'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -30,13 +30,17 @@ INSTALLED_APPS = [
     'django.contrib.sitemaps',
     'django.contrib.staticfiles',
     'core.apps.CoreConfig',
+    'django_check_seo',
+
     'blog.apps.BlogConfig',
     'tools.apps.ToolsConfig',
     'taggit',
     'ckeditor',
     'rosetta',
     'parler',
-
+    
+    'django_celery_beat',
+    'meta',
 
 ]
 
@@ -321,3 +325,43 @@ CKEDITOR_CONFIGS = {
     },
 }
 
+# for django-celery-beat
+CELERY_BROKER_URL = 'redis://localhost:6379'  # Or your preferred broker
+CELERY_RESULT_BACKEND = 'redis://localhost:6379' 
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'UTC'  # Set to your timezone
+
+CELERY_BEAT_SCHEDULE = {
+    'delete_expired_pdfs': {
+        'task': 'tools.tasks.delete_old_pdfs',
+        'schedule': 60,  # Run every minute change to 3600 for hourly 
+    },
+}
+
+
+META_SITE_PROTOCOL = 'http'
+META_SITE_DOMAIN = '127.0.0.1:8000'
+META_SITE_NAME = 'iLovePdfConverterOnline | Online Convert and Edit Tools for PDF Docs Excel Image PowerPoint HTML etc. files in clicks'
+META_INCLUDE_KEYWORDS = ['pdf', 'converter', 'convert', 'online']
+META_SITE_TYPE = 'website'
+# META_DEFAULT_KEYWORDS = 
+# META_IMAGE_URL = 
+META_USE_OG_PROPERTIES = True
+# META_USE_TWITTER_PROPERTIES = 
+META_USE_SCHEMAORG_PROPERTIES = True
+META_USE_TITLE_TAG = True
+# META_USE_SITES = 
+# META_OG_NAMESPACES = 
+# META_OG_SECURE_URL_ITEMS =        
+META_NAMESPACES = {
+    'og': 'http://ilovepdfconverteronline/',  # Your preferred Open Graph prefix
+    # ... other namespaces if needed ...
+}
+
+# The basic config (used by default) is located in django-check-seo/conf/settings.py
+DJANGO_CHECK_SEO_SETTINGS = {
+    "internal_links": 25,
+    "meta_title_length": [15,30],
+}

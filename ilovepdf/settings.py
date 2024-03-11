@@ -335,11 +335,11 @@ CELERY_BEAT_SCHEDULE = {
 
 
 META_SITE_PROTOCOL = 'http'
-META_SITE_DOMAIN = '127.0.0.1:8000'
+META_SITE_DOMAIN = 'ilovepdfconverteronline.com'
 META_SITE_NAME = 'iLovePdfConverterOnline | Online Convert and Edit Tools for PDF Docs Excel Image PowerPoint HTML etc. files in clicks'
 META_INCLUDE_KEYWORDS = ['pdf', 'converter', 'convert', 'online']
 META_SITE_TYPE = 'website'
-# META_DEFAULT_KEYWORDS = 
+META_DEFAULT_KEYWORDS = ['ilovepdf', 'i love pdf'] 
 # META_IMAGE_URL = 
 META_USE_OG_PROPERTIES = True
 # META_USE_TWITTER_PROPERTIES = 
@@ -349,7 +349,7 @@ META_USE_TITLE_TAG = True
 # META_OG_NAMESPACES = 
 # META_OG_SECURE_URL_ITEMS =        
 META_NAMESPACES = {
-    'og': 'http://ilovepdfconverteronline/',  # Your preferred Open Graph prefix
+    'og': 'https://ilovepdfconverteronline.com/',  # Your preferred Open Graph prefix
     # ... other namespaces if needed ...
 }
 
