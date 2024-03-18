@@ -2,9 +2,11 @@
 {% load blog_tags %}
 {% load static %}
 {% load meta %}
+{% load pwa %} 
 
 <!doctype html>
-<html prefix="og: http://127.0.0.1/">
+<html lang="en" prefix="og: http://ilovepdfconverteronline.com/">
+  {% progressive_web_app_meta %}
   {% comment %} {% meta_namespaces_schemaorg %} {% endcomment %}
   {% comment %} <html lang="en" dir="{% trans 'dir' %}"> {% endcomment %}
     <meta http-equiv="X-UA-Compatible" content="IE=edge">

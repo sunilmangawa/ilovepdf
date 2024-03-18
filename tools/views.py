@@ -183,7 +183,8 @@ def word_to_pdf_logic(view_func):
 
             # Convert the Word file to PDF 
             convert_word_to_pdf(temp_file_path, output_pdf_path) 
-
+            # if not os.path.exists(output_pdf_path):
+            #     logger.error(f"Output PDF file not created: {output_pdf_path}")
             # Clean up temporary file
             clean_temp_files(temp_file_path)
 

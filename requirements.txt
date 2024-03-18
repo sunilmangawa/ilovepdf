@@ -27,6 +27,7 @@ django-markdown==0.8.4
 django-meta==2.4.2
 django-parler==2.3
 django-polymorphic==3.1.0
+django-pwa==1.1.0
 django-rosetta==0.10.0
 django-sekizai==4.1.0
 django-taggit==5.0.1
@@ -52,12 +53,14 @@ openpyxl==3.1.2
 packaging==23.2
 pandas==2.2.0
 pdf2docx==0.5.8
+pdf2image==1.17.0
 pdfkit==1.0.0
 pikepdf==8.13.0
 pillow==10.2.0
 plum-dispatch==1.7.4
 polib==1.2.0
 prompt-toolkit==3.0.43
+psycopg2==2.9.9
 pyfiglet==1.0.2
 Pygments==2.17.2
 PyInquirer==1.0.3
@@ -85,6 +88,7 @@ Unidecode==1.3.8
 unoserver==2.0.1
 urllib3==2.1.0
 vine==5.1.0
+Wand==0.6.13
 wcwidth==0.2.13
 webencodings==0.5.1
 wrapt==1.16.0

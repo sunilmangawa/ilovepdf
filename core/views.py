@@ -2,13 +2,16 @@ from django.shortcuts import render, redirect
 from django.conf import settings
 from meta.views import Meta 
 
+def base_layout(request):
+	template='/base.html'
+	return render(request,template)
 
 def home(request):
     meta = Meta(
-        title='Convert & Edit tools for  PDF, Docs & Images',
+        title='iLovePdfConverterOnline - Convert & Edit tools for PDF, Docs & Images',
         description='Online Convert and Edit Tools for PDF Docs Excel Image PowerPoint HTML etc. files in clicks',
         keywords = ['word', 'image', 'powerpoint', 'power-point', 'excel'],
-        og_title='iLovePdfConverterOnline - Homepage',
+        og_title='iLovePdfConverterOnline - Convert & Edit tools for PDF, Docs & Images',
         og_description='Online Convert and Edit Tools for PDF Docs Excel Image PowerPoint HTML etc. files in clicks', 
         # ... other meta tags as needed
     ) 

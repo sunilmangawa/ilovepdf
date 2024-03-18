@@ -10,7 +10,7 @@ db.sqlite3
 staticfiles/
 
 # Media files (usually uploaded by users)
-media/
+
 
 # Virtual environment
 ilvenv/

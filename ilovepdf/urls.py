@@ -34,6 +34,7 @@ urlpatterns = i18n_patterns(
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
     path(r'^set-language/$', set_language, name='set_language'),
     path('ckeditor/', include('ckeditor_uploader.urls')),
+    path("", include("pwa.urls")),
 
     prefix_default_language = False,
 

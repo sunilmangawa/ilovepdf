@@ -30,13 +30,19 @@ INSTALLED_APPS = [
     'django.contrib.sitemaps',
     'django.contrib.staticfiles',
     'core.apps.CoreConfig',
+
+    'django_check_seo',
+
     'blog.apps.BlogConfig',
     'tools.apps.ToolsConfig',
     'taggit',
     'ckeditor',
     'rosetta',
     'parler',
-
+    
+    'django_celery_beat',
+    'meta',
+    'pwa',
 
 ]
 
