@@ -35,7 +35,11 @@
                     <button class="btn dropdown-toggle" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                         To PDF
                     </button>
+<<<<<<< HEAD
                     <ul class="dropdown-menu" aria-labelledby="dropdownMenuButtonToPDF">
+=======
+                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton">
+>>>>>>> 009b0553c4c32b6836c3a46aa7d5a0c3a5e57780
                         <li><a class="dropdown-item" href="{% url 'tools:image_to_pdf' %}">JPG to PDF</a></li>
                         <li><a class="dropdown-item" href="{% url 'tools:word_to_pdf' %}">WORD to PDF</a></li>
                         <li><a class="dropdown-item" href="{% url 'tools:powerpoint_to_pdf' %}">POWERPOINT to PDF</a></li>
@@ -48,7 +52,7 @@
                     <button class="btn dropdown-toggle" type="button" id="dropdownMenuButtonPdfTo" data-bs-toggle="dropdown" aria-expanded="false">
                         PDF To
                     </button>
-                    <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton">
                         <li><a class="dropdown-item" href="{% url 'tools:pdf_to_image' %}">PDF to JPG</a></li>
                         <li><a class="dropdown-item" href="{% url 'tools:pdf_to_word' %}">PDF to WORD</a></li>
                         <li><a class="dropdown-item" href="{% url 'tools:pdf_to_powerpoint' %}">PDF to POWERPOINT</a></li>
