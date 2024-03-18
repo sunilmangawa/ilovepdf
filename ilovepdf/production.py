@@ -30,10 +30,7 @@ INSTALLED_APPS = [
     'django.contrib.sitemaps',
     'django.contrib.staticfiles',
     'core.apps.CoreConfig',
-<<<<<<< HEAD
 
-=======
->>>>>>> 009b0553c4c32b6836c3a46aa7d5a0c3a5e57780
     'django_check_seo',
 
     'blog.apps.BlogConfig',
@@ -45,10 +42,7 @@ INSTALLED_APPS = [
     
     'django_celery_beat',
     'meta',
-<<<<<<< HEAD
     'pwa',
-=======
->>>>>>> 009b0553c4c32b6836c3a46aa7d5a0c3a5e57780
 
 ]
 
@@ -373,3 +367,285 @@ DJANGO_CHECK_SEO_SETTINGS = {
     "internal_links": 25,
     "meta_title_length": [15,30],
 }
+
+
+
+PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, "static/js", "serviceworker.js")
+PWA_APP_DEBUG_MODE = True
+PWA_APP_NAME = 'ilovepdfconverteronline'
+PWA_APP_DESCRIPTION = "ILovePDFconverteronline PWA"
+PWA_APP_THEME_COLOR = '#000000'
+PWA_APP_BACKGROUND_COLOR = '#ffffff'
+PWA_APP_DISPLAY = 'standalone'
+PWA_APP_SCOPE = '/'
+PWA_APP_ORIENTATION = 'any'
+PWA_APP_START_URL = '/'
+PWA_APP_STATUS_BAR_COLOR = 'default'
+PWA_APP_ICONS = [
+	{
+		'src': '/static/img/favicon.png',
+		# 'sizes': '16x16'
+		'sizes': '32x32'
+	},
+	{
+		'src': '/static/img/loveicon.svg',
+		# 'sizes': '16x16'
+		'sizes': '512x512'
+	},
+    {
+      "src": '/static/img/maskable/maskable_icon.png',
+      "sizes": "any",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": '/static/img/maskable/maskable_icon_x48.png',
+      "sizes": "48x48",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": '/static/img/maskable/maskable_icon_x72.png',
+      "sizes": "72x72",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": '/static/img/maskable/maskable_icon_x96.png',
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": '/static/img/maskable/maskable_icon_x128.png',
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": '/static/img/maskable/maskable_icon_x192.png',
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": '/static/img/maskable/maskable_icon_x384.png',
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": '/static/img/maskable/maskable_icon_x512.png',
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+
+    # {'size': '430x932', 'src': '/static/img/splash_screens/iPhone_15_Pro_Max__iPhone_15_Plus__iPhone_14_Pro_Max_landscape.png'},
+    # {'size': '393x852', 'src': '/static/img/splash_screens/iPhone_15_Pro__iPhone_15__iPhone_14_Pro_landscape.png'},
+    # {'size': '428x926', 'src': '/static/img/splash_screens/iPhone_14_Plus__iPhone_13_Pro_Max__iPhone_12_Pro_Max_landscape.png'},
+    # {'size': '390x844', 'src': '/static/img/splash_screens/iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_landscape.png'},
+    # {'size': '375x812', 'src': '/static/img/splash_screens/iPhone_13_mini__iPhone_12_mini__iPhone_11_Pro__iPhone_XS__iPhone_X_landscape.png'},
+    # {'size': '414x896', 'src': '/static/img/splash_screens/iPhone_11_Pro_Max__iPhone_XS_Max_landscape.png'},
+    # {'size': '414x896', 'src': '/static/img/splash_screens/iPhone_11__iPhone_XR_landscape.png'},
+    # {'size': '414x736', 'src': '/static/img/splash_screens/iPhone_8_Plus__iPhone_7_Plus__iPhone_6s_Plus__iPhone_6_Plus_landscape.png'},
+    # {'size': '375x667', 'src': '/static/img/splash_screens/iPhone_8__iPhone_7__iPhone_6s__iPhone_6__4.7__iPhone_SE_landscape.png'},
+    # {'size': '320x568', 'src': '/static/img/splash_screens/4__iPhone_SE__iPod_touch_5th_generation_and_later_landscape.png'},
+    # {'size': '102x1366', 'src': '/static/img/splash_screens/12.9__iPad_Pro_landscape.png'},
+    # {'size': '834x1194', 'src': '/static/img/splash_screens/11__iPad_Pro__10.5__iPad_Pro_landscape.png'},
+    # {'size': '820x1180', 'src': '/static/img/splash_screens/10.9__iPad_Air_landscape.png'},
+    # {'size': '834x1112', 'src': '/static/img/splash_screens/10.5__iPad_Air_landscape.png'},
+    # {'size': '810x1080', 'src': '/static/img/splash_screens/10.2__iPad_landscape.png'},
+    # {'size': '768x1024', 'src': '/static/img/splash_screens/9.7__iPad_Pro__7.9__iPad_mini__9.7__iPad_Air__9.7__iPad_landscape.png'},
+    # {'size': '744x1133', 'src': '/static/img/splash_screens/8.3__iPad_Mini_landscape.png'},
+    # {'size': '430x932', 'src': '/static/img/splash_screens/iPhone_15_Pro_Max__iPhone_15_Plus__iPhone_14_Pro_Max_portrait.png'},
+    # {'size': '393x852', 'src': '/static/img/splash_screens/iPhone_15_Pro__iPhone_15__iPhone_14_Pro_portrait.png'},
+    # {'size': '428x926', 'src': '/static/img/splash_screens/iPhone_14_Plus__iPhone_13_Pro_Max__iPhone_12_Pro_Max_portrait.png'},
+    # {'size': '390x844', 'src': '/static/img/splash_screens/iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_portrait.png'},
+    # {'size': '375x812', 'src': '/static/img/splash_screens/iPhone_13_mini__iPhone_12_mini__iPhone_11_Pro__iPhone_XS__iPhone_X_portrait.png'},
+    # {'size': '414x896', 'src': '/static/img/splash_screens/iPhone_11_Pro_Max__iPhone_XS_Max_portrait.png'},
+    # {'size': '414x896', 'src': '/static/img/splash_screens/iPhone_11__iPhone_XR_portrait.png'},
+    # {'size': '414x736', 'src': '/static/img/splash_screens/iPhone_8_Plus__iPhone_7_Plus__iPhone_6s_Plus__iPhone_6_Plus_portrait.png'},
+    # {'size': '375x667', 'src': '/static/img/splash_screens/iPhone_8__iPhone_7__iPhone_6s__iPhone_6__4.7__iPhone_SE_portrait.png'},
+    # {'size': '320x568', 'src': '/static/img/splash_screens/4__iPhone_SE__iPod_touch_5th_generation_and_later_portrait.png'},
+    # {'size': '1024x1366', 'src': '/static/img/splash_screens/12.9__iPad_Pro_portrait.png'},
+    # {'size': '834x1194', 'src': '/static/img/splash_screens/11__iPad_Pro__10.5__iPad_Pro_portrait.png'},
+    # {'size': '820x1180', 'src': '/static/img/splash_screens/10.9__iPad_Air_portrait.png'},
+    # {'size': '834x1112', 'src': '/static/img/splash_screens/10.5__iPad_Air_portrait.png'},
+    # {'size': '810x1080', 'src': '/static/img/splash_screens/10.2__iPad_portrait.png'},
+    # {'size': '768x1024', 'src': '/static/img/splash_screens/9.7__iPad_Pro__7.9__iPad_mini__9.7__iPad_Air__9.7__iPad_portrait.png'},
+    # {'size': '744x1133', 'src': '/static/img/splash_screens/8.3__iPad_Mini_portrait.png'},
+]
+
+PWA_APP_ICONS_APPLE = [
+	{
+		'src': 'static/img/favicon.png',
+		'sizes': '32x32'
+	}
+]
+PWA_APP_SPLASH_SCREEN = [
+	{
+		'src': '/static/img/iloveicon512x512.png',
+		# 'sizes': '16x16'
+		'sizes': '512x512'
+	},
+	{
+		'src': 'static/img/splash-640x1136.png',
+		'media': '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)'
+	},
+
+    # {
+        
+    #     'media': '(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)' 'src': 'static/img/splash_screens/iPhone_15_Pro__iPhone_15__iPhone_14_Pro_landscape.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)' 'src': 'static/img/splash_screens/iPhone_15_Pro_Max__iPhone_15_Plus__iPhone_14_Pro_Max_landscape.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)' 'src': 'static/img/splash_screens/iPhone_14_Plus__iPhone_13_Pro_Max__iPhone_12_Pro_Max_landscape.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)' 'src': 'static/img/splash_screens/iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_landscape.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)' 'src': 'static/img/splash_screens/iPhone_13_mini__iPhone_12_mini__iPhone_11_Pro__iPhone_XS__iPhone_X_landscape.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)' 'src': 'static/img/splash_screens/iPhone_11_Pro_Max__iPhone_XS_Max_landscape.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)' 'src': 'static/img/splash_screens/iPhone_11__iPhone_XR_landscape.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: landscape)' 'src': 'static/img/splash_screens/iPhone_8_Plus__iPhone_7_Plus__iPhone_6s_Plus__iPhone_6_Plus_landscape.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)' 'src': 'static/img/splash_screens/iPhone_8__iPhone_7__iPhone_6s__iPhone_6__4.7__iPhone_SE_landscape.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)' 'src': 'static/img/splash_screens/4__iPhone_SE__iPod_touch_5th_generation_and_later_landscape.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)' 'src': 'static/img/splash_screens/12.9__iPad_Pro_landscape.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)' 'src': 'static/img/splash_screens/11__iPad_Pro__10.5__iPad_Pro_landscape.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)' 'src': 'static/img/splash_screens/10.9__iPad_Air_landscape.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)' 'src': 'static/img/splash_screens/10.5__iPad_Air_landscape.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)' 'src': 'static/img/splash_screens/10.2__iPad_landscape.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)' 'src': 'static/img/splash_screens/9.7__iPad_Pro__7.9__iPad_mini__9.7__iPad_Air__9.7__iPad_landscape.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: landscape)' 'src': 'static/img/splash_screens/8.3__iPad_Mini_landscape.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)' 'src': 'static/img/splash_screens/iPhone_15_Pro_Max__iPhone_15_Plus__iPhone_14_Pro_Max_portrait.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 393px) and (device-height: 852px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)' 'src': 'static/img/splash_screens/iPhone_15_Pro__iPhone_15__iPhone_14_Pro_portrait.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)' 'src': 'static/img/splash_screens/iPhone_14_Plus__iPhone_13_Pro_Max__iPhone_12_Pro_Max_portrait.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)' 'src': 'static/img/splash_screens/iPhone_14__iPhone_13_Pro__iPhone_13__iPhone_12_Pro__iPhone_12_portrait.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 375px) and (device-height: 812px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)' 'src': 'static/img/splash_screens/iPhone_13_mini__iPhone_12_mini__iPhone_11_Pro__iPhone_XS__iPhone_X_portrait.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)' 'src': 'static/img/splash_screens/iPhone_11_Pro_Max__iPhone_XS_Max_portrait.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)' 'src': 'static/img/splash_screens/iPhone_11__iPhone_XR_portrait.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 414px) and (device-height: 736px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)' 'src': 'static/img/splash_screens/iPhone_8_Plus__iPhone_7_Plus__iPhone_6s_Plus__iPhone_6_Plus_portrait.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)' 'src': 'static/img/splash_screens/iPhone_8__iPhone_7__iPhone_6s__iPhone_6__4.7__iPhone_SE_portrait.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)' 'src': 'static/img/splash_screens/4__iPhone_SE__iPod_touch_5th_generation_and_later_portrait.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)' 'src': 'static/img/splash_screens/12.9__iPad_Pro_portrait.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)' 'src': 'static/img/splash_screens/11__iPad_Pro__10.5__iPad_Pro_portrait.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 820px) and (device-height: 1180px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)' 'src': 'static/img/splash_screens/10.9__iPad_Air_portrait.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 834px) and (device-height: 1112px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)' 'src': 'static/img/splash_screens/10.5__iPad_Air_portrait.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 810px) and (device-height: 1080px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)' 'src': 'static/img/splash_screens/10.2__iPad_portrait.png'
+    # },
+    # {
+        
+    #     'media': '(device-width: 768px) and (device-height: 1024px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)' 'src': 'static/img/splash_screens/9.7__iPad_Pro__7.9__iPad_mini__9.7__iPad_Air__9.7__iPad_portrait.png'
+    # },
+    {
+        'src': 'static/img/splash_screens/8.3__iPad_Mini_portrait.png',
+        'media': '(device-width: 744px) and (device-height: 1133px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)'
+    }
+
+    
+]
+PWA_APP_DIR = 'ltr'
+PWA_APP_LANG = 'en'
+PWA_APP_SHORTCUTS = [
+    {
+        'name': 'Shortcut',
+        'url': '/target',
+        'description': 'Shortcut to a page in my application'
+    }
+]
+PWA_APP_SCREENSHOTS = [
+    {
+      'src': 'static/img/splash_screens/8.3__iPad_Mini_portrait.png',
+      'sizes': '744x1133',
+      "type": "image/png"
+    }
+]
