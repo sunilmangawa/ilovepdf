@@ -40,6 +40,8 @@ INSTALLED_APPS = [
     'parler',
     
     'django_celery_beat',
+    'django_celery_results',
+
     'meta',
     'pwa',
 
@@ -336,11 +338,12 @@ CELERY_ACCEPT_CONTENT = ['application/json']
 CELERY_TASK_SERIALIZER = 'json'
 CELERY_RESULT_SERIALIZER = 'json'
 CELERY_TIMEZONE = 'UTC'  # Set to your timezone
-
+# CELERY BEAT SCHEDULER
+CELERY_BEAT_SCHEDULER = 'django_celery_beat.schedulers:DatabaseScheduler'
 CELERY_BEAT_SCHEDULE = {
     'delete_expired_pdfs': {
         'task': 'tools.tasks.delete_old_pdfs',
-        'schedule': 60,  # Run every minute change to 3600 for hourly 
+        'schedule': 180,  # Run every minute change to 3600 for hourly 
     },
 }
 

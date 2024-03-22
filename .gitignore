@@ -11,7 +11,6 @@ staticfiles/
 
 # Media files (usually uploaded by users)
 
-
 # Virtual environment
 ilvenv/
 
@@ -19,3 +18,5 @@ ilvenv/
 *.pyc
 *.cpy
 *Zone.Identifier
+*.po
+*.mo

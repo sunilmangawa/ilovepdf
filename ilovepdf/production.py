@@ -41,6 +41,8 @@ INSTALLED_APPS = [
     'parler',
     
     'django_celery_beat',
+    'django_celery_results',
+
     'meta',
     'pwa',
 
@@ -338,13 +340,13 @@ CELERY_TIMEZONE = 'UTC'  # Set to your timezone
 CELERY_BEAT_SCHEDULE = {
     'delete_expired_pdfs': {
         'task': 'tools.tasks.delete_old_pdfs',
-        'schedule': 60,  # Run every minute change to 3600 for hourly 
+        'schedule': 3600,  # Runs hourly 
     },
 }
 
 
 META_SITE_PROTOCOL = 'http'
-META_SITE_DOMAIN = '127.0.0.1:8000'
+META_SITE_DOMAIN = 'ilovepdfconverteronline.com'
 META_SITE_NAME = 'iLovePdfConverterOnline | Online Convert and Edit Tools for PDF Docs Excel Image PowerPoint HTML etc. files in clicks'
 META_INCLUDE_KEYWORDS = ['pdf', 'converter', 'convert', 'online']
 META_SITE_TYPE = 'website'

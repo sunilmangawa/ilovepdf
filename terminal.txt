@@ -1,17 +1,4 @@
 
- * Documentation:  https://help.ubuntu.com
- * Management:     https://landscape.canonical.com
- * Support:        https://ubuntu.com/advantage
-
- * Strictly confined Kubernetes makes edge and IoT secure. Learn how MicroK8s
-   just raised the bar for easy, resilient and secure K8s cluster deployment.
-
-   https://ubuntu.com/engage/secure-kubernetes-at-the-edge
-
-This message is shown once a day. To disable it please create the
-/home/coder/.hushlogin file.
-Python 3.12.1 (main, Dec 10 2023, 15:07:36) [GCC 11.4.0] on linux
-Type "help", "copyright", "credits" or "license" for more information.
 coder@code:~$ wget -O find_uno.py https://gist.githubusercontent.com/regebro/036da022dc7d5241a0ee97efdf1458eb/raw/find_uno.py python3 find_uno.py
 --2024-02-25 04:49:46--  https://gist.githubusercontent.com/regebro/036da022dc7d5241a0ee97efdf1458eb/raw/find_uno.py
 Resolving gist.githubusercontent.com (gist.githubusercontent.com)... 185.199.111.133, 185.199.108.133, 185.199.109.133, ...
@@ -33,42 +20,7 @@ wget: unable to resolve host address ‘find_uno.py’
 FINISHED --2024-02-25 04:49:51--
 Total wall clock time: 4.6s
 Downloaded: 1 files, 2.1K in 0.001s (2.86 MB/s)
-coder@code:~$ python3 -V
-Python 3.12.1
-coder@code:~$ python -V
-Traceback (most recent call last):
-  File "/usr/lib/command-not-found", line 28, in <module>
-    from CommandNotFound import CommandNotFound
-  File "/usr/lib/python3/dist-packages/CommandNotFound/CommandNotFound.py", line 19, in <module>
-    from CommandNotFound.db.db import SqliteDatabase
-  File "/usr/lib/python3/dist-packages/CommandNotFound/db/db.py", line 5, in <module>
-    import apt_pkg
-ModuleNotFoundError: No module named 'apt_pkg'
-coder@code:~$ pwd
-/home/coder
-coder@code:~$ cd projects/
-coder@code:~/projects$ sudo dpkg -i wkhtmltox_0.12.6.1-2.jammy_amd64.deb
-[sudo] password for coder:
-Sorry, try again.
-[sudo] password for coder:
-Sorry, try again.
-[sudo] password for coder:
-Selecting previously unselected package wkhtmltox.
-dpkg: considering removing wkhtmltopdf in favour of wkhtmltox ...
-dpkg: yes, will remove wkhtmltopdf in favour of wkhtmltox
-(Reading database ... 61033 files and directories currently installed.)
-Preparing to unpack wkhtmltox_0.12.6.1-2.jammy_amd64.deb ...
-Unpacking wkhtmltox (1:0.12.6.1-2.jammy) ...
-Removing wkhtmltopdf (0.12.6-2), to allow configuration of wkhtmltox (1:0.12.6.1-2.jammy) ...
-dpkg: dependency problems prevent configuration of wkhtmltox:
- wkhtmltox depends on xfonts-75dpi; however:
-  Package xfonts-75dpi is not installed.
 
-dpkg: error processing package wkhtmltox (--install):
- dependency problems - leaving unconfigured
-Processing triggers for man-db (2.10.2-1) ...
-Errors were encountered while processing:
- wkhtmltox
 coder@code:~/projects$ sudo dpkg -i wkhtmltox_0.12.6.1-2.jammy_amd64.deb
 [sudo] password for coder:
 Sorry, try again.
@@ -166,3 +118,6 @@ coder@code:~/projects$ ls -l /usr/lib/wsl/lib/libcuda.so*
 
 
 
+celery -A celer worker -l INFO
+
+celery -A celer beat -l info
