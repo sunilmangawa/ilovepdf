@@ -12,21 +12,21 @@
     }
 </style>
 {% block content %}
-    <div class="container text-center" >
-        <h1> PDF to Word Convereter</h1>
+    <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
+        <h2>{% trans 'p2w_title' %}</h2>
         <hr><br>
-        <h2>You can Convert your PDF into WORD documents with Full accuracy & Formatting.</h2>
+        <h3>{% trans 'p2w_subtitle' %}</h3>
         <br>
-        <div class="container text-center" >
+        <div class="container poppins-regular text-center" >
             <form class="form-control align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="/tools/pdf-to-word-file/" id="upload_form">
                 {% csrf_token %}
                 {% comment %} <input class="form-control-lg  form-control-color"  value="#e5322d" type="file" name="pdf_file" accept=".pdf" required> {% endcomment %}
                 <label for="pdf_file" class="btn btn-custom btn-lg">
-                    <span id="file-label"><h1>Select PDF File</h1></span>
+                    <span id="file-label"><h1>{% trans 'Upload' %} PDF File</h1></span>
                     <input id="pdf_file" class="visually-hidden" type="file" name="pdf_file" accept=".pdf" required onchange="updateFileName(this)">
                 </label>                
-                <br><p>or Drop PDF here<br><br>
-                <button class="btn btn-danger btn-lg" type="submit">Convert</button>
+                <br><p>{% trans 'p2w_rest' %}or Drop PDF here<br><br>
+                <button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert' %}</button>
             </form>
         </div>
 

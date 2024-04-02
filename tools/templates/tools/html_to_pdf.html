@@ -1,31 +1,32 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load static %}
-
+{% load blog_tags %}
 
 {% block content %}
-    <div class="container text-center bg-body-secondary" >
-      <h1> HTML to PDF </h1>
+    <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
+      <h1>{%trans 'h2p_title' %}</h1>
 
       <hr><br>
     <div class="container text-center">
-      <h2>HTML to PDF Convereter Page Content</h2>
+      <h2>{%trans 'h2p_subtitle' %}</h2>
       {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
 
       <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <label for="url"  class="btn btn-success btn-md">
-          <span id=""><h3>Enter URL:</h3></span>
+          <span id=""><h3>{% trans 'h2p_url' %}:</h3></span>
         </label>
         <input type="text" name="url" id="url" style="border-color: crimson; border-radius: 3%;"><br><br>
         <hr><h3 class="text-center">OR</h3><hr>
         <label for="html_file"  class="btn btn-custom btn-md">
           <span id="file-label">
-            <h3>Upload HTML file:</h3>
+            <h3>{%trans 'Upload' %} HTML file:</h3>
           </span>
-          <input id="html_file" type="file" name="html_file">
+          <input class="btn btn-primary btn-lg" id="html_file" type="file" name="html_file">
         </label>
-        <br><p>or Drop HTML file here<br><hr>
-        <input class="btn btn-custom btn-lg"type="submit" value="Convert">
+        <br><p>{%trans 'h2p_rest' %}<br><hr>
+        <input class="btn btn-danger btn-lg"type="submit" value="Convert">
       </form>
 
     </div>

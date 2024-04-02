@@ -142,8 +142,7 @@ class Post(ModelMeta,TranslatableModel):
             return self.safe_translation_getter('intro', language_code=lang_code) 
         except AttributeError:
             return None 
-
-            
+        
     def get_meta_keywords(self):
         lang_code = self.get_current_language()
         try:
@@ -152,7 +151,6 @@ class Post(ModelMeta,TranslatableModel):
             return clean_keywords
         except AttributeError:
             return None 
-
 
     def get_meta_image(self):
         if self.image:

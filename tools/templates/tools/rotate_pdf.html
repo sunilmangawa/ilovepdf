@@ -3,13 +3,31 @@
 
 
 {% block content %}
-<div class="container text-center bg-body-secondary" >
+<div class="container-fluid poppins-regular text-center pt-5 mt-5" >
     <h1> Rotate PDF</h1>
     <hr>
     <div class="container">
       <h2>PDF Rotate tool, Now Rotate your PDF in just clicks</h2>
-      <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid">
+      {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
 
+      <form action="" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="pdf_file">Upload PDF file:</label>
+        <input type="file" name="pdf_file" id="pdf_file" required><br><br>
+        
+        <label for="rotation">Rotation:</label>
+        <select name="rotation" id="rotation">
+            <option value="0">No rotation</option>
+            <option value="90">90° Clockwise</option>
+            <option value="-90">90° Counterclockwise</option>
+            <option value="180">180°</option>
+        </select><br><br>
+
+        <label for="page_ranges">Page ranges to rotate (comma-separated):</label>
+        <input type="text" name="page_ranges" id="page_ranges"><br><br>
+
+        <input type="submit" value="Rotate PDF">
+    </form>
     </div>
   </div>
 

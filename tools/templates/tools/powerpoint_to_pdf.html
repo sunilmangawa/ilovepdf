@@ -1,12 +1,14 @@
 {% extends 'base.html' %}
+{% load i18n %}
+
 {% load static %}
 {% block content %}
-  <div class="container text-center bg-body-secondary" >
-    <h1> Powerpoint to PDF </h1>
+  <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
+    <h1> {% trans 'pp2p_title' %}</h1>
     
     <hr>
     <div class="container">
-      <h2>Powerpoint to PDF Convereter Page is under DEVELOPMENT.</h2>
+      <h2>{% trans 'pp2p_subtitle' %}</h2>
       <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid">
       {% comment %} <form method="post" enctype="multipart/form-data">
         {% csrf_token %}

@@ -19,7 +19,7 @@ class ToolAttachment(models.Model):
         return self.function_name
 
 
-class ConvertedPDF(models.Model):
-    pdf_file = models.FileField(upload_to='pdfs/')
-    uploaded_at = models.DateTimeField(auto_now_add=True)
+# class ConvertedPDF(models.Model):
+#     pdf_file = models.FileField(upload_to='pdfs/')
+#     uploaded_at = models.DateTimeField(auto_now_add=True)
 

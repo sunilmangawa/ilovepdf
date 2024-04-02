@@ -1,11 +1,12 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load static %}
 {% load meta %}
 {% load blog_tags %}
 {% load meta %}
 {% load pwa %} 
 
-{% block title%} Merge PDF Files  {% endblock %}
+{% block title%}{% trans 'mrg2pdf_title' %}{% endblock %}
 
 
 {% block extraheads %}
@@ -26,25 +27,25 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container poppins-regular">
-        <h1 class="roboto-bold">Merge PDF Files</h1>
+    <div class="container-fluid poppins-regular text-center pt-5 mt-5">
+        <h1 class="roboto-bold">{% trans 'mrg2pdf_title' %}</h1>
         <hr><br>
-        <h2>You can merge PDF with Full accuracy just in click.</h2>
+        <h2>{% trans 'mrg2pdf_subtitle' %}</h2>
         <br>
         <div class="container">
             <form id="upload-form" class="form-control align-items-center p-5 mt-5" action="/tools/merge-pdf/" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div id="file-inputs">
                     <div id="input-0" class="file-input">
-                        <label for="pdf_file_0">PDF No. 1</label>
-                        <input type="file" name="pdf_files" id="pdf_file_0" accept="application/pdf" required><br>
+                        <label for="pdf_file_0"><b>PDF No. 1</b></label>
+                        <input type="file" class="btn btn-primary btn-lg" name="pdf_files" id="pdf_file_0" accept="application/pdf" required>
                     </div>
-                </div><br><hr>
-                <button type="button" class="btn btn-danger btn-lg" id="add-file-btn">Add more PDF</button>
-                <button type="submit" class="btn btn-danger btn-lg">Upload and Merge</button>
+                </div><br>
+                <button type="button" class="btn btn-info btn-lg" id="add-file-btn">{% trans 'mrg2pdf_addpdf' %}</button><br><br><hr>
+                <button type="submit" class="btn btn-danger btn-lg">{% trans 'mrg2pdf_btn' %} </button>
             </form>
         </div>
-        <script>
+        {% comment %} <script>
             document.getElementById('add-file-btn').addEventListener('click', function() {
                 var fileInputs = document.getElementById('file-inputs');
                 var lastInputId = fileInputs.children.length;
@@ -71,11 +72,41 @@
                 fileInputs.appendChild(newInputDiv);
 
             });
-        </script>
+        </script> {% endcomment %}
+        <script>
+            document.getElementById('add-file-btn').addEventListener('click', function() {
+                var fileInputs = document.getElementById('file-inputs');
+                var lastInputId = fileInputs.children.length;
+                var newInputNumber = lastInputId + 1;
+            
+                // Create the elements
+                var newInputDiv = document.createElement('div');
+                newInputDiv.classList.add('file-input'); // Add the same class as the original inputs
+            
+                var label = document.createElement('label');
+                label.textContent = 'PDF No. ' + newInputNumber;
+                label.setAttribute('for', 'pdf_file_' + newInputNumber);
+                label.style.fontWeight = 'bold';
+            
+                var inputFile = document.createElement('input');
+                inputFile.type = 'file';
+                inputFile.name = 'pdf_files';
+                inputFile.id = 'pdf_file_' + newInputNumber;
+                inputFile.accept = 'application/pdf';
+                inputFile.required = true;
+                inputFile.classList.add('btn', 'btn-primary', 'btn-lg', 'p-1', 'm-1');
+            
+                // Append the elements to the DOM
+                newInputDiv.appendChild(label);
+                newInputDiv.appendChild(inputFile);
+                fileInputs.appendChild(newInputDiv);
+            });
+        </script>    
+
 
     </div>
-    <div class="container mt-3 text-start">
-        <div class="card-body bg-body p-5">
+    <div class="container-fluid mt-3 text-start">
+        <div class="card-body bg-body fs-5 text p-5">
             {{tool_attachment.body|markdown}}
         </div>
     </div>

@@ -69,14 +69,14 @@ def post_detail(request, post):
             toolattachment = post.toolattachment
         meta = post.as_meta()  # Generate meta data
         meta.url = post.slug
-        # print(f'meta: {meta}')
-        # print(f'meta type: {type(post)}')
-        # print(f'post: {post}')
-        # print(f'post type: {type(post)}')
-        # print(f'meta.title: {meta.title}')
-        # print(f'meta.author: {meta.author}')
-        # print(f'meta.url: {meta.url}')
-        # print(f'meta.sitename: {meta.site_name}')
+        print(f'meta: {meta}')
+        print(f'meta type: {type(post)}')
+        print(f'post: {post}')
+        print(f'post type: {type(post)}')
+        print(f'meta.title: {meta.title}')
+        print(f'meta.author: {meta.author}')
+        print(f'meta.url: {meta.url}')
+        print(f'meta.sitename: {meta.site_name}')
         # meta = Meta(
         #     extra_props = {'viewport': 'width=device-width, initial-scale=1.0, minimum-scale=1.0'},
         #     extra_custom_props=[('http-equiv', 'Content-Type', 'text/html; charset=UTF-8'),]

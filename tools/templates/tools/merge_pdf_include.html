@@ -1,4 +1,5 @@
-{% extends 'base2.html' %}
+<!--{% extends 'base2.html' %} -->
+{% load i18n %}
 {% load static %}
 
 {% block title%} Merge PDF Files  {% endblock %}
@@ -19,10 +20,10 @@
 {% endblock %}
 
 {% block content %}
-    <div class="container poppins-regular">
-        <h1 class="roboto-bold">Merge PDF Files</h1>
+    <div class="container poppins-regular text-center">
+        <h1 class="roboto-bold">{% trans 'mrg2pdf_title' %}Merge PDF Files</h1>
         <hr><br>
-        <h2>You can merge PDF with Full accuracy just in click.</h2>
+        <h2>{% trans 'mrg2pdf_subtitle' %}You can merge PDF with Full accuracy just in click.</h2>
         <br>
         <div class="container">
             <form id="upload-form" class="form-control align-items-center p-5 mt-5" action="{% url 'tools:merge_pdf_include' %}" method="post" enctype="multipart/form-data">
@@ -33,8 +34,8 @@
                         <input type="file" name="pdf_files" id="pdf_file_0" accept="application/pdf" required><br>
                     </div>
                 </div><br><hr>
-                <button type="button" class="btn btn-danger btn-lg" id="add-file-btn">Add Another File</button>
-                <button type="submit" class="btn btn-danger btn-lg">Upload and Merge</button>
+                <button type="button" class="btn btn-danger btn-lg" id="add-file-btn">{% trans 'mrg2pdf_addpdf' %}</button>
+                <button type="submit" class="btn btn-danger btn-lg">{% trans 'mrg2pdf_btn' %}</button>
             </form>
         </div>
         <script>

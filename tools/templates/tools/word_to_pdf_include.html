@@ -1,23 +1,25 @@
 {% comment %} {% extends 'base2.html' %} {% endcomment %}
+{% load i18n %}
 {% load static %}
 
-{% block title%} Word to PDF Converter {% endblock %}
+
+{% comment %} {% block title%} Word to PDF Converter {% endblock %} {% endcomment %}
 
 {% block content %}
-<div class="container poppins-regular">
-    <h1 class="roboto-bold">Word to PDF Converter</h1>
+<div class="container poppins-regular text-center">
+    <h1 class="roboto-bold">{% trans 'w2ptitle' %}</h1>
     <hr><br>
-    <h2>You can Convert your WORD documents into PDF with Full accuracy & Formatting.</h2>
+    <h2>{% trans 'w2psubtitle' %}</h2>
     <br>
     <div class="container">
         <form id="word-to-pdf-form" class="form-control align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="{% url 'tools:word_to_pdf_include' %}">
             {% csrf_token %}
-            <label for="word_file" class="btn btn-custom btn-lg">
-                <span id="file-label"><b>Upload WORD File</b></span>
+            <label for="word_file" class="btn btn-primary btn-lg">
+                <span id="file-label"><b>{% trans 'Upload' %} WORD File</b></span>
                 <input id="word_file" class="visually-hidden" type="file" name="word_file" accept=".docx,.doc,.txt" required onchange="updateFileName(this)">
             </label>
-            <br><p>or Drop WORD File here<br><br>
-            <button class="btn btn-danger btn-lg" type="submit">Convert to PDF</button>
+            <br><p>{% trans 'w2prest' %}<br><br>
+            <button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert' %}</button>
         </form>
     </div>
     <div class="container">

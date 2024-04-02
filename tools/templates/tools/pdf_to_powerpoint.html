@@ -1,13 +1,14 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load static %}
 
 
 {% block content %}
-  <div class="container" >
-    <h1> PDF to PowerPoint Slideshows</h1>
+  <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
+    <h1>{% trans 'p2pp_title' %}</h1>
     <hr><br>
     <div class="container ">
-      <h2>You can Convert your PDF into PowerPoint Slide documents with Full accuracy & Formatting.</h2>
+      <h2>{% trans 'p2pp_subtitle' %}</h2>
       <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid">
 
       {% comment %} <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="/tools/pdf_to_powerpoint/">

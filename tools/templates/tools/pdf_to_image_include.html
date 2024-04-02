@@ -3,20 +3,20 @@
 {% load l10n %}
 
 {% block content %}
-    <div class="container text-center" >
-      <h1> PDF to JPG</h1>
+    <div class="container poppins-regular text-center" >
+      <h1>{% trans 'p2img_title' %}</h1>
       <hr><br>
-      <h2>PDF to JPG Convereter Tool Page</h2>
+      <h2>{% trans 'p2img_subtitle' %}</h2>
       <br>
       <div class="container text-center" >
         <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="/tools/pdf-to-jpg-file/">
           {% csrf_token %}
           <label for="pdf_file" class="btn btn-custom btn-lg">
-            <span id="file-label"><h1>Select PDF File</h1></span>
+            <span id="file-label"><h1>{% trans 'Upload' %} PDF File</h1></span>
             <input id="pdf_file" class="visually-hidden" type="file" name="pdf_file" accept=".pdf" required onchange="updateFileName(this)">
           </label>                
-          <br><p>or Drop PDF here<br><br>
-          <button class="btn btn-danger btn-lg" type="submit">Convert to Image</button>
+          <br><p>{% trans 'p2img_rest' %}or Drop PDF here<br><br>
+          <button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert' %} to Image</button>
         </form>
       </div>
       <script>

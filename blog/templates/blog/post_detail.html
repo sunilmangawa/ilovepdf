@@ -1,6 +1,6 @@
 {% extends "base.html" %}
 {% load blog_tags %}
-{% load meta %}
+
 {% block meta %} 
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -16,78 +16,79 @@
 
 {% block title %}{{ post.title }}{% endblock %}
 {% block content %}
-<div class="container mt-4">
+    <div class="container-fluid mt-5 pt-5">
 
-    <div class="card-body" >
-        <!-- Display the tool content if available -->
-        {% if tool_content %}
-            <div class="tool-section">
-                {{ tool_content|safe }}
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">{{ post.title }}</h2>
+                <p class="card-subtitle text-muted">Published {{ post.publish }} by {{ post.author }}</p>
             </div>
-        {% else %}
-            <div class="tool-section" style="margin-top: 10px; padding-top: 1px;">
-                {% if tool_content.tool_template %}
-                    {% include tool_content.tool_template %}
-                {% endif %}
-                <form method="post" enctype="multipart/form-data" action="{% url 'tools:pdf_to_docx_converter' post.slug %}">
-                    {% csrf_token %}
-                    <input type="file" name="pdf_file" accept=".pdf" required>
-                    <button type="submit">Convert</button>
-                </form>
-            </div>
-        {% endif %}
-        <br><hr>
-    </div>
+            {% if post.image %} 
+                <figure>
+                    <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.title }}">
+                </figure>
+            {% endif %}
 
-    <div class="card">
-        <div class="card-header">
-            <h2 class="card-title">{{ post.title }}</h2>
-            <p class="card-subtitle text-muted">Published {{ post.publish }} by {{ post.author }}</p>
         </div>
-        {% if post.image %} 
-            <figure>
-                <img src="{{ post.image.url }}" class="card-img-top" alt="{{ post.title }}">
-            </figure>
-        {% endif %}
-
-    </div>
-
-    <div class="card-body" >
-        <br><hr>
-        <p class="card-text">{{ post.body|markdown  }}</p>
-    </div>
 
 
+        <div class="card-body" >
+            <!-- Display the tool content if available -->
+            {% if tool_content %}
+                <div class="tool-section">
+                    {{ tool_content|safe }}
+                </div>
+            {% else %}
+                <div class="tool-section" style="margin-top: 10px; padding-top: 1px;">
+                    {% if tool_content.tool_template %}
+                        {% include tool_content.tool_template %}
+                    {% endif %}
+                    <form method="post" enctype="multipart/form-data" action="{% url 'tools:pdf_to_docx_converter' post.slug %}">
+                        {% csrf_token %}
+                        <input type="file" name="pdf_file" accept=".pdf" required>
+                        <button type="submit">Convert</button>
+                    </form>
+                </div>
+            {% endif %}
+            <br><hr>
+        </div>
 
-    {% comment %} {{ post.body|linebreaks }} {% endcomment %}
-    {% comment %} {{ post.body|markdown }} {% endcomment %}
+        <div class="card-body text-justify" >
+            <br>
+            <p class="card-text">{{ post.body|markdown  }}</p>
+        </div>
 
-    <h2>Similar posts</h2>
-    {% for post in similar_posts %}
-        <p>
-            <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
-        </p>
-    {% empty %}
-        There are no similar posts yet.
-    {% endfor %}
-    
-    {% with comments.count as total_comments %}
-        <h2>
-            {{ total_comments }} comment{{ total_comments|pluralize }}
-        </h2>
-    {% endwith %}
-    {% for comment in comments %}
-        <div class="comment">
-            <p class="info">
-                Comment {{ forloop.counter }} by {{ comment.name }}
-                {{ comment.created }}
+
+
+        {% comment %} {{ post.body|linebreaks }} {% endcomment %}
+        {% comment %} {{ post.body|markdown }} {% endcomment %}
+
+        <h2>Similar posts</h2>
+        {% for post in similar_posts %}
+            <p>
+                <a href="{{ post.get_absolute_url }}">{{ post.title }}</a>
             </p>
-            {{ comment.body|linebreaks }}
-        </div>
-    {% empty %}
-        <p>There are no comments.</p>
-    {% endfor %}
-    {% include "blog/includes/comment_form.html" %}
+        {% empty %}
+            There are no similar posts yet.
+        {% endfor %}
+        
+        {% with comments.count as total_comments %}
+            <h2>
+                {{ total_comments }} comment{{ total_comments|pluralize }}
+            </h2>
+        {% endwith %}
+        {% for comment in comments %}
+            <div class="comment">
+                <p class="info">
+                    Comment {{ forloop.counter }} by {{ comment.name }}
+                    {{ comment.created }}
+                </p>
+                {{ comment.body|linebreaks }}
+            </div>
+        {% empty %}
+            <p>There are no comments.</p>
+        {% endfor %}
+        {% include "blog/includes/comment_form.html" %}
 
-</div><br><hr>
+    </div><br><hr>
 {% endblock %}

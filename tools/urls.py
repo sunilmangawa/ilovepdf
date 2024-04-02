@@ -32,7 +32,7 @@ urlpatterns = [
 
 
 
-    path('powerpoint_to_pdf/', views.powerpoint_to_pdf_View, name='powerpoint_to_pdf'), 
+    path('powerpoint-to-pdf/', views.powerpoint_to_pdf_View, name='powerpoint_to_pdf'), 
     path('excel-to-pdf/', views.excel_to_pdf_View, name='excel_to_pdf'),
 
     path('html-to-pdf/', views.html_to_pdf_view, name='html_to_pdf'),
@@ -47,12 +47,12 @@ urlpatterns = [
     path('pdf-to-word-file/', views.pdf_to_word_include, name='pdf_to_word_include'),
 
     # not working yet
-    path('pdf_to_powerpoint/', views.pdf_to_powerpoint_View, name='pdf_to_powerpoint'),
+    path('pdf-to-powerpoint/', views.pdf_to_powerpoint_View, name='pdf_to_powerpoint'),
     path('pdf-to-excel/', views.pdf_to_excel_View, name='pdf_to_excel'),
-    path('rotate_pdf/', views.rotate_pdf_View, name='rotate_pdf'),
+    path('rotate-pdf/', views.rotate_pdf_View, name='rotate_pdf'),
 
     # Extra tools PDF and Others
-    path('lorem_ipsum_generator/', views.lorem_ipsum_generator, name='lorem_ipsum_generator'),
+    path('lorem-ipsum-generator/', views.lorem_ipsum_generator, name='lorem_ipsum_generator'),
 
 ]
 

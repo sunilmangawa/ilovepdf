@@ -16,14 +16,15 @@
 {% endblock %}
 
 {% block content %}
-  <div class="bg-body-secondary p-3">
+  <div class="bg-body-secondary pt-3 mt-5 text-center">
     <div style="padding-bottom:10px; text-align:center">
       <h1>{% trans 'herohomeh1' %}</h1>
       <h2>{% trans 'herohomeh2' %}</h2>
       <h3>{% trans 'herohomeh3' %}</h3>
+      <button class="btn btn-primary btn-lg fs-3" type="submit" id="getStartedButton" >Get Started</button>
     </div>
 
-    <div class="row row-cols-1 row-cols-lg-5 row-cols-md-4 row-cols-sm-2 g-4 m-2">
+    <div class="row row-cols-1 row-cols-lg-5 row-cols-md-4 row-cols-sm-2 g-4 m-2 pt-5" id="toolshome">
 
       <div class="col">
         <div class="card h-100">
@@ -230,5 +231,14 @@
     </div>
   </div>
 
-
+  <script>
+    document.getElementById('getStartedButton').addEventListener('click', function(event) {
+      event.preventDefault(); // Prevent default form submission if the button is within a form
+    
+      document.getElementById('toolshome').scrollIntoView({
+        behavior: 'smooth' // Enable smooth scrolling
+      });
+    });
+  </script>
+ 
 {% endblock %}  

@@ -1,14 +1,15 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load i18n %}
 {% load meta %}
 {% load blog_tags %}
 
 
 {% block content %}
-  <div class="container text-center bg-body-secondary" >
-    <h1> JPG | JPEG | PNG to PDF </h1>
+  <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
+    <h1> {% trans 'img2p_title' %}</h1>
     <hr><br>
-    <h2>You can Convert your JPG, JPEG, PNG Image files into PDF documents with Full accuracy & Formatting.</h2>
+    <h2>{% trans 'img2p_subtitle' %}</h2>
     <div class="container text-center">
       {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
     <!-- tools/templates/jpg_to_pdf.html -->
@@ -16,11 +17,11 @@
     <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="">
         {% csrf_token %}
         <label for="image_file" class="btn btn-custom btn-md">
-          <span id="file-label"><h2>Select Image File</h2></span>        
-        <input id="image_file" type="file" name="images" accept="image/jpg, image/jpeg, image/png" multiple required>
+          <span id="file-label"><h2>{% trans 'Upload' %} Image File</h2></span>        
+        <input id="image_file" type="file" name="images" class="btn btn-primary btn-lg" accept="image/jpg, image/jpeg, image/png" multiple required>
       </label>                
-      <br><p><b>or Drop JPFG | JPG | PNG here</b><br><br>        
-        <button class="btn btn-danger btn-lg" type="submit">Convert</button>
+      <br><p><b>{% trans 'img2p_rest' %}</b><br><br>        
+        <button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert' %}</button>
     </form>
 
     </div>

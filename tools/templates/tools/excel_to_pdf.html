@@ -1,12 +1,14 @@
 {% extends 'base.html' %}
+{% load i18n %}
 {% load static %}
+{% load blog_tags %}
 
 
 {% block content %}
-  <div class="container text-center bg-body-secondary" >
-    <h1>Excel to PDF Converter</h1>
+  <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
+    <h1>{% trans 'xl2p_title' %}</h1>
     <hr><br>
-    <h2>You can Convert your Excel files into PDF documents.</h2>
+    <h2>{% trans 'xl2p_subtitle'%}</h2>
     <br>
     <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid">
 

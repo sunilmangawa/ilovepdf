@@ -18,5 +18,3 @@ ilvenv/
 *.pyc
 *.cpy
 *Zone.Identifier
-*.po
-*.mo

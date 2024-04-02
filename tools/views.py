@@ -15,13 +15,13 @@ from django.urls import reverse
 from django.utils.encoding import smart_str
 from django.views.decorators.csrf import csrf_exempt
 from django.views import View
-
+from PyPDF2 import PdfReader, PdfWriter
 # Models Import
-from .models import ToolAttachment, ConvertedPDF
+from .models import ToolAttachment#, ConvertedPDF
 from blog.models import Post
 
 # Forms Import
-from .forms import PDFUploadForm
+from .forms import PDFUploadForm, RotatePDFForm
 
 # from .tools.word_counter import word_counter_text
 from .extra.split_pdf import split_pdf_by_page
@@ -178,13 +178,14 @@ def word_to_pdf_logic(view_func):
 
             # Generate the output PDF file name (with renaming)
             output_file_name = word_file.name.replace(' ', '_').replace('.docx', '.pdf').replace('.doc', '.pdf').replace('.txt', '.pdf')
+            print(f'output_file_name: {output_file_name}')
             output_pdf_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', output_file_name)
-
+            print(f'output_pdf_path: {output_pdf_path}')
 
             # Convert the Word file to PDF 
             convert_word_to_pdf(temp_file_path, output_pdf_path) 
-            # if not os.path.exists(output_pdf_path):
-            #     logger.error(f"Output PDF file not created: {output_pdf_path}")
+            if not os.path.exists(output_pdf_path):
+                print(f"Output PDF file not created: {output_pdf_path}")
             # Clean up temporary file
             clean_temp_files(temp_file_path)
 
@@ -687,8 +688,150 @@ def pdf_to_powerpoint_View(request):
 def pdf_to_excel_View(request):
     return render(request, template_name='tools/pdf_to_excel.html')
 
+# def rotate_pdf_View(request):
+#     return render(request, template_name='tools/rotate_pdf.html')
+
+
+# def rotatePDF(request):
+#     if request.method == 'POST' and request.FILES['pdf_file']:
+#         pdf_file = request.FILES['pdf_file']
+
+#         # Check if uploaded file is PDF
+#         if not pdf_file.name.endswith('.pdf'):
+#             return HttpResponse('Please upload a PDF file.')
+
+#         # Read uploaded PDF file
+#         pdf_reader = PdfReader(pdf_file)
+#         pdf_writer = PdfWriter()
+
+#         # Get rotation angle from form
+#         rotation = request.POST.get('rotation', '0')
+#         rotation = int(rotation)
+
+#         # Get page ranges to rotate
+#         page_ranges = request.POST.get('page_ranges', '').split(',')
+#         pages_to_rotate = set()
+#         for page_range in page_ranges:
+#             if '-' in page_range:
+#                 start, end = map(int, page_range.split('-'))
+#                 pages_to_rotate.update(range(start - 1, end))
+#             else:
+#                 pages_to_rotate.add(int(page_range) - 1)
+
+#         # Rotate specified pages
+#         for page_num in range(pdf_reader.numPages):
+#             page = pdf_reader.getPage(page_num)
+#             if page_num in pages_to_rotate:
+#                 page.rotateClockwise(rotation)
+#             pdf_writer.addPage(page)
+
+#         # Save rotated PDF to BytesIO buffer
+#         output_buffer = BytesIO()
+#         pdf_writer.write(output_buffer)
+#         output_buffer.seek(0)
+
+#         # Return rotated PDF as response
+#         response = HttpResponse(output_buffer.read(), content_type='application/pdf')
+#         response['Content-Disposition'] = f'attachment; filename="{pdf_file.name}"'
+#         return response
+
+#     return render(request, 'rotate_pdf.html')
+
+
+# def rotate_pdf_View(request):
+#     if request.method == 'POST' and request.FILES['pdf_file']:
+#         pdf_file = request.FILES['pdf_file']
+
+#         # Check if uploaded file is PDF
+#         if not pdf_file.name.endswith('.pdf'):
+#             return HttpResponse('Please upload a PDF file.')
+
+#         # Read uploaded PDF file
+#         pdf_reader = PdfReader(pdf_file)
+#         pdf_writer = PdfWriter()
+
+#         # Get rotation angle from form
+#         rotation = request.POST.get('rotation', '0')
+#         rotation = int(rotation)
+
+#         # Get page ranges to rotate
+#         page_ranges = request.POST.get('page_ranges', '').split(',')
+#         pages_to_rotate = set()
+#         for page_range in page_ranges:
+#             if '-' in page_range:
+#                 start, end = map(int, page_range.split('-'))
+#                 pages_to_rotate.update(range(start - 1, end))
+#             else:
+#                 pages_to_rotate.add(int(page_range) - 1)
+
+#         # Rotate specified pages
+#         for page_num in range(pdf_reader.numPages):
+#             page = pdf_reader.getPage(page_num)
+#             if page_num in pages_to_rotate:
+#                 page.rotateClockwise(rotation)
+#             pdf_writer.addPage(page)
+
+#         # Save rotated PDF to BytesIO buffer
+#         output_buffer = BytesIO()
+#         pdf_writer.write(output_buffer)
+#         output_buffer.seek(0)
+
+#         # Return rotated PDF as response
+#         response = HttpResponse(output_buffer.read(), content_type='application/pdf')
+#         response['Content-Disposition'] = f'attachment; filename="{pdf_file.name}"'
+#         return response
+
+#     return render(request, 'tools/rotate_pdf.html')
+
+
 def rotate_pdf_View(request):
-    return render(request, template_name='tools/rotate_pdf.html')
+    if request.method == 'POST':
+        form = RotatePDFForm(request.POST, request.FILES)
+        if form.is_valid():
+            pdf_file = request.FILES['pdf_file']
+            rotation = request.POST.get('rotation')
+            page_ranges = request.POST.get('page_ranges')
+
+            pdf_pages = PdfReader(pdf_file)
+            output_pdf = PdfWriter()
+
+            if not page_ranges:  # If page_ranges is empty, rotate all pages
+                pages_to_rotate = range(pdf_pages.numPages)
+            else:
+                pages_to_rotate = set()
+                for page_range in page_ranges.split(','):
+                    if '-' in page_range:
+                        start, end = map(int, page_range.split('-'))
+                        pages_to_rotate.update(range(start - 1, end))
+                    else:
+                        pages_to_rotate.add(int(page_range) - 1)
+
+            for page_number in range(pdf_pages.numPages):
+                page = pdf_pages.getPage(page_number)
+                if page_number in pages_to_rotate:
+                    if rotation == 'clockwise':
+                        page.rotateClockwise(90)
+                    elif rotation == 'anticlockwise':
+                        page.rotateCounterClockwise(90)
+                    elif rotation == '180':
+                        page.rotateClockwise(180)
+                output_pdf.addPage(page)
+
+            response = HttpResponse(content_type='application/pdf')
+            response['Content-Disposition'] = 'attachment; filename="rotated_pdf.pdf"'
+            output_pdf.write(response)
+            return response
+    else:
+        form = RotatePDFForm()
+    return render(request, 'tools/rotate_pdf.html', {'form': form})
+
+
+
+
+
+
+
+
 
 # def merge_pdf_view(request):
 #     if request.method == "POST":
