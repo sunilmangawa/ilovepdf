@@ -1,0 +1,22 @@
+{% extends 'base2.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title%} {% trans 'base64_2pdf_title' %}{% endblock %}
+
+{% block content %}
+    <div class="container-fluid poppins-regular text-center bg-body-secondary pt-5" >
+    <h1 class="roboto-bold"> {% trans 'base64_2pdf_title' %}</h1>
+    <hr>
+        <div class="container">
+            <h2>{% trans 'base64_2pdf_subtitle' %}</h2>
+            <form action="/tools/base64-to-pdf/" method="post" class="form-control align-items-center p-5 mt-5">
+                {% csrf_token %}
+                <textarea name="base64_string" rows="9" cols="90" placeholder="{% trans 'base64_2pdf_plcHoldr' %}"></textarea><br>
+                <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} -> {% trans 'PDF' %}</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}  
+    

@@ -1,4 +1,4 @@
-{% comment %} {% extends 'base2.html' %} {% endcomment %}
+{% extends 'base2.html' %}
 {% load i18n %}
 {% load static %}
 
@@ -7,9 +7,9 @@
 
 {% block content %}
 <div class="container poppins-regular text-center">
-    <h1 class="roboto-bold">{% trans 'w2ptitle' %}</h1>
+    <p class="roboto-bold text-uppercase fs-1">{% trans 'w2ptitle' %}</p>
     <hr><br>
-    <h2>{% trans 'w2psubtitle' %}</h2>
+    <p class="roboto-bold text-uppercase fs-2">{% trans 'w2psubtitle' %}</p>
     <br>
     <div class="container">
         <form id="word-to-pdf-form" class="form-control align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="{% url 'tools:word_to_pdf_include' %}">

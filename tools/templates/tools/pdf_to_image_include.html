@@ -4,15 +4,15 @@
 
 {% block content %}
     <div class="container poppins-regular text-center" >
-      <h1>{% trans 'p2img_title' %}</h1>
+      <p class="roboto-bold text-uppercase fs-1">{% trans 'p2img_title' %}</p>
       <hr><br>
-      <h2>{% trans 'p2img_subtitle' %}</h2>
+      <p class="roboto-bold text-uppercase fs-2">{% trans 'p2img_subtitle' %}</p>
       <br>
       <div class="container text-center" >
         <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="/tools/pdf-to-jpg-file/">
           {% csrf_token %}
           <label for="pdf_file" class="btn btn-custom btn-lg">
-            <span id="file-label"><h1>{% trans 'Upload' %} PDF File</h1></span>
+            <span id="file-label" class="roboto-bold text-uppercase fs-1">{% trans 'Upload' %} PDF File</span>
             <input id="pdf_file" class="visually-hidden" type="file" name="pdf_file" accept=".pdf" required onchange="updateFileName(this)">
           </label>                
           <br><p>{% trans 'p2img_rest' %}or Drop PDF here<br><br>

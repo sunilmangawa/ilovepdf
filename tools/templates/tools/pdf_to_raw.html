@@ -1,0 +1,61 @@
+<!-- templates/pdf_to_raw.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to RAW Image Converter</title>
+</head>
+<body>
+    <h1>Convert PDF to RAW Image</h1>
+    <form action="/tools/pdf-to-raw/" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="pdf_file">Upload PDF:</label>
+        <input type="file" id="pdf_file" name="pdf_file" accept="application/pdf" required>
+        <button type="submit">Convert</button>
+    </form>
+</body>
+</html>
+
+
+
+
+{% comment %} <!-- templates/pdf_to_raw.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to RAW Image Converter</title>
+</head>
+<body>
+    <h1>Convert PDF to RAW Image</h1>
+    <form action="/tools/pdf-to-raw/" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="pdf_file">Upload PDF:</label>
+        <input type="file" id="pdf_file" name="pdf_file" accept="application/pdf" required>
+        <button type="submit">Convert</button>
+    </form>
+</body>
+</html> {% endcomment %}
+
+
+
+{% comment %} <!-- templates/pdf_to_raw.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF to RAW Converter</title>
+</head>
+<body>
+    <h1>Convert PDF to RAW</h1>
+    <form action="/tools/pdf-to-raw/" method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="pdf_file">Upload PDF:</label>
+        <input type="file" id="pdf_file" name="pdf_file" accept="application/pdf" required>
+        <button type="submit">Convert</button>
+    </form>
+</body>
+</html> {% endcomment %}

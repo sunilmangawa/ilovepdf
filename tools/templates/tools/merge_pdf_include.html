@@ -1,8 +1,8 @@
-<!--{% extends 'base2.html' %} -->
+{% extends 'base2.html' %}
 {% load i18n %}
 {% load static %}
 
-{% block title%} Merge PDF Files  {% endblock %}
+{% block title%} {% trans 'mrg2pdf_title' %}  {% endblock %}
 
 {% block extraheads %}
     <style>
@@ -21,12 +21,12 @@
 
 {% block content %}
     <div class="container poppins-regular text-center">
-        <h1 class="roboto-bold">{% trans 'mrg2pdf_title' %}Merge PDF Files</h1>
+        <p class="roboto-bold text-uppercase fs-1"></p>
         <hr><br>
-        <h2>{% trans 'mrg2pdf_subtitle' %}You can merge PDF with Full accuracy just in click.</h2>
+        <p class="roboto-bold text-uppercase fs-2">{% trans 'mrg2pdf_subtitle' %}</p>
         <br>
         <div class="container">
-            <form id="upload-form" class="form-control align-items-center p-5 mt-5" action="{% url 'tools:merge_pdf_include' %}" method="post" enctype="multipart/form-data">
+            <form id="upload-form" class="form-control align-items-center p-2 mt-3" action="{% url 'tools:merge_pdf_include' %}" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div id="file-inputs">
                     <div id="input-0" class="file-input">

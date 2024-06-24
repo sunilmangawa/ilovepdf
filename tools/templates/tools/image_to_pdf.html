@@ -6,32 +6,37 @@
 
 
 {% block content %}
-  <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
+  <div class="container-fluid poppins-regular text-center pt-5 mt-3" >
     <h1> {% trans 'img2p_title' %}</h1>
     <hr><br>
     <h2>{% trans 'img2p_subtitle' %}</h2>
+
     <div class="container text-center">
-      {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
-    <!-- tools/templates/jpg_to_pdf.html -->
-
-    <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="">
-        {% csrf_token %}
-        <label for="image_file" class="btn btn-custom btn-md">
-          <span id="file-label"><h2>{% trans 'Upload' %} Image File</h2></span>        
-        <input id="image_file" type="file" name="images" class="btn btn-primary btn-lg" accept="image/jpg, image/jpeg, image/png" multiple required>
-      </label>                
-      <br><p><b>{% trans 'img2p_rest' %}</b><br><br>        
-        <button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert' %}</button>
-    </form>
-
+      <form class="form-control  align-items-center p-5 mt-2" method="post" enctype="multipart/form-data" action="">
+          {% csrf_token %}
+          
+          <label for="image_file" class="btn btn-custom btn-md">
+            <span id="file-label"><h2>{% trans 'Upload' %} Image File</h2></span>        
+            <input id="image_file" type="file" name="images" class="btn btn-primary btn-lg" accept="image/jpg, image/jpeg, image/png" multiple required>
+          </label>                
+          <br>
+          <p><b>{% trans 'img2p_rest' %}</b>
+          <br><br>        
+          <button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert' %}</button>
+      </form>
     </div>
+
   </div>
 
-  <div class="container mt-3 text-start">
-    <div class="card-body bg-light p-5">
-        {{tool_attachment.body|markdown}}
-    </div>
-  </div>
+  <div class="container-fluid mt-3 text-start">
+    {% if tool_attachment %} 
 
-
+      <div class="card-body bg-body fs-5 p-5">
+          {{tool_attachment.body|markdown}}
+      </div>       
+      <br>
+      
+    {% endif %}
+  </div> 
+     
 {% endblock %}  

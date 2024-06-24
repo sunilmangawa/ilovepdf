@@ -310,6 +310,7 @@ STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 MEDIA_URL = 'media/'
+# MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 MEDIA_ROOT = BASE_DIR / 'media'
 
 LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]
@@ -363,7 +364,7 @@ META_USE_TITLE_TAG = True
 # META_OG_NAMESPACES = 
 # META_OG_SECURE_URL_ITEMS =        
 META_NAMESPACES = {
-    'og': 'http://ilovepdfconverteronline/',  # Your preferred Open Graph prefix
+    'og': 'https://ilovepdfconverteronline/',  # Your preferred Open Graph prefix
     # ... other namespaces if needed ...
 }
 
@@ -652,3 +653,22 @@ PWA_APP_SCREENSHOTS = [
       "type": "image/png"
     }
 ]
+
+
+# LOGGING = {
+#     'version': 1,
+#     'disable_existing_loggers': False,
+#     'handlers': {
+#         'console': {
+#             'level': 'DEBUG',
+#             'class': 'logging.StreamHandler',
+#         },
+#     },
+#     'loggers': {
+#         'django': {
+#             'handlers': ['console'],
+#             'level': 'DEBUG',
+#             'propagate': True,
+#         },
+#     },
+# }

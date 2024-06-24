@@ -1,8 +1,7 @@
 {% extends 'base.html' %}
 {% load i18n %}
-
 {% load static %}
-
+{% load blog_tags %}
 
 {% block content %}
   <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
@@ -10,9 +9,24 @@
     <hr>
     <div class="container">
       <h2>{% trans 'p2xl_subtitle' %}</h2>
-      <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid">
+      {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
+      <form method="post" enctype="multipart/form-data" action="/tools/pdf-to-excel/" class="form-control align-items-center p-5 mt-5">
+          {% csrf_token %}
+          <input type="file" name="pdf_file"  class="btn btn-primary btn-lg" required><br>
+          <button type="submit" class="btn btn-danger btn-lg">Convert to Excel</button>
+      </form>
 
     </div>
   </div>
+
+  <div class="container-fluid mt-3 text-start">
+    {% if tool_attachment %} 
+    <div class="card-body bg-body fs-5 p-5">
+        {{tool_attachment.body|markdown}}
+    </div>       
+    <br>
+    {% endif %}
+  </div> 
+
 
 {% endblock %}  

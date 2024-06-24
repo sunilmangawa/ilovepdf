@@ -1,7 +1,10 @@
 {% extends 'base.html' %}
 {% load i18n %}
-
 {% load static %}
+{% load blog_tags %}
+
+{% block title%} {% trans 'pp2p_title' %}{% endblock %}
+
 {% block content %}
   <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
     <h1> {% trans 'pp2p_title' %}</h1>
@@ -9,12 +12,12 @@
     <hr>
     <div class="container">
       <h2>{% trans 'pp2p_subtitle' %}</h2>
-      <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid">
-      {% comment %} <form method="post" enctype="multipart/form-data">
+      <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-5 mt-5">
         {% csrf_token %}
-        <input type="file" name="ppt_file">
-        <button type="submit">Convert to PDF</button>
-      </form> {% endcomment %}
+        <label for="ppt_file"><b>{% trans 'Upload' %} PowerPoint {% trans 'File' %} : </b></label>
+        <input type="file" id="ppt_file" name="ppt_file" accept=".ppt, .pptx" required class="btn btn-primary btn-lg"><br>
+        <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} -> {% trans 'PDF' %} </button>
+      </form>
 
 
 

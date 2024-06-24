@@ -1,0 +1,24 @@
+{% extends 'base2.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title%} {% trans 'rotatepdf_title' %} Rotate PDF{% endblock %}
+
+
+{% block content %}
+<div class="container-fluid poppins-regular text-center pt-2 mt-3" >
+  <p class="roboto-bold"> {% trans 'rotatepdf_title' %} Rotate PDF</p>
+  <hr>
+  <div class="container">
+    <p>{% trans 'rotatepdf_subtitle' %} PDF Rotate tool, Now Rotate your PDF in just clicks</p>
+
+    <form method="post" enctype="multipart/form-data"  class="form-control align-items-center p-5 mt-5" >
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-danger btn-lg">Rotate</button>
+    </form>
+  </div>
+</div>
+
+{% endblock %}  

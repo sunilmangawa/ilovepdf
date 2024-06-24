@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title%} {% trans 'string2base64_title' %}{% endblock %}
+
+{% block content %}
+  <div class="container-fluid poppins-regular text-center bg-body-secondary pt-5" >
+    <h1 class="roboto-bold"> {% trans 'string2base64_title' %}</h1>
+    <hr>
+    <div class="container mt-5">
+        <h2> {% trans 'string2base64_subtitle' %}</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>String to Base64 Converter</h4>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="original_string">Enter String</label>
+                                <input type="text" class="form-control" rows="5" id="original_string" name="original_string" value="{{ original_string|default:'' }}" required>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Convert to base64</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% if base64_string %}
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>Base64 Encoded String</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="base64_string">Encoded String</label>
+                            <textarea class="form-control" id="base64_string" rows="5" readonly>{{ base64_string }}</textarea>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+{% endblock %}

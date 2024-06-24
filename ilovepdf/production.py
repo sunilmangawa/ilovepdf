@@ -307,7 +307,7 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = '/usr/local/lsws/Example/html/ilovepdf/static'
 
-MEDIA_URL = '/python/media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = '/usr/local/lsws/Example/html/ilovepdf/media'
 
 LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]

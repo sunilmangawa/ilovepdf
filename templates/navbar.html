@@ -23,13 +23,15 @@
             <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
                 <div class="navbar-nav ">
                     <a class="nav-link active" aria-current="page" href="{% url 'blog:post_list' %}">{% trans 'Blog'%}</a>
-                    <a class="nav-link active" aria-current="page" href="{% url 'tools:merge_pdf' %}">{% trans 'MergePDF'%}</a>
-                    <a class="nav-link active" aria-current="page" href="{% url 'tools:split_pdf' %}">{% trans 'SplitPDF'%}</a>
-                    <a class="nav-link active" aria-current="page" href="{% url 'tools:compress_pdf' %}">{% trans 'CompressPDF'%}</a>
+                    <a class="nav-link " aria-current="page" href="{% url 'tools:merge_pdf' %}">{% trans 'Merge'%}</a>
+                    <a class="nav-link " aria-current="page" href="{% url 'tools:split_pdf' %}">{% trans 'Split'%}</a>
+                    <a class="nav-link " aria-current="page" href="{% url 'tools:compress_pdf' %}">{% trans 'Compress'%}</a>
+                    <a class="nav-link " aria-current="page" href="{% url 'tools:rotate_pdf' %}">{% trans 'Rotate'%}</a>
                 </div>
 
+
                 <div class="dropdown">
-                    <button class="btn dropdown-toggle fs-5" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn btn-light dropdown-toggle fs-5" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                         to PDF
                     </button>
                     <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButtonToPDF">
@@ -38,11 +40,15 @@
                         <li><a class="dropdown-item" href="{% url 'tools:powerpoint_to_pdf' %}">POWERPOINT to PDF</a></li>
                         <li><a class="dropdown-item" href="{% url 'tools:excel_to_pdf' %}">EXCEL to PDF</a></li>
                         <li><a class="dropdown-item" href="{% url 'tools:html_to_pdf' %}">HTML to PDF</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:json_to_pdf' %}">JSON to PDF</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:xml_to_pdf' %}">XML to PDF</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:base64_to_pdf' %}">Base64 to PDF</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:tiff_to_pdf' %}">TIFF to PDF</a></li>
                     </ul>
                 </div>
 
                 <div class="dropdown">
-                    <button class="btn dropdown-toggle fs-5" type="button" id="dropdownMenuButtonPdfTo" data-bs-toggle="dropdown" aria-expanded="false">
+                    <button class="btn btn-light dropdown-toggle fs-5" type="button" id="dropdownMenuButtonPdfTo" data-bs-toggle="dropdown" aria-expanded="false">
                         PDF to
                     </button>
                     <ul class="dropdown-menu dropdown-menu-dark" aria-labelledby="dropdownMenuButton">
@@ -50,12 +56,16 @@
                         <li><a class="dropdown-item" href="{% url 'tools:pdf_to_word' %}">PDF to WORD</a></li>
                         <li><a class="dropdown-item" href="{% url 'tools:pdf_to_powerpoint' %}">PDF to POWERPOINT</a></li>
                         <li><a class="dropdown-item" href="{% url 'tools:pdf_to_excel' %}">PDF to EXCEL</a></li>
-                        {% comment %} <li><a class="dropdown-item" href="{% url 'tools:pdf_to_html' %}">PDF to HTML</a></li> {% endcomment %}
+                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_html' %}">PDF to HTML</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_json' %}">PDF to JSON</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_xml' %}">PDF to XML</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_base64' %}">PDF to Base64</a></li>
+                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_tiff' %}">PDF to TIFF</a></li>
                     </ul>
                 </div>
 
                 
-                <div class="dropdown"> <!-- class = "me-auto"-->
+                <div class="dropdown btn-secondary"> <!-- class = "me-auto"-->
                     {% get_current_language as CURRENT_LANGUAGE %}
                     {% get_available_languages as AVAILABLE_LANGUAGES %}
                     {% get_language_info_list for AVAILABLE_LANGUAGES as languages %}
@@ -77,12 +87,18 @@
                         {% endfor %}
                     </ul>
                 </div>
-                
-                <div class="navbar-nav">
-                    <a class="nav-link active" aria-current="page" href="{% url 'core:about_us' %}">About</a>
-                    <a class="nav-link active" aria-current="page" href="{% url 'core:contact_us' %}">Contact</a>
-
+                <div class="btn-group">
+                    <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                      About
+                    </button>
+                    <ul class="dropdown-menu">
+                      <li><a class="dropdown-item" href="{% url 'core:about_us' %}">About Us</a></li>
+                      <li><a class="dropdown-item" href="{% url 'core:contact_us' %}">Contact</a></li>
+                      <li><a class="dropdown-item" href="{% url 'core:terms_and_condition' %}">Terms&Condition</a></li>
+                      <li><a class="dropdown-item" href="{% url 'core:privacy_policy' %}">Privacy Policy</a></li>
+                    </ul>
                 </div>
+
 
             </div>
         </div>

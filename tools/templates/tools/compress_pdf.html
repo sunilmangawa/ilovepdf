@@ -1,17 +1,34 @@
 {% extends 'base.html' %}
 {% load i18n %}
 {% load static %}
+{% load blog_tags %}
 
-
+{% block title%}{% trans 'compress_pdf_title' %} {% endblock %}
 {% block content %}
-  <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
-      <h1>{% trans 'cmprs2pdf_title' %}</h1>
-
-    <hr>
-    <div class="container">
-      <h2 class="text-light bg-dark">{% trans 'cmprs2pdf_subtitle' %}</h2>
-      <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid">
-
+    <div class="container-fluid poppins-regular text-center pt-2 mt-3">
+        <h1 class="roboto-bold">{% trans 'compress_pdf_title' %} </h1>
+        <hr><br>
+        <h2>{% trans 'compress_pdf_subtitle' %} </h2><br>
+        <div class="container">
+            <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-5 mt-2">
+                {% csrf_token %}
+                <label for="pdf_file"><h3>{% trans 'Upload' %} {% trans 'PDF' %}:</h3></label>
+                <input type="file" name="pdf_file" id="pdf_file" accept="application/pdf" class="btn btn-primary btn-lg" required>
+                <br><br>
+                <label for="compress_level">{% trans 'compress_pdf_level' %} (%):</label>
+                <input type="range" name="compress_level" id="compress_level" class="primary-border-subtle" min="10" max="100" value="50" step="10" oninput="this.nextElementSibling.value = this.value">
+                <output>50</output>%
+                <br>
+                <button type="submit" class="btn btn-danger btn-lg">{% trans 'compress' %} {% trans 'PDF' %}</button>
+            </form>
+        </div>
+        <div class="container-fluid mt-3 text-start">
+            {% if tool_attachment %} 
+                <div class="card-body bg-body fs-5 p-5">
+                    {{tool_attachment.body|markdown}}
+                </div>       
+                <br>
+            {% endif %}
+        </div>
     </div>
-  </div>
-{% endblock %}  
+{% endblock %}

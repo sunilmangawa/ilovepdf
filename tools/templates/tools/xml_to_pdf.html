@@ -1,0 +1,50 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title%} {% trans 'xml2pdf_title' %}{% endblock %}
+{% block content %}
+  <div class="container-fluid poppins-regular text-center bg-body-secondary pt-5" >
+    <h1 class="roboto-bold"> {% trans 'xml2pdf_title' %}</h1>
+    <hr>
+    <div class="container">
+      <h2>{% trans 'xml2pdf_subtitle' %}</h2>
+
+      <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-3 mt-3">
+        {% csrf_token %}
+        <label for="xml_content">{% trans 'xml2pdf_txt_lbl' %}</label><br>
+        <textarea id="xml_content" name="xml_content" rows="5" cols="100"></textarea><br><br>
+        <h3> OR </h3>
+        <label for="xml_file">{% trans 'Upload' %} XML {% trans 'File' %}:</label><br>
+        <input type="file" id="xml_file" accept=".xml"  name="xml_file" class="btn btn-primary btn-lg"><br><br>
+        <button type="submit" class="btn btn-danger btn-lg">XML -> {% trans 'PDF' %}</button>
+      </form>
+    </div>
+  {% endblock %}  
+    
+
+
+
+{% comment %} <!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>XML to PDF Converter</title>
+</head>
+<body>
+    <h1>Convert XML to PDF</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <textarea name="xml_content" rows="10" cols="50" placeholder="Enter XML content here..."></textarea>
+        <br>
+        <input type="file" name="xml_file">
+        <br>
+        <label for="remove_tags">Remove XML tags:</label>
+        <input type="checkbox" id="remove_tags" name="remove_tags">
+        <br>
+        <button type="submit">Convert to PDF</button>
+    </form>
+</body>
+</html> {% endcomment %}

@@ -7,22 +7,27 @@
 {% block content %}
   <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
     <h1>{% trans 'xl2p_title' %}</h1>
-    <hr><br>
-    <h2>{% trans 'xl2p_subtitle'%}</h2>
-    <br>
-    <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid">
+    
+    <hr>
+    <div class="container">
+        <h2>{% trans 'xl2p_subtitle'%}</h2>
+        <br>
 
-    {% comment %} <div class="container text-center" >
-        <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="/tools/excel-to-pdf/">
+        <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-5 mt-5">
             {% csrf_token %}
-            <label for="excel_file" class="btn btn-custom btn-lg">
-                <span id="file-label"><h1>Select Excel File</h1></span>
-                <input id="excel_file" type="file" name="excel_file" accept=".xls, .xlsx" ><br><br>
-            </label>                
-            <br><p>or Drop Excel file here<br><br>
-            <button class="btn btn-danger btn-lg" type="submit">Convert to PDF</button>
+            <input type="file" name="excel_file" required class="btn btn-primary btn-lg"><br>
+            <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert'%} -> {% trans 'PDF'%} </button>
         </form>
-
     </div>
- {% endcomment %}
+
+    <div class="container-fluid mt-3 text-start">
+      {% if tool_attachment %} 
+        <div class="card-body bg-body fs-5 p-5">
+            {{tool_attachment.body|markdown}}
+        </div>       
+        <br>
+      {% endif %}
+    </div>
+    
+  </div>
 {% endblock %}  

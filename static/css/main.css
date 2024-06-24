@@ -189,8 +189,8 @@ label.btn.btn-custom {
     background-color: #fa573c;
     border-color: #fa573c;
     color: #fff;
-    margin: 0px 0px 12px;
-    padding: 24px 32px;
+    margin: 0px 0px 8px;
+    padding: 18px 26px;
 }
 
 /* .btn-custom:hover {
@@ -293,4 +293,28 @@ div[style="padding-bottom:10px; text-align:center"] button {
 
 html {
   scroll-behavior: smooth;
+}
+
+.form-control {
+  max-width: 80%;
+  margin: 0 auto;
+}
+
+h1, h2 {
+  font-family: 'Poppins', sans-serif;
+}
+
+.container-fluid {
+  background-color: #f8f9fa;
+  padding-top: 10px;
+  padding-bottom: 2-0juhjuu0px;
+}
+
+button {
+  margin-top: 20px;
+}
+
+
+.bg-red {
+  background-color: #f8f9fa;
 }

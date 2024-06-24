@@ -2,15 +2,15 @@
 {% load i18n %}
 {% load l10n %}
 {% load static %}
+{% load blog_tags %}
 
 {% block content %}
-    <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
+    <div class="container-fluid poppins-regular text-center pt-5 mt-3" >
       <h1>{% trans 'p2img_title' %}</h1>
       <hr><br>
       <h2>{% trans 'p2img_subtitle' %}</h2>
-      <br>
       <div class="container" >
-        <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="{% url 'tools:pdf_to_image' %}">
+        <form class="form-control align-items-center p-5 mt-2" method="post" enctype="multipart/form-data" action="{% url 'tools:pdf_to_image' %}">
           {% csrf_token %}
           <label for="pdf_file" class="btn btn-custom btn-lg">
             <span id="file-label"><h2>{% trans 'Upload' %} PDF File</h2></span>
@@ -25,7 +25,17 @@
             var fileName = input.files[0].name;
             document.getElementById('file-label').innerText = fileName;
         }
-    </script>  
+      </script>  
     </div>
+
+    <div class="container-fluid mt-3 text-start">
+      {% if tool_attachment %} 
+      <div class="card-body bg-body fs-5 p-5">
+          {{tool_attachment.body|markdown}}
+      </div>       
+      <br>
+      {% endif %}
+  </div> 
+
 {% endblock %}  
 

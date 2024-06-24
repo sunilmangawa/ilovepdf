@@ -22,16 +22,15 @@
             cursor: move; /* Indicate it's draggable */
         }
     </style>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <!--<meta name="viewport" content="width=device-width, initial-scale=1">-->
 
 {% endblock %}
 
 {% block content %}
-    <div class="container-fluid poppins-regular text-center pt-5 mt-5">
+    <div class="container-fluid poppins-regular text-center pt-2 mt-3">
         <h1 class="roboto-bold">{% trans 'mrg2pdf_title' %}</h1>
         <hr><br>
         <h2>{% trans 'mrg2pdf_subtitle' %}</h2>
-        <br>
         <div class="container">
             <form id="upload-form" class="form-control align-items-center p-5 mt-5" action="/tools/merge-pdf/" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
@@ -45,34 +44,6 @@
                 <button type="submit" class="btn btn-danger btn-lg">{% trans 'mrg2pdf_btn' %} </button>
             </form>
         </div>
-        {% comment %} <script>
-            document.getElementById('add-file-btn').addEventListener('click', function() {
-                var fileInputs = document.getElementById('file-inputs');
-                var lastInputId = fileInputs.children.length;
-                var newInputId = 'input-' + lastInputId;
-                var newInputNumber = lastInputId + 1;
-
-                var newInputDiv = document.createElement('div');
-                newInputDiv.id = newInputId;
-                newInputDiv.classList.add('file-input');
-
-                var label = document.createElement('label');
-                label.textContent = 'PDF No. ' + newInputNumber;
-                label.setAttribute('for', 'pdf_file_' + newInputNumber);
-
-                var inputFile = document.createElement('input');
-                inputFile.type = 'file';
-                inputFile.name = 'pdf_files';
-                inputFile.id = 'pdf_file_' + newInputNumber;
-                inputFile.accept = 'application/pdf';
-                inputFile.required = true;
-
-                newInputDiv.appendChild(label);
-                newInputDiv.appendChild(inputFile);
-                fileInputs.appendChild(newInputDiv);
-
-            });
-        </script> {% endcomment %}
         <script>
             document.getElementById('add-file-btn').addEventListener('click', function() {
                 var fileInputs = document.getElementById('file-inputs');
@@ -105,11 +76,15 @@
 
 
     </div>
+
     <div class="container-fluid mt-3 text-start">
-        <div class="card-body bg-body fs-5 text p-5">
+        {% if tool_attachment %} 
+        <div class="card-body bg-body fs-5 p-5">
             {{tool_attachment.body|markdown}}
-        </div>
-    </div>
+        </div>       
+        <br>
+        {% endif %}
+    </div> 
 
     <!-- <script src="{% static 'js/merge_pdf.js' %}"></script> -->
 {% endblock %}

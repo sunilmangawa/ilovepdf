@@ -2,14 +2,16 @@
 {% load static %}
 {% load i18n %}
 {% load l10n %}
+{% load blog_tags %}
+
 {% block content %}
-    <div class="ccontainer-fluid poppins-regular text-center pt-5 mt-5" >
+    <div class="ccontainer-fluid poppins-regular text-center pt-3 mt-3" >
         <h1>{% trans 'p2w_title' %}</h1>
         <hr><br>
         <h2>{% trans 'p2w_subtitle' %} </h2>
         <br>
         <div class="container text-center" >
-            <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="/tools/pdf-to-word/">
+            <form class="form-control  align-items-center p-5 mt-2" method="post" enctype="multipart/form-data" action="/tools/pdf-to-word/">
                 {% csrf_token %}
                 {% comment %} <input class="form-control-lg  form-control-color"  value="#e5322d" type="file" name="pdf_file" accept=".pdf" required> {% endcomment %}
                 <label for="pdf_file" class="btn btn-custom btn-lg">
@@ -27,5 +29,15 @@
             }
         </script>
     </div>
+
+    <div class="container-fluid mt-3 text-start">
+        {% if tool_attachment %} 
+          <div class="card-body bg-body fs-5 p-5">
+              {{tool_attachment.body|markdown}}
+          </div>       
+          <br>
+        {% endif %}
+      </div> 
+    
 {% endblock %}  
 

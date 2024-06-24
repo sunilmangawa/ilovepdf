@@ -4,15 +4,14 @@
 {% load blog_tags %}
 
 {% block content %}
-    <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
-      <h1>{%trans 'h2p_title' %}</h1>
-
-      <hr><br>
+  <div class="container-fluid poppins-regular text-center pt-3 mt-2" >
+    <h1>{%trans 'h2p_title' %}</h1>
+    <hr><br>
     <div class="container text-center">
       <h2>{%trans 'h2p_subtitle' %}</h2>
       {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
 
-      <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data">
+      <form class="form-control align-items-center p-2 mt-1" method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <label for="url"  class="btn btn-success btn-md">
           <span id=""><h3>{% trans 'h2p_url' %}:</h3></span>
@@ -23,12 +22,22 @@
           <span id="file-label">
             <h3>{%trans 'Upload' %} HTML file:</h3>
           </span>
-          <input class="btn btn-primary btn-lg" id="html_file" type="file" name="html_file">
+          <input class="btn btn-primary btn-md" id="html_file" type="file" name="html_file">
         </label>
         <br><p>{%trans 'h2p_rest' %}<br><hr>
         <input class="btn btn-danger btn-lg"type="submit" value="Convert">
       </form>
 
     </div>
+
+    <div class="container-fluid mt-3 text-start">
+      {% if tool_attachment %} 
+        <div class="card-body bg-body fs-5 p-5">
+            {{tool_attachment.body|markdown}}
+        </div>       
+        <br>
+      {% endif %}
+    </div> 
+       
   </div>
 {% endblock %}  

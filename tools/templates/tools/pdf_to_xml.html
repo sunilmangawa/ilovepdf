@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title%} {% trans 'pdf2xml_title' %}{% endblock %}
+
+{% block content %}
+  <div class="container-fluid poppins-regular text-center bg-body-secondary pt-5" >
+    <h1 class="roboto-bold"> {% trans 'pdf2xml_title' %}</h1>
+    <hr><br>
+    <div class="container">
+      <h2 class="roboto-bold">{% trans 'pdf2xml_subtitle' %}</h2>
+      <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-5 mt-5">
+          {% csrf_token %}
+          {{form}}<br>
+          <button type="submit" class="btn btn-danger btn-lg"">{% trans 'Convert' %} -> XML</button>
+      </form>
+    </div>
+  </div> 
+
+  <div class="container-fluid mt-3 text-start">
+    {% if tool_attachment %} 
+      <div class="card-body bg-body fs-5 p-5">
+          {{tool_attachment.body|markdown}}
+      </div>       
+      <br>
+    {% endif %}
+  </div> 
+
+{% endblock %}  

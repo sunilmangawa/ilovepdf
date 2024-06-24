@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Convert RAW to PDF</title>
+</head>
+<body>
+    <h1>Convert RAW Image to PDF</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="raw_image">Upload RAW Image:</label>
+        <input type="file" id="raw_image" name="raw_image" accept=".raw">
+        <button type="submit">Convert to PDF</button>
+    </form>
+</body>
+</html>

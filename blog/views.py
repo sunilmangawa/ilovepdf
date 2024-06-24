@@ -22,12 +22,13 @@ from taggit.models import Tag
 
 from .forms import CommentForm
 
-from .models import Post, Comment
+from .models import Post, Comment, PublishedManager
 
 
 def post_list(request, tag_slug=None):
     # post_list = Post.published.all().prefetch_related('translations')
-    post_list = Post.published.all()
+    post_list = Post.published.all() #working
+
     tag = None
     if tag_slug:
         tag = get_object_or_404(Tag, slug=tag_slug)

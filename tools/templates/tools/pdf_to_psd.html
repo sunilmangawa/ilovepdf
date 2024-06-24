@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>PDF to PSD</title>
+</head>
+<body>
+    <h1>Convert PDF to PSD</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="pdf_file">Select PDF file:</label>
+        <input type="file" id="pdf_file" name="pdf_file" required>
+        <button type="submit">Convert</button>
+    </form>
+
+    {% if layers_info %}
+        <h2>Layers Information</h2>
+        <ul>
+            {% for layer in layers_info %}
+                <li>
+                    <strong>Name:</strong> {{ layer.name }} <br>
+                    <strong>Visible:</strong> {{ layer.visible }} <br>
+                    <strong>Opacity:</strong> {{ layer.opacity }} <br>
+                    <strong>Blend Mode:</strong> {{ layer.blend_mode }}
+                </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</body>
+</html>
+
+
+
+<!--
+<html>
+<head>
+    <title>Convert PDF to PSD</title>
+</head>
+<body>
+    <h1>Convert PDF to PSD</h1>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <label for="pdf_file">Select PDF file:</label>
+        <input type="file" id="pdf_file" name="pdf_file" accept="application/pdf" required>
+        <br><br>
+        <button type="submit">Convert to PSD</button>
+    </form>
+</body>
+</html>
+-->

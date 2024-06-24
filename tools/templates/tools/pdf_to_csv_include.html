@@ -1,0 +1,23 @@
+{% extends 'base2.html' %}
+{% load i18n %}
+
+{% load static %}
+
+
+{% block content %}
+  <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
+    <h1>{% trans 'p2csv_title' %}</h1>
+    <hr>
+    <div class="container">
+      <h2>{% trans 'p2csv_subtitle' %}</h2>
+      {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
+      <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-5 mt-5">
+          {% csrf_token %}
+          <input type="file" name="pdf_file" class="btn btn-primary btn-lg" accept=".pdf" required><br>
+          <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} to CSV</button>
+      </form>
+
+    </div>
+  </div>
+
+{% endblock %}  

@@ -35,6 +35,7 @@ class Category(models.Model):
 #         word = word.strip()
 #         if not word:
 #             raise ValidationError('Enter at least one keyword.')
+
 # Create your models here.
 def validate_comma_separated_words(value):
     words = [word.strip() for word in value.split(',') if word.strip()]
@@ -49,7 +50,11 @@ def image_upload_path(instance, filename):
 class PublishedManager(TranslatableQuerySet):
 # class PublishedManager(models.Manager,TranslatableQuerySet):
     def get_queryset(self):
-        return super().get_queryset().filter(status=Post.Status.PUBLISHED).select_related('translations')
+        return super().get_queryset().filter(status=Post.Status.PUBLISHED).select_related('translations')#WORKING
+        # return super().get_queryset().filter(status=Post.Status__exact=='PB').select_related('translations')
+
+
+
 
 class Post(ModelMeta,TranslatableModel):
 

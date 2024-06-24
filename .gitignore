@@ -8,13 +8,37 @@ db.sqlite3
 
 # Static files (usually collected with `python manage.py collectstatic`)
 staticfiles/
-
+pdfsizeopt/
+.vscode/
+.idea/
 # Media files (usually uploaded by users)
 
 # Virtual environment
 ilvenv/
 
+
+__pycache__
 #pyc files
+*.cpython
 *.pyc
 *.cpy
 *Zone.Identifier
+
+
+#Document files
+*.pdf
+*.doc
+*.docx
+*.xls
+*.xlsx
+
+
+LC_MESSAGES/
+*.po
+*.mo
+django.po
+django.mo
+
+
+PDF_to_JSON.json
+uploaded_json.json
