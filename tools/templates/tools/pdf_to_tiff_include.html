@@ -3,30 +3,31 @@
 {% load static %}
 {% load blog_tags %}
 
-{% block title%} {% trans 'pdf2tiff_title' %} {% endblock %}
+{% block title%} {% trans 'PDF' %} {% trans 'To' %} {% trans 'TIFF' %} {% endblock %}
 
 {% block content %}
     <div class="container-fluid poppins-regular text-center bg-body-secondary pt-5" >
-    <h1 class="roboto-bold"> {% trans 'pdf2tiff_title' %}</h1>
+    <h1 class="roboto-bold"> {% trans 'PDF' %} {% trans 'To' %} {% trans 'TIFF' %}</h1>
     <hr>
         <div class="container">
             <h2>{% trans 'pdf2tiff_subtitle' %}</h2>
             <!-- <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> -->
-            <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-5 mt-5" action="">
+            <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-3 mt-3" action="">
                 {% csrf_token %}
                 <label for="pdf_file">{% trans 'Upload' %} {% trans 'PDF' %} {% trans 'File' %}:</label>
-                <input type="file" id="pdf_file" name="pdf_file" accept=".pdf" class="btn btn-primary btn-lg" required><br><br>
-                <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} -> TIFF</button>
+                <input type="file" id="pdf_file" name="pdf_file" accept=".pdf" class="form-control btn btn-primary btn-md" required><br><br>
+                <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} -> {% trans 'TIFF' %}</button>
             </form>
 
             {% if tiff_url %}
-                <h2>Conversion Successful!</h2>
-                <p>{% trans 'Download' %}  your TIFF:</p>
+                <h2>Conversion Successful!</h2><br>
+                <!--<p>{% trans 'Download' %}  your {% trans 'TIFF' %}:</p>-->
                 <button type="submit" class="btn btn-danger btn-lg">
-                    <a href="{{ tiff_url }}" target="_blank" style="color: inherit; text-decoration: none;">{% trans 'Download' %} TIFF</a></p>
+                    <a href="{{ tiff_url }}" target="_blank" style="color: inherit; text-decoration: none;">{% trans 'Download' %} {% trans 'TIFF' %}</a></p>
                 </button>
             {% endif %}
         </div>
     </div>
-  {% endblock %}  
+
+{% endblock %}  
   

@@ -11,14 +11,17 @@
         display: none;
     }
 </style>
+
+{% block title%} {% trans 'PDF' %} {% trans 'To' %} {% trans 'WORD' %} {% endblock %}
+
 {% block content %}
     <div class="container-fluid poppins-regular text-center pt-3 mt-3" >
-        <p class="roboto-bold text-uppercase fs-1">{% trans 'p2w_title' %}</p>
+        <p class="roboto-bold text-uppercase fs-1">{% trans 'PDF' %} {% trans 'To' %} {% trans 'WORD' %}</p>
         <hr><br>
         <p class="roboto-bold text-uppercase fs-2">{% trans 'p2w_subtitle' %}</p>
         <br>
         <div class="container poppins-regular text-center" >
-            <form class="form-control align-items-center p-5 mt-2" method="post" enctype="multipart/form-data" action="/tools/pdf-to-word-file/" id="upload_form">
+            <form class="form-control align-items-center p-2 mt-2" method="post" enctype="multipart/form-data" action="/tools/pdf-to-word-file/" id="upload_form">
                 {% csrf_token %}
                 {% comment %} <input class="form-control-lg  form-control-color"  value="#e5322d" type="file" name="pdf_file" accept=".pdf" required> {% endcomment %}
                 <label for="pdf_file" class="btn btn-custom btn-lg">
@@ -26,64 +29,9 @@
                     <input id="pdf_file" class="visually-hidden" type="file" name="pdf_file" accept=".pdf" required onchange="updateFileName(this)">
                 </label>                
                 <br><p>{% trans 'p2w_rest' %}or Drop PDF here<br><br>
-                <button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert' %}</button>
+                <button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert' %} -> {% trans 'WORD' %}</button>
             </form>
         </div>
-
-        {% comment %} <div class="container not-visible progress" id="progress">
-        </div> {% endcomment %}
-        {% comment %} <script>
-            const uploadForm = document.getElementById('upload_form');
-            const input_file = document.getElementById('pdf_file');
-            const progress_bar = document.getElementById('progress');
-            
-            $("#upload_form").submit(function(e){
-                e.preventDefault();
-                $form = $(this)
-                var formData = new FormData(this);
-                const media_data = input_file.files[0];
-                if(media_data != null){
-                    console.log(media_data);
-                    progress_bar.classList.remove("not-visible");
-                }
-    
-                $.ajax({
-                    type: 'POST',
-                    url:'/',
-                    data: formData,
-                    dataType: 'json',
-                    beforeSend: function(){
-    
-                    },
-                    xhr:function(){
-                        const xhr = new window.XMLHttpRequest();
-                        xhr.upload.addEventListener('progress', e=>{
-                            if(e.lengthComputable){
-                                const percentProgress = (e.loaded/e.total)*100;
-                                console.log(percentProgress);
-                                progress_bar.innerHTML = `<div class="progress-bar progress-bar-striped bg-success" 
-                        role="progressbar" style="width: ${percentProgress}%" aria-valuenow="${percentProgress}" aria-valuemin="0" 
-                        aria-valuemax="100"></div>`
-                            }
-                        });
-                        return xhr
-                    },
-                    success: function(response){
-                        console.log(response);
-                        uploadForm.reset()
-                        progress_bar.classList.add('not-visible')
-                    },
-                    error: function(err){
-                        console.log(err);
-                    },
-                    cache: false,
-                    contentType: false,
-                    processData: false,
-                });
-            });
-    
-        </script>
- {% endcomment %}
 
         <script>
             function updateFileName(input) {

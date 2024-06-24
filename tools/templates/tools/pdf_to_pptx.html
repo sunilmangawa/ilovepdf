@@ -3,24 +3,24 @@
 {% load static %}
 {% load blog_tags %}
 
-{% block title%} {% trans 'pdf2ppt_title' %}Convert PDF to PowerPoint {% endblock %}
-
-
+{% block title%} {% trans 'PDF' %} {% trans 'To' %} {% trans 'POWERPOINT' %} {% endblock %}
 
 {% block content %}
   <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
-    <h1 class="roboto-bold"> {% trans 'pdf2ppt_title' %}</h1>
+    <h1 class="roboto-bold"> {% trans 'PDF' %} {% trans 'To' %} {% trans 'POWERPOINT' %}</h1>
 
     <hr>
-    {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
+    <div class="container">
+      <h2>{% trans 'pdf2ppt_subtitle' %}</h2>
 
-    <form class="form-control align-items-center p-5 mt-2" method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <label class ="text-start" for="ppt_file">Upload PDF file:</label><br>
-        <input class="btn btn-primary btn-lg" type="file" id="ppt_file" name="ppt_file" accept=".pdf" required>
-        <br>
-        <button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert' %}</button>
-    </form>
+      <form class="form-control align-items-center p-2 mt-2" method="post" enctype="multipart/form-data">
+          {% csrf_token %}
+          <label class ="text-start" for="ppt_file">{% trans 'Upload' %} {% trans 'PDF' %} {% trans 'File' %}:</label><br>
+          <input class="form-control btn btn-primary btn-md" type="file" id="ppt_file" name="ppt_file" accept=".pdf" required>
+          <br>
+          <button class="btn btn-danger btn-lg" type="submit"()">{% trans 'Convert' %} -> {% trans 'PDF' %}</button>
+      </form>
+    </div>
   </div>
 
 

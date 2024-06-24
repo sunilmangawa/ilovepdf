@@ -11,7 +11,6 @@ urlpatterns = [
     path('split-pdf/', views.split_pdf_view, name='split_pdf'),
     path('split-pdf-file/', views.split_pdf_include, name='split_pdf_include'),
 
-    # path('compress-pdf/', views.compress_pdf, name='compress_pdf'),
     path('compress-pdf/', views.compress_pdf_view, name='compress_pdf'),
     path('compress-pdf-file/', views.compress_pdf_include, name='compress_pdf_include'),
 
@@ -23,7 +22,6 @@ urlpatterns = [
     path('jpg-to-pdf-file/', views.image_to_pdf_include, name='image_to_pdf_include'),
     path('image-to-pdf-file/', views.image_to_pdf_include, name='image_to_pdf_include'),
 
-    # path('download/<int:pdf_id>/', views.download_pdf, name='download_pdf'),
     path('word-to-pdf/', views.word_to_pdf_view, name='word_to_pdf'),
     path('word-to-pdf-file/', views.word_to_pdf_include, name='word_to_pdf_include'),
 
@@ -45,7 +43,6 @@ urlpatterns = [
     path('pdf-to-word-file/', views.pdf_to_word_include, name='pdf_to_word_include'),
 
     # not working yet
-    path('pdf-to-powerpoint/', views.pdf_to_pptx_view, name='pdf_to_powerpoint'),
     path('pdf-to-pptx/', views.pdf_to_pptx_view, name='pdf_to_pptx'),
     path('pdf-to-pptx-file/', views.pdf_to_pptx_include, name='pdf_to_pptx_include'),
 
@@ -86,16 +83,18 @@ urlpatterns = [
     path('pdf-to-tiff/', views.pdf_to_tiff_view, name='pdf_to_tiff'),
     path('pdf-to-tiff-file/', views.pdf_to_tiff_include, name='pdf_to_tif_include'),
 
-    # Work pending
-    # path('pdf-to-psd/', views.pdf_to_psd, name='pdf_to_psd'),
-
-    # path('pdf-to-raw/', views.pdf_to_raw_view, name='pdf_to_raw'),
-    # path('raw-to-pdf/', views.raw_to_pdf_view, name='raw_to_pdf'),
     # Extra tools PDF and Others
     path('lorem-ipsum-generator/', views.lorem_ipsum_generator_view, name='lorem_ipsum_generator'),
     path('lorem-ipsum-generator-online/', views.lorem_ipsum_generator_include, name='lorem_ipsum_generator_include'),
 
     path('word-counter/', views.word_counter_text_view, name='word_counter_text'),
+    path('word-counter-tool/', views.word_counter_text_include, name='word_counter_text_include'),
+
+    # Work pending
+    # path('pdf-to-psd/', views.pdf_to_psd, name='pdf_to_psd'),
+
+    # path('pdf-to-raw/', views.pdf_to_raw_view, name='pdf_to_raw'),
+    # path('raw-to-pdf/', views.raw_to_pdf_view, name='raw_to_pdf'),
 
 ]
 

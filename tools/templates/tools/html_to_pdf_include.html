@@ -2,10 +2,11 @@
 {% load i18n %}
 {% load static %}
 
+{% block title%}{% trans 'HTML' %} {% trans 'To' %} {% trans 'PDF' %} {% endblock %}
 
 {% block content %}
     <div class="container text-center bg-body-secondary" >
-      <h1>{%trans 'h2p_title' %} </h1>
+      <h1>{% trans 'HTML' %} {% trans 'To' %} {% trans 'PDF' %} </h1>
 
       <hr><br>
     <div class="container poppins-regular text-center">
@@ -19,11 +20,11 @@
         </label>
         <input type="text" name="url" id="url" style="border-color: crimson; border-radius: 3%;"><br><br>
         <hr><h3 class="text-center">OR</h3><hr>
-        <label for="html_file"  class="btn btn-custom btn-md">
+        <label for="html_file">
           <span id="file-label">
-            <h3>{%trans 'Upload' %} HTML file:</h3>
+            <h3>{%trans 'Upload' %} {%trans 'HTML' %} {%trans 'File' %}:</h3>
           </span>
-          <input class="btn btn-primary btn-md" id="html_file" type="file" name="html_file">
+          <input class="form-control btn btn-primary btn-md" id="html_file" type="file" name="html_file">
         </label>
         <br><p>{%trans 'h2p_rest' %}<br><hr>
         <input class="btn btn-danger btn-lg"type="submit" value="Convert">

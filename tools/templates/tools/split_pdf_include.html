@@ -3,7 +3,7 @@
 {% load static %}
 {% load blog_tags %}
 
-{% block title%} {% trans 'split2pdf_title' %} {% endblock %}
+{% block title%} {% trans 'Split'%} {% trans 'PDF'%} {% endblock %}
 
 {% block extraheads %}
     <style>
@@ -23,7 +23,7 @@
 
 {% block content %}
   <div class="container poppins-regular text-center" >
-    <p class="roboto-bold text-uppercase fs-1">{% trans 'split2pdf_title' %}</p>
+    <p class="roboto-bold text-uppercase fs-1">{% trans 'Split'%} {% trans 'PDF'%}</p>
     <hr><br>
     <div class="container">
       <p class="roboto-bold text-uppercase fs-2">{% trans 'split2pdf_subtitle' %}</p><br>
@@ -32,10 +32,10 @@
         {% csrf_token %}  
         {% comment %} {{ form.as_p }} {% endcomment %}
         <label for="page_numbers"><p class="roboto-bold text-uppercase fs-3">{% trans 'split2pdf_eachpg' %}:</p></label><br>
-        <input type="file" name="file" accept=".pdf" required aria-label="Upload PDF to split (accepts single pages or ranges)">><br><br><p><b>OR</b></p>
+        <input type="file" name="file" class="form-control btn btn-primary btn-md" accept=".pdf" required aria-label="Upload PDF to split (accepts single pages or ranges)">><br><br><p><b>OR</b></p>
         <label for="page_numbers">{% trans 'split2pdf_onlypg' %}:</label><br>
-        <input type="text" id="page_numbers" name="page_numbers" placeholder="1,2,3 OR 1-3 "><br><br>
-        <button type="submit" class="btn btn-danger btn-lg">{% trans 'split2pdf_btn' %}</button>
+        <input type="text" id="page_numbers" class="btn btn-outline-info" name="page_numbers" placeholder="1,2,3 OR 1-3 "><br><br>
+        <button type="submit" class="btn btn-danger btn-lg">{% trans 'Split'%} {% trans 'PDF'%}</button>
       </form>
       
       {% if output_files %}

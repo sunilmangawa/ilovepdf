@@ -4,18 +4,19 @@
 
 {% load static %}
 
+{% block title%} {% trans 'PDF' %} {% trans 'To' %} {% trans 'EXCEL' %} ({% trans 'XLSX' %}) {% endblock %}
 
 {% block content %}
   <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
-    <h1>{% trans 'p2xl_title' %}</h1>
+    <h1>{% trans 'PDF' %} {% trans 'To' %} {% trans 'EXCEL' %} ({% trans 'XLSX' %})</h1>
     <hr>
     <div class="container">
       <h2>{% trans 'p2xl_subtitle' %}</h2>
       {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
-      <form method="post" enctype="multipart/form-data" action="/tools/pdf-to-excel/" class="form-control align-items-center p-5 mt-5">
+      <form method="post" enctype="multipart/form-data" action="/tools/pdf-to-excel/" class="form-control align-items-center p-3 mt-3">
           {% csrf_token %}
-          <input type="file" name="pdf_file" class="btn btn-primary btn-lg" required><br>
-          <button type="submit" class="btn btn-danger btn-lg">Convert to Excel</button>
+          <input type="file" name="pdf_file" class="form-control btn btn-primary btn-md" required><br>
+          <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} {% trans 'To' %} {% trans 'EXCEL' %} ({% trans 'XLSX' %})</button>
       </form>
 
     </div>

@@ -1,33 +1,35 @@
 {% extends 'base2.html' %}
 {% load i18n %}
+
 {% load static %}
+{% load blog_tags %}
 
-
-{% comment %} {% block title%} Word to PDF Converter {% endblock %} {% endcomment %}
+{% block title%} {% trans 'WORD' %} {% trans 'To' %} {% trans 'PDF' %} {% endblock %}
 
 {% block content %}
-<div class="container poppins-regular text-center">
-    <p class="roboto-bold text-uppercase fs-1">{% trans 'w2ptitle' %}</p>
+<div class="container-fluid poppins-regular text-center pt-5 mt-5">
+    <h1 class="roboto-bold">{% trans 'WORD' %} {% trans 'To' %} {% trans 'PDF' %}</h1>
     <hr><br>
-    <p class="roboto-bold text-uppercase fs-2">{% trans 'w2psubtitle' %}</p>
+    <h2>{% trans 'w2psubtitle' %}</h2>
     <br>
     <div class="container">
-        <form id="word-to-pdf-form" class="form-control align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="{% url 'tools:word_to_pdf_include' %}">
+        <form id="word-to-pdf-form" class="form-control align-items-center p-3 mt-2" method="post" enctype="multipart/form-data">
             {% csrf_token %}
-            <label for="word_file" class="btn btn-primary btn-lg">
-                <span id="file-label"><b>{% trans 'Upload' %} WORD File</b></span>
-                <input id="word_file" class="visually-hidden" type="file" name="word_file" accept=".docx,.doc,.txt" required onchange="updateFileName(this)">
+            <label for="word_file">
+                <span id="file-label"><b>{% trans 'Upload' %} {% trans 'WORD' %} {% trans 'File' %}</b></span>
             </label>
-            <br><p>{% trans 'w2prest' %}<br><br>
-            <button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert' %}</button>
+            <input id="word_file" class="form-control btn btn-primary btn-md" type="file" name="word_file" accept=".docx,.doc,.txt" required onchange="updateFileName(this)">
+            <br>
+            <p>{% trans 'w2prest' %}<br><br>
+            <button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert' %} -> {% trans 'PDF' %}</button>
         </form>
     </div>
-    <div class="container">
+    <div class="container-fluid mt-3 text-start">
         {% if tool_attachment %} 
-        <div class="tool-body">
-             {{ tool_attachment.body|safe }} 
-        </div>
-       <br>
+            <div class="card-body bg-body fs-5 p-5">
+                {{tool_attachment.body|markdown}}
+            </div>       
+            <br>
         {% endif %}
     </div>
 </div>
@@ -35,7 +37,6 @@
 <script>
     function updateFileName(input) {
         var fileName = input.files[0].name;
-        document.getElementById('file-label').innerText = fileName;
     }
 
     document.getElementById('convert-btn').addEventListener('click', function() {

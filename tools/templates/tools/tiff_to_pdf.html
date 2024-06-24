@@ -3,19 +3,19 @@
 {% load static %}
 {% load blog_tags %}
 
-{% block title%} {% trans 'tiff2pdf_title' %} TIFF to PDF Converter{% endblock %}
+{% block title%} {% trans 'TIFF' %} {% trans 'To' %} {% trans 'PDF' %} {% endblock %}
 
 {% block content %}
-    <div class="container-fluid poppins-regular text-center bg-body-secondary pt-5 pb-5" >
-        <h1 class="roboto-bold"> {% trans 'tiff2pdf_title' %}</h1>
+    <div class="container-fluid poppins-regular text-center bg-body-secondary pt-3 pb-3" >
+        <h1 class="roboto-bold"> {% trans 'TIFF' %} {% trans 'To' %} {% trans 'PDF' %} {% trans 'Converter' %} </h1>
         <hr>
         <div class="container">
             <h2>{% trans 'tiff2pdf_subtitle' %}</h2>
-            <form action="/tools/tiff-to-pdf/" method="post" enctype="multipart/form-data" class="form-control align-items-center p-5 mt-5 mb-5">
+            <form action="/tools/tiff-to-pdf/" method="post" enctype="multipart/form-data" class="form-control align-items-center p-3 mt-3 mb-3">
                 {% csrf_token %}
-                <label for="tiff_file"><h3>{% trans 'Upload' %} TIFF {% trans 'File' %}:</h3></label>
-                <input type="file" id="tiff_file" name="tiff_file" accept=".tiff,.tif" class="btn btn-primary btn-lg" required><br>
-                <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} {% trans 'PDF' %}</button><br>
+                <label for="tiff_file"><h3>{% trans 'Upload' %} {% trans 'TIFF' %} {% trans 'File' %}:</h3></label>
+                <input type="file" id="tiff_file" name="tiff_file" accept=".tiff,.tif" class="form-control btn btn-primary btn-md" required><br>
+                <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} -> {% trans 'PDF' %}</button><br>
             </form>
 
             {% if pdf_url %}
@@ -28,4 +28,15 @@
             {% endif %}
         </div>
     </div>
+
+    <div class="container-fluid mt-3 text-start">
+        {% if tool_attachment %} 
+            <div class="card-body bg-body fs-5 p-5">
+                {{tool_attachment.body|markdown}}
+            </div>       
+        <br>
+        {% endif %}
+    </div>
+
+
 {% endblock %}  

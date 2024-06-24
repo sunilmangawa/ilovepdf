@@ -4,26 +4,28 @@
 {% load static %}
 {% load blog_tags %}
 
-{% block title%} {% trans 'w2ptitle' %} {% endblock %}
+{% block title%} {% trans 'WORD' %} {% trans 'To' %} {% trans 'PDF' %} {% endblock %}
 
 {% block content %}
-<div class="container-fluid poppins-regular text-center pt-5 mt-5">
-    <h1 class="roboto-bold">{% trans 'w2ptitle' %}</h1>
-    <hr><br>
-    <h2>{% trans 'w2psubtitle' %}</h2>
-    <br>
-    <div class="container">
-        <form id="word-to-pdf-form" class="form-control align-items-center p-3 mt-2" method="post" enctype="multipart/form-data">
-            {% csrf_token %}
-            <label for="word_file" class="btn btn-custom btn-lg">
-                <span id="file-label"><b>{% trans 'Upload' %} Word File</b></span>
-                <input id="word_file" class="btn btn-primary btn-lg" type="file" name="word_file" accept=".docx,.doc,.txt" required onchange="updateFileName(this)">
-                <!-- <input id="word_file" class="visually-hidden" type="file" name="word_file" accept=".docx,.doc,.txt" required onchange="updateFileName(this)"> -->
-            </label>
-            <br><p>{% trans 'w2prest' %}<br><br>
-            <button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert' %}</button>
-        </form>
+    <div class="container-fluid poppins-regular text-center pt-5 mt-5">
+        <h1 class="roboto-bold">{% trans 'WORD' %} {% trans 'To' %} {% trans 'PDF' %}</h1>
+        <hr><br>
+        <h2>{% trans 'w2psubtitle' %}</h2>
+        <br>
+        <div class="container">
+            <form id="word-to-pdf-form" class="form-control align-items-center p-3 mt-2" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <label for="word_file">
+                    <span id="file-label"><b>{% trans 'Upload' %} {% trans 'WORD' %} {% trans 'File' %}</b></span>
+                </label>
+                <input id="word_file" class="form-control btn btn-primary btn-md" type="file" name="word_file" accept=".docx,.doc,.txt" required onchange="updateFileName(this)">
+                <!-- <input id="word_file" class="visually-hidden" type="file" name="word_file" accept=".docx,.doc,.txt" required onchange="updateFileName(this)"> -->            
+                <br><p>{% trans 'w2prest' %}<br><br>
+                <button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert' %} -> {% trans 'PDF' %}</button>
+            </form>
+        </div>
     </div>
+
     <div class="container-fluid mt-3 text-start">
         {% if tool_attachment %} 
             <div class="card-body bg-body fs-5 p-5">
@@ -32,33 +34,33 @@
             <br>
         {% endif %}
     </div>
-</div>
 
-<script>
-    function updateFileName(input) {
-        var fileName = input.files[0].name;
-    }
 
-    document.getElementById('convert-btn').addEventListener('click', function() {
-        var form = document.getElementById('word-to-pdf-form');
-        var formData = new FormData(form);
-        var xhr = new XMLHttpRequest();
-        xhr.open('POST', form.action);
-        xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
-        xhr.responseType = 'blob';
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                var blob = new Blob([xhr.response], { type: 'application/pdf' });
-                var url = window.URL.createObjectURL(blob);
-                var a = document.createElement('a');
-                a.href = url;
-                a.download = 'converted.pdf';
-                document.body.appendChild(a);
-                a.click();
-                window.URL.revokeObjectURL(url);
-            }
-        };
-        xhr.send(formData);
-    });
-</script>
+    <script>
+        function updateFileName(input) {
+            var fileName = input.files[0].name;
+        }
+
+        document.getElementById('convert-btn').addEventListener('click', function() {
+            var form = document.getElementById('word-to-pdf-form');
+            var formData = new FormData(form);
+            var xhr = new XMLHttpRequest();
+            xhr.open('POST', form.action);
+            xhr.setRequestHeader('X-CSRFToken', '{{ csrf_token }}');
+            xhr.responseType = 'blob';
+            xhr.onload = function() {
+                if (xhr.status === 200) {
+                    var blob = new Blob([xhr.response], { type: 'application/pdf' });
+                    var url = window.URL.createObjectURL(blob);
+                    var a = document.createElement('a');
+                    a.href = url;
+                    a.download = 'converted.pdf';
+                    document.body.appendChild(a);
+                    a.click();
+                    window.URL.revokeObjectURL(url);
+                }
+            };
+            xhr.send(formData);
+        });
+    </script>
 {% endblock %}

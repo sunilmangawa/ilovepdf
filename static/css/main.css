@@ -183,7 +183,13 @@
 }
   
 
-
+.dropdown-scroll{
+  max-height: 200px;
+  /* overflow-y: scroll; */
+  /* overflow: hidden; */
+  overflow-y: auto;
+  /* max-height: calc(100vh - 150px); */
+}
 
 label.btn.btn-custom {
     background-color: #fa573c;

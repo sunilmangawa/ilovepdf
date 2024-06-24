@@ -1,22 +1,25 @@
 {% extends 'base2.html' %}
 {% load i18n %}
 {% load l10n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title%} {% trans 'PDF' %} {% trans 'To' %} {% trans 'Image' %} ({% trans 'JPG' %}|{% trans 'JPEG' %}|{% trans 'PNG' %}) {% endblock %}
 
 {% block content %}
-    <div class="container poppins-regular text-center" >
-      <p class="roboto-bold text-uppercase fs-1">{% trans 'p2img_title' %}</p>
+    <div class="container-fluid poppins-regular text-center pt-5 mt-3" >
+      <h1>{% trans 'PDF' %} {% trans 'To' %} {% trans 'Image' %} ({% trans 'JPG' %}|{% trans 'JPEG' %}|{% trans 'PNG' %})</h1>
       <hr><br>
-      <p class="roboto-bold text-uppercase fs-2">{% trans 'p2img_subtitle' %}</p>
-      <br>
-      <div class="container text-center" >
-        <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="/tools/pdf-to-jpg-file/">
+      <h2>{% trans 'p2img_subtitle' %}</h2>
+      <div class="container" >
+        <form class="form-control align-items-center p-2 mt-2" id="pdfForm" onsubmit="handleFormSubmit(event)" method="post" enctype="multipart/form-data" action="{% url 'tools:pdf_to_image' %}">
           {% csrf_token %}
           <label for="pdf_file" class="btn btn-custom btn-lg">
-            <span id="file-label" class="roboto-bold text-uppercase fs-1">{% trans 'Upload' %} PDF File</span>
+            <span id="file-label"><h2>{% trans 'Upload' %} {% trans 'PDF' %} {% trans 'File' %} </h2></span>
             <input id="pdf_file" class="visually-hidden" type="file" name="pdf_file" accept=".pdf" required onchange="updateFileName(this)">
           </label>                
-          <br><p>{% trans 'p2img_rest' %}or Drop PDF here<br><br>
-          <button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert' %} to Image</button>
+          <br><p>{% trans 'p2img_rest' %}<br><br>
+          <button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert' %} -> {% trans 'Image' %}</button>
         </form>
       </div>
       <script>
@@ -24,7 +27,45 @@
             var fileName = input.files[0].name;
             document.getElementById('file-label').innerText = fileName;
         }
-    </script>  
+      </script>  
+
+      <script>
+        function downloadImages(imageUrls) {
+            imageUrls.forEach(url => {
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = '';
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            });
+        }
+
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            const formData = new FormData(event.target);
+            const response = await fetch('/tools/pdf-to-jpg/', {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await response.json();
+
+            if (data.image_urls) {
+                downloadImages(data.image_urls);
+            }
+        }
+    </script>
+
     </div>
+
+    <div class="container-fluid mt-3 text-start">
+      {% if tool_attachment %} 
+      <div class="card-body bg-body fs-5 p-5">
+          {{tool_attachment.body|markdown}}
+      </div>       
+      <br>
+      {% endif %}
+  </div> 
+
 {% endblock %}  
 

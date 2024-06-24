@@ -3,19 +3,20 @@
 {% load static %}
 {% load blog_tags %}
 
-{% block title%} {% trans 'pdf2xml_title' %}{% endblock %}
+{% block title%} {% trans 'PDF' %} {% trans 'To' %} {% trans 'XML' %}{% endblock %}
 
 {% block content %}
   <div class="container-fluid poppins-regular text-center bg-body-secondary pt-5" >
-    <h1 class="roboto-bold"> {% trans 'pdf2xml_title' %}</h1>
+    <h1 class="roboto-bold"> {% trans 'PDF' %} {% trans 'To' %} {% trans 'XML' %} </h1>
     <hr><br>
     <div class="container">
       <h2 class="roboto-bold">{% trans 'pdf2xml_subtitle' %}</h2>
-      <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-5 mt-5">
+      <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-3 mt-3">
           {% csrf_token %}
           {{form}}<br>
-          <button type="submit" class="btn btn-danger btn-lg"">{% trans 'Convert' %} -> XML</button>
+          <button type="submit" class="btn btn-danger btn-lg"">{% trans 'Convert' %} -> {% trans 'XML' %}</button>
       </form>
     </div>
   </div> 
+
 {% endblock %}  

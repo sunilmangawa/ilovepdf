@@ -12,10 +12,10 @@
     <hr>
     <div class="container">
       <h2>{% trans 'pp2p_subtitle' %}</h2>
-      <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-5 mt-5">
+      <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-3 mt-3">
         {% csrf_token %}
         <label for="ppt_file"><b>{% trans 'Upload' %} PowerPoint File : </b></label>
-        <input type="file" id="ppt_file" name="ppt_file" accept=".ppt, .pptx" required class="btn btn-primary btn-lg"><br>
+        <input type="file" id="ppt_file" class="form-control btn btn-primary btn-md" name="ppt_file" accept=".ppt, .pptx" required><br>
         <button type="submit" class="btn btn-danger btn-lg">Convert</button>
       </form>
 

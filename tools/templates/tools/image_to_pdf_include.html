@@ -1,21 +1,23 @@
 {% extends 'base2.html' %}
 {% load static %}
 
+{% block title%}{% trans 'Image' %} ({% trans 'JPG' %}|{% trans 'JPEG' %}|{% trans 'PNG' %}) {% trans 'To' %} {% trans 'PDF' %} {% endblock %}
 
 {% block content %}
   <div class="container poppins-regular text-center" >
-    <p class="roboto-bold text-uppercase fs-1"> Image to PDF Converter </p>
+    <p class="roboto-bold text-uppercase fs-1"> {% trans 'Image' %} ({% trans 'JPG' %}|{% trans 'JPEG' %}|{% trans 'PNG' %}) {% trans 'To' %} {% trans 'PDF' %} Converter </p>
     <hr><br>
     <div class="container bg-light ">
-      <p class="roboto-bold text-uppercase fs-2">Image to PDF Convereter Online Tool Page </p>
+      <p class="roboto-bold text-uppercase fs-2"> {% trans 'Image' %} ({% trans 'JPG' %}|{% trans 'JPEG' %}|{% trans 'PNG' %}) {% trans 'To' %} {% trans 'PDF' %} Convereter Online Tool Page </p>
         <div class="container text-center">
           <form method="post" enctype="multipart/form-data" action="{% url 'tools:image_to_pdf_include' %}">
-              {% csrf_token %}
-              <label for="image_file" class="btn btn-custom btn-md">
-                <span id="file-label" class="btn btn-primary btn-lg roboto-bold text-uppercase fs-5">Select Image File</span>        
-              <input id="image_file" type="file" name="images" accept="image/jpg, image/jpeg, image/png" multiple required>
-            </label><br>
-          <button class="btn btn-danger btn-lg" type="submit">Convert</button><br><br><br>
+            {% csrf_token %}
+            <label for="image_file"> 
+              <span id="file-label"><h2>{% trans 'Upload' %} {% trans 'Image' %} {% trans 'File' %}</h2></span>    
+            </label>    
+            <input id="image_file" type="file" name="images" class="form-control btn btn-primary btn-md" accept="image/jpg, image/jpeg, image/png" multiple required>
+            <br>
+            <button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert' %} {% trans 'To' %} {% trans 'PDF' %}</button><br><br><br>
           </form>
 
     </div>

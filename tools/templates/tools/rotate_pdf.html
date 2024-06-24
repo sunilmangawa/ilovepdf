@@ -3,57 +3,30 @@
 {% load static %}
 {% load blog_tags %}
 
-{% block title%} {% trans 'rotatepdf_title' %}{% endblock %}
+{% block title%} {% trans 'Rotate'%} {% trans 'PDF' %}{% endblock %}
 
 {% block content %}
-<div class="container-fluid poppins-regular text-center pt-5 mt-5" >
-  <h1> {% trans 'rotatepdf_title' %}</h1>
-  <hr>
-  <div class="container">
-    <h2>{% trans 'rotatepdf_subtitle' %}</h2>
+  <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
+    <h1> {% trans 'Rotate'%} {% trans 'PDF' %}</h1>
+    <hr>
+    <div class="container">
+      <h2>{% trans 'rotatepdf_subtitle' %}</h2>
 
-    <form method="post" enctype="multipart/form-data">
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit" class="btn btn-danger btn-lg">Rotate</button>
-    </form>
+      <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        {{ form.as_p }}
+        <button type="submit" class="btn btn-danger btn-lg">{% trans 'Rotate'%} {% trans 'PDF' %}</button>
+      </form>
+    </div>
   </div>
+
   <div class="container-fluid mt-3 text-start">
     {% if tool_attachment %} 
     <div class="card-body bg-body fs-5 p-5">
         {{tool_attachment.body|markdown}}
     </div>       
-   <br>
+  <br>
     {% endif %}
-</div>
-
-</div>
+  </div>
 
 {% endblock %}  
-
-<!--
-{% comment %} {% extends 'base.html' %}
-{% load i18n %}
-{% load static %}
-{% load blog_tags %}
-
-{% block title%} {% trans 'rotatepdf_title' %} Rotate PDF{% endblock %}
-
-
-{% block content %}
-<div class="container-fluid poppins-regular text-center pt-2 mt-3" >
-  <h1 class="roboto-bold"> {% trans 'rotatepdf_title' %} Rotate PDF</h1>
-  <hr>
-  <div class="container">
-    <h2>{% trans 'rotatepdf_subtitle' %} PDF Rotate tool, Now Rotate your PDF in just clicks</h2>
-
-    <form method="post" enctype="multipart/form-data"  class="form-control align-items-center p-5 mt-5" >
-      {% csrf_token %}
-      {{ form.as_p }}
-      <button type="submit" class="btn btn-danger btn-lg">Rotate</button>
-    </form>
-  </div>
-</div>
-
-{% endblock %}   {% endcomment %}
--->

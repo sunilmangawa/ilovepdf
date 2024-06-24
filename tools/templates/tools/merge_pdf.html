@@ -6,7 +6,7 @@
 {% load meta %}
 {% load pwa %} 
 
-{% block title%}{% trans 'mrg2pdf_title' %}{% endblock %}
+{% block title%}{% trans 'Merge'%} {% trans 'PDF'%}{% endblock %}
 
 
 {% block extraheads %}
@@ -28,16 +28,16 @@
 
 {% block content %}
     <div class="container-fluid poppins-regular text-center pt-2 mt-3">
-        <h1 class="roboto-bold">{% trans 'mrg2pdf_title' %}</h1>
+        <h1 class="roboto-bold">{% trans 'Merge'%} {% trans 'PDF'%} </h1>
         <hr><br>
         <h2>{% trans 'mrg2pdf_subtitle' %}</h2>
         <div class="container">
-            <form id="upload-form" class="form-control align-items-center p-5 mt-5" action="/tools/merge-pdf/" method="post" enctype="multipart/form-data">
+            <form id="upload-form" class="form-control align-items-center p-3 mt-3" action="/tools/merge-pdf/" method="post" enctype="multipart/form-data">
                 {% csrf_token %}
                 <div id="file-inputs">
                     <div id="input-0" class="file-input">
-                        <label for="pdf_file_0"><b>PDF No. 1</b></label>
-                        <input type="file" class="btn btn-primary btn-lg" name="pdf_files" id="pdf_file_0" accept="application/pdf" required>
+                        <label for="pdf_file_0"><b>{% trans 'PDF'%} No. 1</b></label>
+                        <input type="file" class="form-control btn btn-primary btn-md" name="pdf_files" id="pdf_file_0" accept="application/pdf" required>
                     </div>
                 </div><br>
                 <button type="button" class="btn btn-info btn-lg" id="add-file-btn">{% trans 'mrg2pdf_addpdf' %}</button><br><br><hr>
@@ -65,7 +65,7 @@
                 inputFile.id = 'pdf_file_' + newInputNumber;
                 inputFile.accept = 'application/pdf';
                 inputFile.required = true;
-                inputFile.classList.add('btn', 'btn-primary', 'btn-lg', 'p-1', 'm-1');
+                inputFile.classList.add('form-control', 'btn', 'btn-primary', 'btn-md', 'p-1', 'm-1');
             
                 // Append the elements to the DOM
                 newInputDiv.appendChild(label);
