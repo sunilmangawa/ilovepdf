@@ -1,0 +1,38 @@
+{% extends 'base2.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title%} {% trans 'Convert' %} {% trans 'ODT' %} {% trans 'To' %} {% trans 'PDF' %} {% endblock %}
+
+{% block extraheads %}
+    <link rel="canonical" href="https://ilovepdfconverteronlne.com/tools/odp-to-pdf" />
+{% endblock %}
+
+
+{% block content %}
+  <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
+    <h1>{% trans 'Convert' %} {% trans 'ODT' %} {% trans 'To' %} {% trans 'PDF' %} </h1>
+    <hr>
+    <div class="container">
+      <h2>{% trans 'ODT2PDF_subtitle' %}</h2>
+      <form action="/tools/odt-to-pdf/" method="post" enctype="multipart/form-data" class="form-control align-items-center p-3 mt-3">
+        {% csrf_token %}
+        <label for="odp_file">{% trans 'Upload' %} {% trans 'ODT' %} {% trans 'File' %}:</label>
+        <input type="file" name="odt_file" id="odt_file" class="form-control btn btn-primary btn-md" accept=".odt" required>
+        <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} {% trans 'To' %} {% trans 'PDF' %}</button>
+    </form>
+    </div>
+  </div>
+
+  <div class="container-fluid mt-3 text-start">
+    {% if tool_attachment %} 
+        <div class="card-body bg-body fs-5 p-5">
+            {{tool_attachment.body|markdown}}
+        </div>       
+        <br>
+    {% endif %}
+</div> 
+
+{% endblock %}  
+

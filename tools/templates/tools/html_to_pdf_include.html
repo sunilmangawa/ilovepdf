@@ -4,6 +4,11 @@
 
 {% block title%}{% trans 'HTML' %} {% trans 'To' %} {% trans 'PDF' %} {% endblock %}
 
+{% block extraheads %}
+    <link rel="canonical" href="https://ilovepdfconverteronlne.com/tools/html-to-pdf" />
+{% endblock %}
+
+
 {% block content %}
     <div class="container text-center bg-body-secondary" >
       <h1>{% trans 'HTML' %} {% trans 'To' %} {% trans 'PDF' %} </h1>
@@ -24,7 +29,7 @@
           <span id="file-label">
             <h3>{%trans 'Upload' %} {%trans 'HTML' %} {%trans 'File' %}:</h3>
           </span>
-          <input class="form-control btn btn-primary btn-md" id="html_file" type="file" name="html_file">
+          <input class="form-control btn btn-primary btn-md" id="html_file" type="file" accept=".html" name="html_file">
         </label>
         <br><p>{%trans 'h2p_rest' %}<br><hr>
         <input class="btn btn-danger btn-lg"type="submit" value="Convert">

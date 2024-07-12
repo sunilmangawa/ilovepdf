@@ -184,7 +184,7 @@
   
 
 .dropdown-scroll{
-  max-height: 200px;
+  max-height: 300px;
   /* overflow-y: scroll; */
   /* overflow: hidden; */
   overflow-y: auto;
@@ -323,4 +323,19 @@ button {
 
 .bg-red {
   background-color: #f8f9fa;
+}
+
+.card-text{
+  margin: 0;
+  text-align: justify;
+}
+.justify{
+  margin: 0;
+  text-align: justify;
+}
+
+.card-body img{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
 }

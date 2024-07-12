@@ -14,7 +14,7 @@
       {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
       <form method="post" enctype="multipart/form-data" action="/tools/pdf-to-excel/" class="form-control align-items-center p-3 mt-3">
           {% csrf_token %}
-          <input type="file" name="pdf_file"  class="form-control btn btn-primary btn-md" required><br>
+          <input type="file" name="pdf_file"  class="form-control btn btn-primary btn-md" accept=".pdf" required><br>
           <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} {% trans 'To' %} {% trans 'EXCEL' %} ({% trans 'XLSX' %})</button>
       </form>
 
@@ -23,7 +23,7 @@
 
   <div class="container-fluid mt-3 text-start">
     {% if tool_attachment %} 
-    <div class="card-body bg-body fs-5 p-5">
+    <div class="card-body bg-body justify fs-5 p-5">
         {{tool_attachment.body|markdown}}
     </div>       
     <br>

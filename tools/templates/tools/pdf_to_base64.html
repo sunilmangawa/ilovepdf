@@ -14,7 +14,7 @@
         <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-3 mt-3" >
             {% csrf_token %}
             <label for="pdf_file">{% trans 'Upload' %} a {% trans 'PDF' %} {% trans 'File' %}:</label><br>
-            <input type="file" id="pdf_file" name="pdf_file" class="form-control btn btn-primary btn-md"><br>
+            <input type="file" id="pdf_file" name="pdf_file" class="form-control btn btn-primary btn-md" accept=".pdf"><br>
             <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} -> {% trans 'Base64' %}</button>
         </form>
         {% if base64_string %}
@@ -26,7 +26,7 @@
 
   <div class="container-fluid mt-3 text-start">
     {% if tool_attachment %} 
-    <div class="card-body bg-body fs-5 p-5">
+    <div class="card-body bg-body justify fs-5 p-5">
         {{tool_attachment.body|markdown}}
     </div>       
     <br>

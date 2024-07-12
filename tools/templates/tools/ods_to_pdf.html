@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title%} {% trans 'Convert' %} {% trans 'ODS' %} {% trans 'To' %} {% trans 'PDF' %} {% endblock %}
+
+{% block content %}
+    <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
+    <h1>{% trans 'Convert' %} {% trans 'ODS' %} {% trans 'To' %} {% trans 'PDF' %} </h1>
+    <hr>
+    <div class="container">
+        <h2>{% trans 'ODS2PDF_subtitle' %}</h2>
+        <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-3 mt-3">
+        {% csrf_token %}
+        <label for="odp_file">{% trans 'Upload' %} {% trans 'ODS' %} {% trans 'File' %}:</label>
+        <input type="file" name="ods_file" id="ods_file" class="form-control btn btn-primary btn-md" accept=".ods" required>
+        <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} {% trans 'To' %} {% trans 'PDF' %}</button>
+    </form>
+    </div>
+    </div>
+
+    <div class="container-fluid mt-3 text-start">
+    {% if tool_attachment %} 
+    <div class="card-body bg-body justify fs-5 p-5">
+        {{tool_attachment.body|markdown}}
+    </div>       
+    <br>
+    {% endif %}
+</div> 
+
+{% endblock %}  
+

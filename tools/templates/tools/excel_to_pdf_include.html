@@ -5,6 +5,11 @@
 
 {% block title%}{% trans 'EXCEL' %} {% trans 'To' %} {% trans 'PDF' %} {% endblock %}
 
+{% block extraheads %}
+    <link rel="canonical" href="https://ilovepdfconverteronlne.com/tools/excel-to-pdf" />
+{% endblock %}
+
+
 {% block content %}
   <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
     <h1>{% trans 'EXCEL' %} {% trans 'To' %} {% trans 'PDF' %}</h1>
@@ -16,7 +21,7 @@
 
         <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-3 mt-3">
             {% csrf_token %}
-            <input type="file" class="form-control btn btn-primary btn-md" name="excel_file" required><br>
+            <input type="file" class="form-control btn btn-primary btn-md" name="excel_file" accept=".xlsx, .xlsm, .xltx, .xltm" required><br>
             <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert'%} -> {% trans 'PDF'%} </button>
         </form>
     </div>

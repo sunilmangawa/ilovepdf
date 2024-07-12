@@ -1,0 +1,37 @@
+{% extends 'base2.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title%} {% trans 'Convert' %} {% trans 'WORD' %} (.DOCX) {% trans 'To' %} {% trans 'ODT' %} {% endblock %}
+
+{% block extraheads %}
+    <link rel="canonical" href="https://ilovepdfconverteronlne.com/tools/docx-to-odt" />
+{% endblock %}
+
+
+{% block content %}
+  <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
+    <h1>{% trans 'Convert' %} {% trans 'WORD' %} (.DOCX) {% trans 'To' %} {% trans 'ODT' %}</h1>
+    <hr>
+    <div class="container">
+      <h2>{% trans 'DOCX2ODT_subtitle' %}</h2>
+      <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-3 mt-3">
+        {% csrf_token %}
+        <label for="odp_file">{% trans 'Upload' %} {% trans 'WORD' %}(.DOCX) {% trans 'File' %}:</label>
+        <input type="file" name="docx_file" accept=".docx" id="odt_file" class="form-control btn btn-primary btn-md" required>
+        <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} {% trans 'To' %} {% trans 'ODT' %}</button>
+    </form>
+    </div>
+  </div>
+
+  <div class="container-fluid mt-3 text-start">
+    {% if tool_attachment %} 
+        <div class="card-body bg-body fs-5 p-5">
+            {{tool_attachment.body|markdown}}
+        </div>       
+        <br>
+    {% endif %}
+</div> 
+
+{% endblock %}  

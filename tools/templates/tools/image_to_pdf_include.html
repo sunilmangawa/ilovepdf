@@ -1,7 +1,15 @@
 {% extends 'base2.html' %}
 {% load static %}
+{% load i18n %}
+{% load meta %}
+{% load blog_tags %}
 
 {% block title%}{% trans 'Image' %} ({% trans 'JPG' %}|{% trans 'JPEG' %}|{% trans 'PNG' %}) {% trans 'To' %} {% trans 'PDF' %} {% endblock %}
+
+{% block extraheads %}
+    <link rel="canonical" href="https://ilovepdfconverteronlne.com/tools/jpeg-to-pdf" />
+{% endblock %}
+
 
 {% block content %}
   <div class="container poppins-regular text-center" >

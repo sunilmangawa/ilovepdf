@@ -1,0 +1,37 @@
+{% extends 'base2.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title%} {% trans 'Convert' %} {% trans 'RTF' %} {% trans 'To' %} {% trans 'WORD' %} (.DOCX) {% endblock %}
+
+{% block extraheads %}
+    <link rel="canonical" href="https://ilovepdfconverteronlne.com/tools/rtp-docx" />
+{% endblock %}
+
+
+{% block content %}
+  <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
+    <h1>{% trans 'Convert' %} {% trans 'RTF' %} {% trans 'To' %} {% trans 'WORD' %} (.DOCX) </h1>
+    <hr>
+    <div class="container">
+      <h2>{% trans 'RTF2DOCX_subtitle' %}</h2>
+      <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-3 mt-3">
+        {% csrf_token %}
+        <label for="odp_file">{% trans 'Upload' %} {% trans 'RTF' %} {% trans 'File' %}:</label>
+        <input type="file" name="rtf_file" id="rtf_file" class="form-control btn btn-primary btn-md" accept=".rtf" required>
+        <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} {% trans 'To' %} {% trans 'WORD' %}</button>
+    </form>
+    </div>
+  </div>
+
+  <div class="container-fluid mt-3 text-start">
+    {% if tool_attachment %} 
+        <div class="card-body bg-body fs-5 p-5">
+            {{tool_attachment.body|markdown}}
+        </div>       
+        <br>
+    {% endif %}
+</div> 
+
+{% endblock %}  

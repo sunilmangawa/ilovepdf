@@ -6,56 +6,54 @@
 {% block title%} {% trans 'String' %} {% trans 'To' %} {% trans 'Base64' %} {% endblock %}
 
 {% block content %}
-    <div class="container-fluid poppins-regular text-center bg-body-secondary pt-5" >
-        <h1 class="roboto-bold"> {% trans 'String' %} {% trans 'To' %} {% trans 'Base64' %}</h1>
-        <hr>
-        <div class="container mt-5">
-            <h2> {% trans 'string2base64_subtitle' %}</h2>
-            <div class="row justify-content-center">
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4>{% trans 'String' %} {% trans 'To' %} {% trans 'Base64' %} {% trans 'Converter' %}</h4>
-                        </div>
-                        <div class="card-body">
-                            <form method="post">
-                                {% csrf_token %}
-                                <div class="form-group">
-                                    <label for="original_string">Enter {% trans 'String' %}</label>
-                                    <input type="text" class="form-control" rows="5" id="original_string" name="original_string" value="{{ original_string|default:'' }}" required>
-                                </div>
-                                <button type="submit" class="btn btn-primary">{% trans 'Convert' %} {% trans 'To' %} {% trans 'Base64' %}</button>
-                            </form>
-                        </div>
+  <div class="container-fluid poppins-regular text-center bg-body-secondary pt-5" >
+    <h1 class="roboto-bold"> {% trans 'String' %} {% trans 'To' %} {% trans 'Base64' %}</h1>
+    <hr>
+    <div class="container mt-5">
+        <h2> {% trans 'string2base64_subtitle' %}</h2>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>{% trans 'String' %} {% trans 'To' %} {% trans 'Base64' %} {% trans 'Converter' %}</h4>
                     </div>
-                </div>
-                {% if base64_string %}
-                <div class="col-md-6">
-                    <div class="card">
-                        <div class="card-header">
-                            <h4>{% trans 'Base64' %} Encoded {% trans 'String' %}</h4>
-                        </div>
-                        <div class="card-body">
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
                             <div class="form-group">
-                                <label for="base64_string">Encoded {% trans 'String' %}</label>
-                                <textarea class="form-control" id="base64_string" rows="5" readonly>{{ base64_string }}</textarea>
+                                <label for="original_string">Enter {% trans 'String' %}</label>
+                                <input type="text" class="form-control" rows="5" id="original_string" name="original_string" value="{{ original_string|default:'' }}" required>
                             </div>
+                            <button type="submit" class="btn btn-primary">{% trans 'Convert' %} {% trans 'To' %} {% trans 'Base64' %}</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            {% if base64_string %}
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h4>{% trans 'Base64' %} Encoded {% trans 'String' %}</h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="form-group">
+                            <label for="base64_string">Encoded {% trans 'String' %}</label>
+                            <textarea class="form-control" id="base64_string" rows="5" readonly>{{ base64_string }}</textarea>
                         </div>
                     </div>
                 </div>
-                {% endif %}
             </div>
+            {% endif %}
         </div>
     </div>
 
     <div class="container-fluid mt-3 text-start">
         {% if tool_attachment %} 
-            <div class="card-body bg-body fs-5 p-5">
-                {{tool_attachment.body|markdown}}
-            </div>       
-        <br>
+          <div class="card-body bg-body justify fs-5 p-5">
+              {{tool_attachment.body|markdown}}
+          </div>       
+          <br>
         {% endif %}
-    </div>
-
-
+      </div> 
+          
 {% endblock %}

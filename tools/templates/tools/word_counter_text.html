@@ -29,41 +29,51 @@
 {% endblock %}
 
 {% block content %}
-<div class="container-fluid poppins-regular text-center pt-3 mt-2">
-    <h1 class="roboto-bold">{% trans 'wordcounter_title' %}</h1>
-    <hr><br>
-    <h2>{% trans 'wordcounter_subtitle' %}</h2>
-    <br>
-    <div class="container">
-        <form id="word-counter-form" class="form-control align-items-center p-3 mt-2">
-            {% csrf_token %}
-            <textarea name="text" id="text" placeholder="Enter your text here..."></textarea>
-            <button type="button" id="count-words-button" class="btn btn-danger btn-lg">Count Words</button>
-        </form><br>
-    </div>
-    <div class="form-control align-items-center p-3 ml-2">
-        <p>Word Count: <span id="word-count" >{{ word_count }}</span></p>
-    </div>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <div class="container-fluid poppins-regular text-center pt-3 mt-2">
+        <h1 class="roboto-bold">{% trans 'wordcounter_title' %}</h1>
+        <hr><br>
+        <h2>{% trans 'wordcounter_subtitle' %}</h2>
+        <br>
+        <div class="container">
+            <form id="word-counter-form" class="form-control align-items-center p-3 mt-2">
+                {% csrf_token %}
+                <textarea name="text" id="text" placeholder="Enter your text here..."></textarea>
+                <button type="button" id="count-words-button" class="btn btn-danger btn-lg">Count Words</button>
+            </form><br>
+        </div>
+        <div class="form-control align-items-center p-3 ml-2">
+            <p>Word Count: <span id="word-count" >{{ word_count }}</span></p>
+        </div>
+        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 
-    <script>
-        $(document).ready(function(){
-            $('#count-words-button').click(function(){
-                var text = $('#text').val();
-                $.ajax({
-                    type: 'POST',
-                    url: '',
-                    data: {
-                        'text': text,
-                        'csrfmiddlewaretoken': '{{ csrf_token }}'
-                    },
-                    success: function(response){
-                        $('#word-count').text(response.word_count);
-                    }
+        <script>
+            $(document).ready(function(){
+                $('#count-words-button').click(function(){
+                    var text = $('#text').val();
+                    $.ajax({
+                        type: 'POST',
+                        url: '',
+                        data: {
+                            'text': text,
+                            'csrfmiddlewaretoken': '{{ csrf_token }}'
+                        },
+                        success: function(response){
+                            $('#word-count').text(response.word_count);
+                        }
+                    });
                 });
             });
-        });
-    </script>
+        </script>
 
-</div>
+    </div>
+
+    <div class="container-fluid mt-3 text-start">
+        {% if tool_attachment %} 
+        <div class="card-body bg-body justify fs-5 p-5">
+            {{tool_attachment.body|markdown}}
+        </div>       
+        <br>
+        {% endif %}
+    </div> 
+
 {% endblock %}

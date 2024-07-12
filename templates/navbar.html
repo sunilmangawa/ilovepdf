@@ -20,89 +20,134 @@
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
             </button>
-            <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
-                <div class="navbar-nav ">
-                    <a class="nav-link active" aria-current="page" href="{% url 'blog:post_list' %}">{% trans 'Blog'%}</a>
+
+        {% comment %} <div class="collapse navbar-collapse" id="navbarNavAltMarkup"> {% endcomment %}
+            <!--<div class="navbar-nav pt-3">
+                <a class="nav-link active" aria-current="page" href="{% url 'blog:post_list' %}">{% trans 'Blog'%}</a>
+                <a class="nav-link " aria-current="page" href="{% url 'tools:merge_pdf' %}">{% trans 'Merge'%} {% trans 'PDF'%}</a>
+                <a class="nav-link " aria-current="page" href="{% url 'tools:split_pdf' %}">{% trans 'Split'%} {% trans 'PDF'%}</a>
+                <a class="nav-link " aria-current="page" href="{% url 'tools:compress_pdf' %}">{% trans 'Compress'%} {% trans 'PDF' %}</a>
+                <a class="nav-link " aria-current="page" href="{% url 'tools:rotate_pdf' %}">{% trans 'Rotate'%} {% trans 'PDF' %}</a>
+            </div>-->
+
+            <ul class="nav nav-pills  nav-fill pt-3">
+                <li class="nav-item">
+                    <a class="nav-link" aria-current="page" href="{% url 'blog:post_list' %}">{% trans 'Blog'%}</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link " aria-current="page" href="{% url 'tools:merge_pdf' %}">{% trans 'Merge'%} {% trans 'PDF'%}</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link " aria-current="page" href="{% url 'tools:split_pdf' %}">{% trans 'Split'%} {% trans 'PDF'%}</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link " aria-current="page" href="{% url 'tools:compress_pdf' %}">{% trans 'Compress'%} {% trans 'PDF' %}</a>
+                </li>
+                <li class="nav-item">
                     <a class="nav-link " aria-current="page" href="{% url 'tools:rotate_pdf' %}">{% trans 'Rotate'%} {% trans 'PDF' %}</a>
-                </div>
+                </li>
+            </ul>
 
 
-                <div class="dropdown">
-                    <button class="btn btn-light dropdown-toggle fs-7" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
-                        to PDF
-                    </button>
-                    <ul class="dropdown-menu dropdown-scroll dropdown-menu-dark" aria-labelledby="dropdownMenuButtonToPDF">
-                        <li><a class="dropdown-item" href="{% url 'tools:image_to_pdf' %}">{% trans 'JPG' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:word_to_pdf' %}">{% trans 'WORD' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:powerpoint_to_pdf' %}">{% trans 'POWERPOINT' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:excel_to_pdf' %}">{% trans 'EXCEL' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:html_to_pdf' %}">{% trans 'HTML' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:json_to_pdf' %}">{% trans 'JSON' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:xml_to_pdf' %}">{% trans 'XML' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:base64_to_pdf' %}">{% trans 'Base64' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:tiff_to_pdf' %}">{% trans 'TIFF' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                    </ul>
-                </div>
+            <div class="dropdown pt-0 mt-0">
+                <button class="btn btn-light dropdown-toggle fs-7" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
+                    to PDF
+                </button>
+                <ul class="dropdown-menu dropdown-scroll dropdown-menu-dark" aria-labelledby="dropdownMenuButtonToPDF">
+                    <li><a class="dropdown-item" href="{% url 'tools:image_to_pdf' %}">{% trans 'JPG' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:word_to_pdf' %}">{% trans 'WORD' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:odt_to_pdf_view' %}">ODT {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    
+                    <li><a class="dropdown-item" href="{% url 'tools:powerpoint_to_pdf' %}">{% trans 'POWERPOINT' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:odp_to_pdf_view' %}">ODP {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    
+                    <li><a class="dropdown-item" href="{% url 'tools:excel_to_pdf' %}">{% trans 'EXCEL' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:ods_to_pdf' %}">ODS {% trans 'To' %} {% trans 'PDF' %} </a></li>
 
-                <div class="dropdown">
-                    <button class="btn btn-light dropdown-toggle fs-7" type="button" id="dropdownMenuButtonPdfTo" data-bs-toggle="dropdown" aria-expanded="false">
-                        PDF to
-                    </button>
-                    <ul class="dropdown-menu dropdown-scroll dropdown-menu-dark" aria-labelledby="dropdownMenuButton">
-                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_image' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'JPG' %} </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_word' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'WORD' %} </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_pptx' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'POWERPOINT' %} </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_excel' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'EXCEL' %} ({% trans 'XLSX' %}) </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_csv' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'EXCEL' %}  ({% trans 'CSV' %}) </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_html' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'HTML' %} </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_json' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'JSON' %} </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_xml' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'XML' %} </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:string_to_base64' %}">{% trans 'String' %} {% trans 'To' %} {% trans 'Base64' %} </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_base64' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'Base64' %} </a></li>
-                        <li><a class="dropdown-item" href="{% url 'tools:pdf_to_tiff' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'TIFF' %} </a></li>
-                    </ul>
-                </div>
-
-                
-                <div class="dropdown btn-secondary"> <!-- class = "me-auto"-->
-                    {% get_current_language as CURRENT_LANGUAGE %}
-                    {% get_available_languages as AVAILABLE_LANGUAGES %}
-                    {% get_language_info_list for AVAILABLE_LANGUAGES as languages %}
-                
-                    <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        {% trans 'Change languages' %}
-                    </button>
-                    <ul class="dropdown-menu" style="max-height: 500px; overflow-y: auto;">
-                        {% for language in languages %}
-                        <li>
-                            <form method="post" action="{% url 'set_language' %}">
-                                {% csrf_token %}
-                                <input type="hidden" name="language" value="{{ language.code }}">
-                                <button type="submit" class="dropdown-item {% if language.code == CURRENT_LANGUAGE %}active{% endif %}">
-                                    {{ language.name_local }}
-                                </button>
-                            </form>
-                        </li>
-                        {% endfor %}
-                    </ul>
-                </div>
-                <div class="btn-group">
-                    <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
-                        {% trans 'about' %}
-                    </button>
-                    <ul class="dropdown-menu">
-                      <li><a class="dropdown-item" href="{% url 'core:about_us' %}">{% trans 'aboutus' %}</a></li>
-                      <li><a class="dropdown-item" href="{% url 'core:contact_us' %}">{% trans 'contactus' %}</a></li>
-                      <li><a class="dropdown-item" href="{% url 'core:terms_and_condition' %}">{% trans 't&c' %}</a></li>
-                      <li><a class="dropdown-item" href="{% url 'core:privacy_policy' %}">{% trans 'privacy' %}</a></li>
-                    </ul>
-                </div>
-
-
+                    <li><a class="dropdown-item" href="{% url 'tools:rtf_to_pdf_view' %}">RTF {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    
+                    <li><a class="dropdown-item" href="{% url 'tools:html_to_pdf' %}">{% trans 'HTML' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:json_to_pdf' %}">{% trans 'JSON' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:xml_to_pdf' %}">{% trans 'XML' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:base64_to_pdf' %}">{% trans 'Base64' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:tiff_to_pdf' %}">{% trans 'TIFF' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                </ul>
             </div>
-        </div>
+
+            <div class="dropdown">
+                <button class="btn btn-light dropdown-toggle fs-7" type="button" id="dropdownMenuButtonPdfTo" data-bs-toggle="dropdown" aria-expanded="false">
+                    PDF to
+                </button>
+                <ul class="dropdown-menu dropdown-scroll dropdown-menu-dark" aria-labelledby="dropdownMenuButton">
+                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_image' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'JPG' %} </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_word' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'WORD' %} </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_pptx' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'POWERPOINT' %} </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_excel' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'EXCEL' %} ({% trans 'XLSX' %}) </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_csv' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'EXCEL' %}  ({% trans 'CSV' %}) </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_html' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'HTML' %} </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_json' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'JSON' %} </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_xml' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'XML' %} </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:string_to_base64' %}">{% trans 'String' %} {% trans 'To' %} {% trans 'Base64' %} </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_base64' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'Base64' %} </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_tiff' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'TIFF' %} </a></li>
+                </ul>
+            </div>
+
+            
+            <div class="dropdown">
+                <button class="btn btn-light dropdown-toggle fs-7" type="button" id="dropdownMenuButtonMore" data-bs-toggle="dropdown" aria-expanded="false">
+                    More
+                </button>
+                <ul class="dropdown-menu dropdown-scroll dropdown-menu-dark" aria-labelledby="dropdownMenuButton">
+                    <li><a class="dropdown-item" href="{% url 'tools:odp_to_pptx_view' %}">ODP to  POWERPOINT </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:ods_to_xlsx_view' %}">ODS to Excel(XLSX) </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:odt_to_docx_view' %}">ODT to Word(Docx)  </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:rtf_to_docx_view' %}">RTF to Word(Docx) </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:docx_to_rtf_view' %}">Word (Docx) to RTF </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:docx_to_odt_view' %}">Word (Docx) to ODT </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:xlsx_to_ods_view' %}">Excel (XLSX) to ODS </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:pptx_to_odp_view' %}">PowerPoint(PPTX) to ODP </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:word_counter_text' %}">Word Counter </a></li>
+                    <li><a class="dropdown-item" href="{% url 'tools:lorem_ipsum_generator' %}">Lorem Ipsum  </a></li>
+                </ul>
+            </div>
+
+            
+            <div class="dropdown btn-secondary"> <!-- class = "me-auto"-->
+                {% get_current_language as CURRENT_LANGUAGE %}
+                {% get_available_languages as AVAILABLE_LANGUAGES %}
+                {% get_language_info_list for AVAILABLE_LANGUAGES as languages %}
+            
+                <button class="btn dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    {% trans 'Change languages' %}
+                </button>
+                <ul class="dropdown-menu" style="max-height: 500px; overflow-y: auto;">
+                    {% for language in languages %}
+                    <li>
+                        <form method="post" action="{% url 'set_language' %}">
+                            {% csrf_token %}
+                            <input type="hidden" name="language" value="{{ language.code }}">
+                            <button type="submit" class="dropdown-item {% if language.code == CURRENT_LANGUAGE %}active{% endif %}">
+                                {{ language.name_local }}
+                            </button>
+                        </form>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-light dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    {% trans 'about' %}
+                </button>
+                <ul class="dropdown-menu">
+                    <li><a class="dropdown-item" href="{% url 'core:about_us' %}">{% trans 'aboutus' %}</a></li>
+                    <li><a class="dropdown-item" href="{% url 'core:contact_us' %}">{% trans 'contactus' %}</a></li>
+                    <li><a class="dropdown-item" href="{% url 'core:terms_and_condition' %}">{% trans 't&c' %}</a></li>
+                    <li><a class="dropdown-item" href="{% url 'core:privacy_policy' %}">{% trans 'privacy' %}</a></li>
+                </ul>
+            </div>
+
+        {% comment %} </div> {% endcomment %}
     </nav>
 </header>
