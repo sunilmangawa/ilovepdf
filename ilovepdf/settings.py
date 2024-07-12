@@ -330,6 +330,7 @@ CKEDITOR_CONFIGS = {
         'toolbar': 'full',
         'height': 300,
         'width': 900,
+        'versionCheck': False, # To hide the admin msg "This CKEditor 4.22.1 version is not secure. Consider upgrading to the latest one, 4.24.0-lts."
     },
 }
 

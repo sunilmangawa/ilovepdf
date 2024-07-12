@@ -95,15 +95,6 @@ urlpatterns = [
     # path('pdf-to-raw/', views.pdf_to_raw_view, name='pdf_to_raw'),
     # path('raw-to-pdf/', views.raw_to_pdf_view, name='raw_to_pdf'),
 
-    path('odp-to-pptx/', views.odp_to_pptx_view, name='odp_to_pptx_view'),
-    path('odp-to-pptx-file/', views.odp_to_pptx_include, name='odp_to_pptx_include'),
-
-    path('ods-to-xlsx/', views.ods_to_xlsx_view, name='ods_to_xlsx_view'),
-    path('ods-to-xlsx-file/', views.ods_to_xlsx_include, name='ods_to_xlsx_include'),
-
-    path('odt-to-docx/', views.odt_to_docx_view, name='odt_to_docx_view'),
-    path('odt-to-docx-file/', views.odt_to_docx_include, name='odt_to_docx_include'),
-
     path('odt-to-pdf/', views.odt_to_pdf_view, name='odt_to_pdf_view'),
     path('odt-to-pdf-file/', views.odt_to_pdf_include, name='odt_to_pdf_include'),
 
@@ -115,6 +106,15 @@ urlpatterns = [
 
     path('rtf-to-pdf/', views.rtf_to_pdf_view, name='rtf_to_pdf_view'),
     path('rtf-to-pdf-file/', views.rtf_to_pdf_include, name='rtf_to_pdf_include'),
+
+    path('odt-to-docx/', views.odt_to_docx_view, name='odt_to_docx_view'),
+    path('odt-to-docx-file/', views.odt_to_docx_include, name='odt_to_docx_include'),
+
+    path('ods-to-xlsx/', views.ods_to_xlsx_view, name='ods_to_xlsx_view'),
+    path('ods-to-xlsx-file/', views.ods_to_xlsx_include, name='ods_to_xlsx_include'),
+
+    path('odp-to-pptx/', views.odp_to_pptx_view, name='odp_to_pptx_view'),
+    path('odp-to-pptx-file/', views.odp_to_pptx_include, name='odp_to_pptx_include'),
 
     path('rtf-to-docx/', views.rtf_to_docx_view, name='rtf_to_docx_view'),
     path('rtf-to-docx-file/', views.rtf_to_docx_include, name='rtf_to_docx_include'),

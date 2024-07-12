@@ -349,93 +349,55 @@ def rotate_pdf_include(request):
 # -----------------------------------------================================
 
 #Working on Server
-# def word_to_pdf_logic(view_func):
-#     def wrapper_function(request, *args, **kwargs):
-#         if request.method == "POST" and request.FILES.get('word_file'):
-#             try:
-#                 word_file = request.FILES['word_file']
-
-#                 # Generate unique temporary file name
-#                 temp_filename = f"{uuid.uuid4()}.docx"
-#                 temp_file_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', temp_filename)
-
-#                 # Save uploaded Word file to temporary location
-#                 fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'word_to_pdf'))
-#                 temp_file = fs.save(temp_filename, word_file)
-                
-#                 word_filename = word_file.name
-
-#                 out_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf')
-
-#                 env = os.environ.copy()
-#                 env['HOME'] = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf')
-
-#                 result = subprocess.run(
-#                     ['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', out_path, temp_file_path],
-#                     env=env, capture_output=True, text=True
-#                 )
-#                 if result.returncode != 0:
-#                     raise Exception(f"Subprocess failed with error: {result.stderr}")
-
-#                 output_pdf_filename = os.path.splitext(word_filename)[0] + '.pdf'
-#                 output_pdf_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', temp_filename.replace(temp_filename.split('.')[1], 'pdf'))
-
-#                 if os.path.exists(output_pdf_path):
-#                     # Serve the PDF file for download
-#                     response = FileResponse(open(output_pdf_path, 'rb'), content_type='application/pdf')
-#                     response['Content-Disposition'] = f'attachment; filename={os.path.basename(output_pdf_path)}'
-                    
-#                     # Add files to cleanup list
-#                     response.cleanup_files = [temp_file_path, output_pdf_path]
-
-#                     return response
-#                 else:
-#                     return HttpResponse("Error converting file to PDF")
-#             except Exception as e:
-#                 return HttpResponse(status=500, content=str(e))
-#         else:
-#             return view_func(request, *args, **kwargs)
-#     return wrapper_function
-
-
-
-# Working on localhost
-# Using Middleware remove temporary created files successfully
 def word_to_pdf_logic(view_func):
     def wrapper_function(request, *args, **kwargs):
         if request.method == "POST" and request.FILES.get('word_file'):
-            word_file = request.FILES['word_file']
+            try:
+                word_file = request.FILES['word_file']
 
-            # Generate unique temporary file name
-            temp_filename = f"{uuid.uuid4()}.docx"
-            temp_file_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', temp_filename)
+                # Generate unique temporary file name
+                temp_filename = f"{uuid.uuid4()}.docx"
+                temp_file_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', temp_filename)
 
-            # Save uploaded Word file to temporary location
-            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'word_to_pdf'))
-            temp_file = fs.save(temp_filename, word_file)
-            
-            word_filename = word_file.name
-
-            out_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf')
-            subprocess.call(['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', out_path, temp_file_path])
- 
-            output_pdf_filename = os.path.splitext(word_filename)[0] + '.pdf'
-            output_pdf_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', temp_filename.replace(temp_filename.split('.')[1], 'pdf'))
-
-            if os.path.exists(output_pdf_path):
-                # Serve the PDF file for download
-                response = FileResponse(open(output_pdf_path, 'rb'), content_type='application/pdf')
-                response['Content-Disposition'] = f'attachment; filename={os.path.basename(output_pdf_path)}'
+                # Save uploaded Word file to temporary location
+                fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'word_to_pdf'))
+                temp_file = fs.save(temp_filename, word_file)
                 
-                # Add files to cleanup list
-                response.cleanup_files = [temp_file_path, output_pdf_path]
+                word_filename = word_file.name
 
-                return response
-            else:
-                return HttpResponse("Error converting file to PDF")
+                out_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf')
+
+                env = os.environ.copy()
+                env['HOME'] = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf')
+
+                result = subprocess.run(
+                    ['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', out_path, temp_file_path],
+                    env=env, capture_output=True, text=True
+                )
+                if result.returncode != 0:
+                    raise Exception(f"Subprocess failed with error: {result.stderr}")
+
+                output_pdf_filename = os.path.splitext(word_filename)[0] + '.pdf'
+                output_pdf_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', temp_filename.replace(temp_filename.split('.')[1], 'pdf'))
+
+                if os.path.exists(output_pdf_path):
+                    # Serve the PDF file for download
+                    response = FileResponse(open(output_pdf_path, 'rb'), content_type='application/pdf')
+                    response['Content-Disposition'] = f'attachment; filename={os.path.basename(output_pdf_path)}'
+                    
+                    # Add files to cleanup list
+                    response.cleanup_files = [temp_file_path, output_pdf_path]
+
+                    return response
+                else:
+                    return HttpResponse("Error converting file to PDF")
+            except Exception as e:
+                return HttpResponse(status=500, content=str(e))
         else:
-            return view_func(request, *args, **kwargs)  
+            return view_func(request, *args, **kwargs)
     return wrapper_function
+
+
 
 @word_to_pdf_logic
 def word_to_pdf_view(request):
@@ -732,79 +694,47 @@ def pdf_to_image_include(request):
 # -----------------------------------------================================
 
 #Working for server
-# def powerpoint_to_pdf_logic(func):
-#     def wrapper(request, *args, **kwargs):
-#         if request.method == 'POST' and request.FILES.get('ppt_file'):
-#             try:
-#                 ppt_file = request.FILES['ppt_file']
-#                 fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'uploads'))
-#                 filename = fs.save(ppt_file.name, ppt_file)
-#                 file_path = fs.path(filename)
+def powerpoint_to_pdf_logic(func):
+    def wrapper(request, *args, **kwargs):
+        if request.method == 'POST' and request.FILES.get('ppt_file'):
+            try:
+                ppt_file = request.FILES['ppt_file']
+                fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'uploads'))
+                filename = fs.save(ppt_file.name, ppt_file)
+                file_path = fs.path(filename)
 
-#                 # Convert the PPT/PPTX file to PDF using LibreOffice
-#                 output_dir = fs.location
-#                 out_path = os.path.join(settings.MEDIA_ROOT, 'uploads')
-#                 output_file_path = os.path.join(out_path, os.path.splitext(filename)[0] + '.pdf')
+                # Convert the PPT/PPTX file to PDF using LibreOffice
+                output_dir = fs.location
+                out_path = os.path.join(settings.MEDIA_ROOT, 'uploads')
+                output_file_path = os.path.join(out_path, os.path.splitext(filename)[0] + '.pdf')
 
-#                 env = os.environ.copy()
-#                 env['HOME'] = '/tmp'
-#                 result = subprocess.run(
-#                     ['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', out_path, file_path],
-#                     env=env, capture_output=True, text=True
-#                 )
-#                 if result.returncode != 0:
-#                     raise Exception(f"Subprocess failed with error: {result.stderr}")
+                env = os.environ.copy()
+                env['HOME'] = '/tmp'
+                result = subprocess.run(
+                    ['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', out_path, file_path],
+                    env=env, capture_output=True, text=True
+                )
+                if result.returncode != 0:
+                    raise Exception(f"Subprocess failed with error: {result.stderr}")
 
-#                 with open(output_file_path, 'rb') as pdf_file:
-#                     response = HttpResponse(pdf_file.read(), content_type='application/pdf')
-#                     response['Content-Disposition'] = f'attachment; filename={os.path.basename(output_file_path)}'
+                with open(output_file_path, 'rb') as pdf_file:
+                    response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+                    response['Content-Disposition'] = f'attachment; filename={os.path.basename(output_file_path)}'
 
-#                     # Add files to cleanup list
-#                     response.cleanup_files = [file_path, output_file_path]
+                    # Add files to cleanup list
+                    response.cleanup_files = [file_path, output_file_path]
 
-#                     return response
-#             except Exception as e:
-#                 return HttpResponse(status=500, content=str(e))
-#         return func(request, *args, **kwargs)
-#     return wrapper
+                    return response
+            except Exception as e:
+                return HttpResponse(status=500, content=str(e))
+        return func(request, *args, **kwargs)
+    return wrapper
 
 
 # Settings done before working on server
 # sudo mkdir -p /tmp/nobody_home
 # sudo chown nobody:nogroup /tmp/nobody_home
 # sudo chmod 700 /tmp/nobody_home
-
-
-
-# Working for localhost
-def powerpoint_to_pdf_logic(func):
-    def wrapper(request, *args, **kwargs):
-        if request.method == 'POST' and request.FILES['ppt_file']:
-            ppt_file = request.FILES['ppt_file']
-            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'uploads'))
-            filename = fs.save(ppt_file.name, ppt_file)
-            file_path = fs.path(filename)
-
-            # Convert the PPT/PPTX file to PDF using LibreOffice
-            output_dir = fs.location
-            out_path = os.path.join(settings.MEDIA_ROOT, 'uploads')
-            output_file_path = os.path.join(out_path, os.path.splitext(filename)[0] + '.pdf')
-
-            subprocess.run(['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', out_path, file_path])
-
-
-            with open(output_file_path, 'rb') as pdf_file:
-                response = HttpResponse(pdf_file.read(), content_type='application/pdf')
-                response['Content-Disposition'] = f'attachment; filename={os.path.basename(output_file_path)}'
-                
-                # Add files to cleanup list
-                response.cleanup_files = [file_path, output_file_path]
-                
-                return response
-
-        return func(request, *args, **kwargs)
-    return wrapper
-
 
 @csrf_exempt
 @powerpoint_to_pdf_logic
@@ -1931,511 +1861,6 @@ def raw_to_pdf_view(request):
 
 
 ###########################################################################################
-
-# def html_to_pdf_logic(view_func):
-#     def wrapper_function(request, *args, **kwargs):
-#         if request.method == "POST":
-#             if 'url' in request.POST:
-#                 url = request.POST['url']
-#                 if url:
-#                     pdf = pdfkit.from_url(url, False)
-#                     response = HttpResponse(pdf, content_type='application/pdf')
-#                     response['Content-Disposition'] = 'attachment; filename="download.pdf"'
-#                     return response
-#             elif 'html_file' in request.FILES:
-#                 html_file = request.FILES['html_file']
-#                 html_content = html_file.read().decode('utf-8')                
-#                 pdf = pdfkit.from_string(html_content, options={"enable-local-file-access": ""})
-#                 response = HttpResponse(pdf, content_type='application/pdf')
-#                 response['Content-Disposition'] = 'attachment; filename="download.pdf"'
-#                 return response
-#             else:
-#                 return HttpResponse("Invalid Request")
-#         else:
-#             return view_func(request, *args, **kwargs)  
-#     return wrapper_function
-
-# @html_to_pdf_logic
-# def html_to_pdf_view(request):
-#     meta = Meta(
-#         title='HTML to PDF converter online',
-#         description='Convert HTML file or URL to PDF. This tool converts URL/HTML frontend to PDF file',
-#         keywords=['html', 'url', 'urls', 'links', 'file', 'download'],
-#         og_title='HTML to PDF converter online',
-#         og_description='Convert HTML file or URL to PDF. This tool converts URL/HTML frontend to PDF file',
-#     )
-#     tool_attachment = ToolAttachment.objects.get(function_name='html_to_pdf_view')
-#     context = {'meta': meta, 'tool_attachment': tool_attachment}
-#     return render(request, 'tools/html_to_pdf.html', context) 
-
-# @html_to_pdf_logic
-# def html_to_pdf_include(request):
-#     meta = Meta(
-#         title='iLovePdfConverterOnline - HTML | URLs to PDF file',
-#         description='Convert HTML file or URL to PDF file.',
-#         keywords=['html', 'url', 'urls', 'links', 'file', 'download'],
-#         og_title='iLovePdfConverterOnline - HTML | URLs to PDF file',
-#         og_description='Convert HTML file or URL to PDF file.',
-#     )
-#     context = {'meta': meta}
-#     return render(request, 'tools/html_to_pdf_include.html')
-
-
-
-
-# def split_pdf_logic(view_func):
-#     def wrapper_function(request, *args, **kwargs):
-#         if request.method == "POST":
-#             form = UploadFileForm(request.POST, request.FILES)
-#             if form.is_valid():
-#                 file = request.FILES['file']
-#                 page_numbers = request.POST.get('page_numbers', '')
-#                 output_files = split_pdf_by_page(file, page_numbers)
-
-#                 if len(output_files) == 1:
-#                     # Directly serve the single split PDF file
-#                     output_file = output_files[0]
-#                     response = FileResponse(open(output_file, 'rb'), content_type='application/pdf')
-#                     response['Content-Disposition'] = f'attachment; filename={smart_str(os.path.basename(output_file))}'
-#                     return response
-#                 else:
-#                     # Serve the files as individual downloads
-#                     context = {'form': form, 'output_files': output_files}
-#                     return render(request, 'tools/split_pdf.html', context)
-#         else:
-#             return view_func(request, *args, **kwargs)
-#     return wrapper_function
-
-
-# def word_to_pdf_logic(view_func):
-#     def wrapper_function(request, *args, **kwargs):
-#         if request.method == "POST" and request.FILES.get('word_file'):
-#             word_file = request.FILES['word_file']
-
-#             # Generate unique temporary file name
-#             temp_filename = f"{uuid.uuid4()}.docx"
-#             temp_file_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', temp_filename)
-
-#             # Save uploaded Word file to temporary location
-#             fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'word_to_pdf'))
-#             temp_file = fs.save(temp_filename, word_file)
-            
-#             word_filename = word_file.name
-
-#             out_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf')
-#             # subprocess.call(['lowriter', '--headless', '--convert-to', 'pdf', '--outdir', out_path, temp_file_path])
-#             subprocess.call(['libreoffice', '--headless', '--convert-to', 'pdf', '--outdir', out_path, temp_file_path])
- 
-#             output_pdf_filename = os.path.splitext(word_filename)[0] + '.pdf'
-#             output_pdf_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf', temp_filename.replace(temp_filename.split('.')[1],'pdf'))
-            
-#             if output_pdf_path:
-#                 # Serve the PDF file for download
-#                 with open(output_pdf_path, 'rb') as pdf_file:
-#                     response = HttpResponse(pdf_file.read(), content_type='application/pdf')
-#                     response['Content-Disposition'] = f'attachment; filename={os.path.basename(output_pdf_path)}'
-#                     return response
-#             else:
-#                 return HttpResponse("Error converting file to PDF")
-#         else:
-#             return view_func(request, *args, **kwargs)  
-#     return wrapper_function    
-
-#         # os.remove(temp_file)
-#         # os.remove(output_pdf_path)
-
-
-
-
-# Working but exports images in zip folder
-# def pdf_to_image_decorator(view_func):
-#     def wrapper_function(request, *args, **kwargs):
-#         if request.method == 'POST':
-#             pdf_file = request.FILES.get('pdf_file')
-
-#             if pdf_file:
-#                 # Define your desired output folder
-#                 output_folder = "media/pdf_to_jpg/"
-
-#                 # Read the content of the uploaded PDF file
-#                 pdf_content = pdf_file.read()
-
-#                 # Convert PDF to JPG
-#                 jpg_paths = convert_pdf_to_jpg(BytesIO(pdf_content), output_folder)
-
-#                 # Create a zip file containing all JPG images
-#                 zip_file_path = os.path.join(output_folder, "PDF_to_Image_iLovePDFconverteronline.com.zip")
-#                 create_zip_archive(jpg_paths, zip_file_path)
-
-#                 # Clean up temporary JPG files
-#                 clean_up_jpg_files(jpg_paths)
-
-#                 # Serve the zip file for download
-#                 with open(zip_file_path, 'rb') as zip_file:
-#                     response = HttpResponse(zip_file.read(), content_type='application/zip')
-#                     response['Content-Disposition'] = f'attachment; filename={os.path.basename(zip_file_path)}'
-#                     return response
-#         return view_func(request, *args, **kwargs)  
-#     return wrapper_function
-
-# Exporting multiple images but doesn't clean the files from server
-# def pdf_to_image_decorator(view_func):
-#     def wrapper_function(request, *args, **kwargs):
-#         if request.method == 'POST':
-#             pdf_file = request.FILES.get('pdf_file')
-
-#             if pdf_file:
-#                 # Define your desired output folder
-#                 output_folder = os.path.join(settings.MEDIA_ROOT, "pdf_to_jpg")
-
-#                 # Read the content of the uploaded PDF file
-#                 pdf_content = pdf_file.read()
-
-#                 # Convert PDF to JPG
-#                 jpg_paths = convert_pdf_to_jpg(BytesIO(pdf_content), output_folder)
-
-#                 # If there is only one image, return it directly
-#                 if len(jpg_paths) == 1:
-#                     with open(jpg_paths[0], 'rb') as jpg_file:
-#                         response = HttpResponse(jpg_file.read(), content_type='image/jpeg')
-#                         response['Content-Disposition'] = f'attachment; filename={os.path.basename(jpg_paths[0])}'
-#                         return response
-                
-#                 # If there are multiple images, return their URLs in a JSON response
-#                 else:
-#                     image_urls = []
-#                     for jpg_path in jpg_paths:
-#                         image_urls.append(request.build_absolute_uri(os.path.join(settings.MEDIA_URL, "pdf_to_jpg", os.path.basename(jpg_path))))
-
-#                     # Clean up temporary JPG files
-#                     # clean_up_jpg_files(jpg_paths)
-
-#                     return JsonResponse({'image_urls': image_urls})
-
-#         return view_func(request, *args, **kwargs)
-#     return wrapper_function
-
-
-
-
-
-# def pdf_to_pptx_logic(func):
-#     @wraps(func)
-#     def wrapper(request, *args, **kwargs):
-#         if request.method == 'POST' and 'pdf_file' in request.FILES:
-#             pdf_file = request.FILES['pdf_file']
-#             pdf_bytes = pdf_file.read()
-#             images = convert_from_bytes(pdf_bytes)
-            
-#             prs = Presentation()
-#             blank_slide_layout = prs.slide_layouts[6]  # Choosing a blank slide layout
-
-#             for image in images:
-#                 slide = prs.slides.add_slide(blank_slide_layout)
-#                 image_stream = BytesIO()
-#                 image.save(image_stream, format='PNG')
-#                 image_stream.seek(0)
-                
-#                 slide.shapes.add_picture(image_stream, 0, 0, width=prs.slide_width, height=prs.slide_height)
-
-#             pptx_stream = BytesIO()
-#             prs.save(pptx_stream)
-#             pptx_stream.seek(0)
-
-#             response = HttpResponse(pptx_stream, content_type='application/vnd.openxmlformats-officedocument.presentationml.presentation')
-#             response['Content-Disposition'] = 'attachment; filename="converted_presentation.pptx"'
-#             return response
-        
-#         return func(request, *args, **kwargs)
-#     return wrapper
-
-
-# ------------------------------------------------------------
-
-# def pdf_to_html(request):
-#     if request.method == 'POST' and request.FILES['pdf_file']:
-#         pdf_file = request.FILES['pdf_file']
-        
-#         # Save the uploaded PDF file
-#         fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'uploads'))
-#         filename = fs.save(pdf_file.name, pdf_file)
-#         uploaded_file_path = fs.path(filename)
-#         print(f'filename: {filename}')
-#         print(f'uploaded_file_path: {uploaded_file_path}')
-        
-#         # Define the output HTML file path
-#         output_html_path = os.path.splitext(uploaded_file_path)[0] + ".html"
-#         print(f'output_html_path: {output_html_path}')
-        
-#         # Convert the PDF to HTML using pdf2htmlEX
-#         try:
-#             # subprocess.run(['pdf2htmlEX', '--dest-dir', fs.location, uploaded_file_path], check=True)
-#             p=subprocess.Popen(['pdf2htmlEX', '--dest-dir', fs.location, uploaded_file_path])
-#             p.wait()
-#         except subprocess.CalledProcessError:
-#             raise Http404("Error in converting PDF to HTML")
-        
-#         # Create an HTTP response with the HTML content
-#         with open(output_html_path, 'r', encoding='utf-8') as html_file:
-#             html_content = html_file.read()
-        
-#         response = HttpResponse(html_content, content_type='text/html')
-#         response['Content-Disposition'] = 'attachment; filename="converted.html"'
-        
-#         return response
-    
-#     return render(request, 'tools/pdf_to_html.html')
-
-
-# .................................................................==================================================
-
-# def word_counter_text_view(request):
-#     word_count = 0
-
-#     if request.method == 'POST':
-#         text = request.POST.get('text', '')  # Assuming the text input field has the name 'text'
-#         word_count = word_counter_text(text)
-#     # return render(request, 'converter/word_counter_text.html', {'word_count': word_count}) #working but redirect
-#     return JsonResponse({'word_count': word_count})
-
-
-# def pdf_to_image_decorator(view_func):
-#     def wrapper_function(request, *args, **kwargs):
-#         if request.method == 'POST':
-#             pdf_file = request.FILES.get('pdf_file')
-
-#             if pdf_file:
-#                 # Define your desired output folder
-#                 output_folder = os.path.join(settings.MEDIA_ROOT, "pdf_to_jpg")
-
-#                 # Read the content of the uploaded PDF file
-#                 pdf_content = pdf_file.read()
-
-#                 # Convert PDF to JPG
-#                 jpg_paths = convert_pdf_to_jpg(BytesIO(pdf_content), output_folder)
-
-#                 # If there is only one image, return it directly
-#                 if len(jpg_paths) == 1:
-#                     with open(jpg_paths[0], 'rb') as jpg_file:
-#                         response = HttpResponse(jpg_file.read(), content_type='image/jpeg')
-#                         response['Content-Disposition'] = f'attachment; filename={os.path.basename(jpg_paths[0])}'
-#                         schedule_cleanup(jpg_paths)  # Schedule file cleanup
-#                         return response
-                
-#                 # If there are multiple images, return their URLs in a JSON response
-#                 else:
-#                     image_urls = []
-#                     for jpg_path in jpg_paths:
-#                         image_urls.append(request.build_absolute_uri(os.path.join(settings.MEDIA_URL, "pdf_to_jpg", os.path.basename(jpg_path))))
-                    
-#                     response = JsonResponse({'image_urls': image_urls})
-#                     schedule_cleanup(jpg_paths)  # Schedule file cleanup
-#                     return response
-
-#         return view_func(request, *args, **kwargs)
-#     return wrapper_function
-
-
-
-############################
-# def pdf_to_word_logic(view_func):
-#     def wrapper_function(request, *args, **kwargs):
-#         if request.method == 'POST' and 'pdf_file' in request.FILES:
-#             pdf_file = request.FILES['pdf_file']
-#             try:
-#                 # Save the uploaded PDF file
-#                 with open('uploaded_pdf.pdf', 'wb') as destination:
-#                     for chunk in pdf_file.chunks():
-#                         destination.write(chunk)
-#                 # Define paths for converted files
-#                 output_docx_path = 'converted_doc.docx'
-#                 # Call the pdf_to_docx_converter function
-#                 success, error_message = pdf_to_docx_converter('uploaded_pdf.pdf', output_docx_path)
-#                 if success:
-#                     with open(output_docx_path, 'rb') as docx_file:
-#                         response = HttpResponse(docx_file.read(), content_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document')
-#                         response['Content-Disposition'] = 'attachment; filename="PDF_to_Word_iLovePDFconverteronline.com.docx"'
-#                         return response
-#                 else:
-#                     return HttpResponse(f"Conversion failed. Error: {error_message}")
-#             except Exception as e:
-#                 return HttpResponse(f"Conversion failed. Error: {str(e)}")
-#         else:
-#             return view_func(request, *args, **kwargs)  # Continue with the original view function
-#     return wrapper_function
-
-######################################
-
-
-# decorators.py
-# from pdf2pptx import pdf2pptx
-# import tempfile
-
-# def pdf_to_pptx_logic(func):
-#     @wraps(func)
-#     def wrapper(request, *args, **kwargs):
-#         if request.method == 'POST' and 'pdf_file' in request.FILES:
-#             pdf_file = request.FILES['pdf_file']
-#             pdf_bytes = pdf_file.read()
-            
-#             # Save PDF file to a temporary file
-#             with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_pdf:
-#                 temp_pdf.write(pdf_bytes)
-#                 temp_pdf_path = temp_pdf.name
-
-#             # Convert PDF to PPTX using pdf2pptx
-#             pptx_stream = BytesIO()
-#             pdf2pptx(temp_pdf_path, pptx_stream)
-#             pptx_stream.seek(0)
-
-#             # Clean up temporary PDF file
-#             os.remove(temp_pdf_path)
-
-#             response = HttpResponse(pptx_stream, content_type='application/vnd.openxmlformats-officedocument.presentationml.presentation')
-#             response['Content-Disposition'] = 'attachment; filename="converted_presentation.pptx"'
-#             return response
-        
-#         return func(request, *args, **kwargs)
-#     return wrapper
-
-
-
-# def pdf_to_pptx_logic(func):
-#     @wraps(func)
-#     def wrapper(request, *args, **kwargs):
-#         if request.method == 'POST' and 'pdf_file' in request.FILES:
-#             pdf_file = request.FILES['pdf_file']
-#             pdf_bytes = pdf_file.read()
-#             images = convert_from_bytes(pdf_bytes)
-            
-#             prs = Presentation()
-#             blank_slide_layout = prs.slide_layouts[6]  # Choosing a blank slide layout
-
-#             for image in images:
-#                 slide = prs.slides.add_slide(blank_slide_layout)
-#                 image_stream = BytesIO()
-#                 image.save(image_stream, format='PNG')
-#                 image_stream.seek(0)
-                
-#                 slide.shapes.add_picture(image_stream, 0, 0, width=prs.slide_width, height=prs.slide_height)
-
-#             pptx_stream = BytesIO()
-#             prs.save(pptx_stream)
-#             pptx_stream.seek(0)
-
-#             response = HttpResponse(pptx_stream, content_type='application/vnd.openxmlformats-officedocument.presentationml.presentation')
-#             response['Content-Disposition'] = 'attachment; filename="converted_presentation.pptx"'
-#             return response
-        
-#         return func(request, *args, **kwargs)
-#     return wrapper
-
-
-################################
-
-# def pdf_to_excel_logic(func):
-#     @wraps(func)
-#     def wrapper(request, *args, **kwargs):
-#         if request.method == 'POST' and request.FILES.get('pdf_file'):
-#             print("Post condition working")
-#             pdf_file = request.FILES['pdf_file']
-#             print(f"file is : {pdf_file}")
-#             # Assuming the uploaded file is saved in MEDIA_ROOT
-#             file_path = os.path.join(settings.MEDIA_ROOT, pdf_file.name)
-#             with open(file_path, 'wb') as destination:
-#                 for chunk in pdf_file.chunks():
-#                     destination.write(chunk)
-
-#             # Convert PDF to CSV using tabula
-#             csv_file_path = os.path.join(settings.MEDIA_ROOT, 'output.csv')
-#             tabula.convert_into(input_path=file_path, output_path=csv_file_path, output_format='csv', pages='all', stream=True)
-
-#             # Convert CSV to XLSX using pandas
-#             xlsx_file_path = os.path.join(settings.MEDIA_ROOT, 'output.xlsx')
-#             read_file = pd.read_csv(csv_file_path)
-#             read_file.to_excel(xlsx_file_path, index=None, header=True)
-
-#             # Provide the xlsx file for download
-#             with open(xlsx_file_path, 'rb') as excel_file:
-#                 response = HttpResponse(excel_file.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-#                 response['Content-Disposition'] = 'attachment; filename=output.xlsx'
-#                 return response
-#         else:
-#             print("Get condition working")
-#         return func(request, *args, **kwargs)
-#     return wrapper
-
-
-#####################################
-
-# def pdf_to_csv_logic(func):
-#     @wraps(func)
-#     def wrapper(request, *args, **kwargs):
-#         if request.method == 'POST' and request.FILES.get('pdf_file'):
-#             print("Post condition working")
-#             pdf_file = request.FILES['pdf_file']
-#             print(f"file is : {pdf_file}")
-#             # Assuming the uploaded file is saved in MEDIA_ROOT
-#             file_path = os.path.join(settings.MEDIA_ROOT, pdf_file.name)
-#             with open(file_path, 'wb') as destination:
-#                 for chunk in pdf_file.chunks():
-#                     destination.write(chunk)
-
-#             # Convert PDF to DataFrame
-#             df = tabula.read_pdf(input_path=file_path, pages='all')
-#             # Convert DataFrame to Excel
-#             excel_file_path = os.path.join(settings.MEDIA_ROOT, 'output.csv')
-#             tabula.convert_into(input_path=file_path, output_path=excel_file_path, output_format='csv', pages='all', stream=True)
-
-#             # Provide the excel file for download
-#             with open(excel_file_path, 'rb') as excel_file:
-#                 response = HttpResponse(excel_file.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-#                 response['Content-Disposition'] = 'attachment; filename=output.csv'
-#                 return response
-#         else:
-#             print("Get condition working")
-#         return func(request, *args, **kwargs)
-#     return wrapper
-
-##############################
-
-
-
-# def tiff_to_pdf_logic(func):
-#     def wrapper(request, *args, **kwargs):
-#         if request.method == "POST":
-#             tiff_file = request.FILES.get('tiff_file')
-#             if not tiff_file:
-#                 return HttpResponse("No TIFF file uploaded.", status=400)
-            
-#             tiff_path = default_storage.save(tiff_file.name, ContentFile(tiff_file.read()))
-#             tiff_path_full = default_storage.path(tiff_path)
-
-#             try:
-#                 pdf_path_full = tiff_path_full.replace('.tiff', '.pdf').replace('.tif', '.pdf')
-#                 if not os.path.exists(tiff_path_full):
-#                     raise Exception(f'{tiff_path_full} not found.')
-
-#                 image = Image.open(tiff_path_full)
-#                 images = []
-
-#                 for i, page in enumerate(ImageSequence.Iterator(image)):
-#                     page = page.convert("RGB")
-#                     images.append(page)
-
-#                 if len(images) == 1:
-#                     images[0].save(pdf_path_full)
-#                 else:
-#                     images[0].save(pdf_path_full, save_all=True, append_images=images[1:])
-                
-#                 pdf_url = default_storage.url(os.path.basename(pdf_path_full))
-#                 # Add files to cleanup list
-#                 return func(request, pdf_url=pdf_url, *args, **kwargs)
-#             except Exception as e:
-#                 return HttpResponse(f"Error converting TIFF to PDF: {e}", status=500)
-#         else:
-#             return func(request, *args, **kwargs)
-#     return wrapper
 
 ####################################################################################################
 import shutil
