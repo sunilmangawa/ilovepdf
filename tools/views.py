@@ -509,8 +509,12 @@ def pdf_to_html_logic(view_func):
             
             # Convert the PDF to HTML using pdf2htmlEX
             try:
-
-                p = subprocess.run(['pdf2htmlEX', '--dest-dir', fs.location, uploaded_file_path])
+                #for server
+                pdf2htmlEX_path = '/usr/local/bin/pdf2htmlEX'  # Full path to pdf2htmlEX
+                p = subprocess.run([pdf2htmlEX_path, '--dest-dir', fs.location, uploaded_file_path], check=True)
+                
+                # for localhost
+                # p = subprocess.run(['pdf2htmlEX', '--dest-dir', fs.location, uploaded_file_path])
                 # p = subprocess.Popen(['pdf2htmlEX', '--dest-dir', fs.location, uploaded_file_path])
                 # p.wait()
             except subprocess.CalledProcessError:
@@ -998,7 +1002,7 @@ def pdf_to_excel_view(request):
     )
     tool_attachment = ToolAttachment.objects.get(function_name='pdf_to_excel_view')
     context = {'meta': meta, 'tool_attachment': tool_attachment}
-    return render(request, 'tools/pdf_to_excel.html')
+    return render(request, 'tools/pdf_to_excel.html', context)
 
 @pdf_to_excel_logic
 def pdf_to_excel_include(request):
@@ -1010,7 +1014,7 @@ def pdf_to_excel_include(request):
         og_description='Convert PDF to XLSX file online in free.',
     )
     context = {'meta': meta}
-    return render(request, 'tools/pdf_to_excel_include.html')
+    return render(request, 'tools/pdf_to_excel_include.html', context)
 
 # -----------------------------------------================================
 

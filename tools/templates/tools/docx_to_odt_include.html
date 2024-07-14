@@ -20,6 +20,7 @@
         {% csrf_token %}
         <label for="odp_file">{% trans 'Upload' %} {% trans 'WORD' %}(.DOCX) {% trans 'File' %}:</label>
         <input type="file" name="docx_file" accept=".docx" id="odt_file" class="form-control btn btn-primary btn-md" required>
+        <br>
         <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} {% trans 'To' %} {% trans 'ODT' %}</button>
     </form>
     </div>

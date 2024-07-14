@@ -296,19 +296,13 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-# STATIC_URL = 'static/'
-# Add these new lines
 # STATICFILES_DIRS = (os.path.join(BASE_DIR, 'static'),)
 
-# STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-
-# MEDIA_URL = 'media/'
-# MEDIA_ROOT = BASE_DIR / 'media'
 STATIC_URL = '/static/'
-STATIC_ROOT = '/usr/local/lsws/Example/html/ilovepdf/static'
+STATIC_ROOT = '/usr/local/lsws/Example/ilovepdf/static'
 
 MEDIA_URL = '/media/'
-MEDIA_ROOT = '/usr/local/lsws/Example/html/ilovepdf/media'
+MEDIA_ROOT = '/usr/local/lsws/Example/ilovepdf/media'
 
 LOCALE_PATHS = [os.path.join(BASE_DIR, 'locale')]
 
@@ -348,7 +342,7 @@ CELERY_BEAT_SCHEDULE = {
 META_SITE_PROTOCOL = 'http'
 META_SITE_DOMAIN = 'ilovepdfconverteronline.com'
 META_SITE_NAME = 'iLovePdfConverterOnline | Online Convert and Edit Tools for PDF Docs Excel Image PowerPoint HTML etc. files in clicks'
-META_INCLUDE_KEYWORDS = ['pdf', 'converter', 'convert', 'online']
+META_INCLUDE_KEYWORDS = ['pdf', 'i love pdf', 'ilovepdf', 'converter', 'convert', 'online']
 META_SITE_TYPE = 'website'
 # META_DEFAULT_KEYWORDS = 
 # META_IMAGE_URL = 

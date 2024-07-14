@@ -4,22 +4,21 @@
 
 <header class="header roboto fs-7">
     <nav class="navbar navbar-expand-lg fixed-top text-light" style="background-color: #fcf9f9;">
-            <a class="navbar-brand " href="{% url 'core:home' %}" title="iLovePdfConverterOnline">   
-                {% comment %} <img class="logo" src="{% static '/media/ilovepdfconvertonline.svg' %}" alt="iLovePdfConverterOnline"> {% endcomment %}
-                <svg width="180" height="45" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
-                    <!-- Created with SVG-edit - https://github.com/SVG-Edit/svgedit-->
-                    <title>ilovepdfconverteronline</title>
-                    <g class="layer">
-                     <text fill="#000000" font-family="Courier" font-size="29" font-weight="bold" id="svg_2" stroke="#000000" stroke-width="0" text-anchor="middle" transform="matrix(1 0 0 0.932416 0 -2.06112)" x="83.24" xml:space="preserve" y="24.83">I  PDF</text>
-                     <path d="m67.14,8.14c4.42,-12.57 21.7,0 0,16.16c-21.7,-16.16 -4.42,-28.72 0,-16.16z" fill="#FF0000" id="svg_6" stroke="#fcf9f9" transform="matrix(1 0 0 1 0 0)"/>
-                     <text fill="#000000" font-family="Courier" font-size="19" font-weight="bold" id="svg_1" stroke="#000000" stroke-width="0" text-anchor="middle" transform="matrix(0.862178 0 0 0.932416 9.13931 -2.06112)" x="94" xml:space="preserve" y="40.79">Converter Online</text>
-                    </g>
-                </svg>
-            </a>
-            {% comment %} <a class="navbar-brand" href="{% url 'home' %}">{% trans 'navbar' %}</a> {% endcomment %}
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
-                <span class="navbar-toggler-icon"></span>
-            </button>
+        <a class="navbar-brand " href="{% url 'core:home' %}" title="iLovePdfConverterOnline">   
+            {% comment %} <img class="logo" src="{% static '/media/ilovepdfconvertonline.svg' %}" alt="iLovePdfConverterOnline"> {% endcomment %}
+            <svg width="180" height="45" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
+                <!-- Created with SVG-edit - https://github.com/SVG-Edit/svgedit-->
+                <title>ilovepdfconverteronline</title>
+                <g class="layer">
+                    <text fill="#000000" font-family="Courier" font-size="29" font-weight="bold" id="svg_2" stroke="#000000" stroke-width="0" text-anchor="middle" transform="matrix(1 0 0 0.932416 0 -2.06112)" x="83.24" xml:space="preserve" y="24.83">I  PDF</text>
+                    <path d="m67.14,8.14c4.42,-12.57 21.7,0 0,16.16c-21.7,-16.16 -4.42,-28.72 0,-16.16z" fill="#FF0000" id="svg_6" stroke="#fcf9f9" transform="matrix(1 0 0 1 0 0)"/>
+                    <text fill="#000000" font-family="Courier" font-size="19" font-weight="bold" id="svg_1" stroke="#000000" stroke-width="0" text-anchor="middle" transform="matrix(0.862178 0 0 0.932416 9.13931 -2.06112)" x="94" xml:space="preserve" y="40.79">Converter Online</text>
+                </g>
+            </svg>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNavAltMarkup" aria-controls="navbarNavAltMarkup" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
 
         {% comment %} <div class="collapse navbar-collapse" id="navbarNavAltMarkup"> {% endcomment %}
             <!--<div class="navbar-nav pt-3">
@@ -29,48 +28,47 @@
                 <a class="nav-link " aria-current="page" href="{% url 'tools:compress_pdf' %}">{% trans 'Compress'%} {% trans 'PDF' %}</a>
                 <a class="nav-link " aria-current="page" href="{% url 'tools:rotate_pdf' %}">{% trans 'Rotate'%} {% trans 'PDF' %}</a>
             </div>-->
-
-            <ul class="nav nav-pills  nav-fill pt-3">
+        <div class="collapse navbar-collapse" id="navbarNavAltMarkup">
+            <ul class="nav nav-pills nav-fill pt-3">
                 <li class="nav-item">
-                    <a class="nav-link" aria-current="page" href="{% url 'blog:post_list' %}">{% trans 'Blog'%}</a>
+                    <a class="nav-link {% if request.path == '/blog/' %}active{% endif %}"  aria-current="page" href="{% url 'blog:post_list' %}">{% trans 'Blog'%}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link " aria-current="page" href="{% url 'tools:merge_pdf' %}">{% trans 'Merge'%} {% trans 'PDF'%}</a>
+                    <a class="nav-link {% if request.path == '/tools/merge-pdf/' %}active{% endif %}" aria-current="page" href="{% url 'tools:merge_pdf' %}">{% trans 'Merge'%} {% trans 'PDF'%}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link " aria-current="page" href="{% url 'tools:split_pdf' %}">{% trans 'Split'%} {% trans 'PDF'%}</a>
+                    <a class="nav-link {% if request.path == '/tools/split-pdf/' %}active{% endif %}" aria-current="page" href="{% url 'tools:split_pdf' %}">{% trans 'Split'%} {% trans 'PDF'%}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link " aria-current="page" href="{% url 'tools:compress_pdf' %}">{% trans 'Compress'%} {% trans 'PDF' %}</a>
+                    <a class="nav-link {% if request.path == '/tools/compress-pdf/' %}active{% endif %}" aria-current="page" href="{% url 'tools:compress_pdf' %}">{% trans 'Compress'%} {% trans 'PDF' %}</a>
                 </li>
                 <li class="nav-item">
-                    <a class="nav-link " aria-current="page" href="{% url 'tools:rotate_pdf' %}">{% trans 'Rotate'%} {% trans 'PDF' %}</a>
+                    <a class="nav-link {% if request.path == '/tools/rotate-pdf/' %}active{% endif %}" aria-current="page" href="{% url 'tools:rotate_pdf' %}">{% trans 'Rotate'%} {% trans 'PDF' %}</a>
                 </li>
             </ul>
-
 
             <div class="dropdown pt-0 mt-0">
                 <button class="btn btn-light dropdown-toggle fs-7" type="button" id="dropdownMenuButton" data-bs-toggle="dropdown" aria-expanded="false">
                     to PDF
                 </button>
                 <ul class="dropdown-menu dropdown-scroll dropdown-menu-dark" aria-labelledby="dropdownMenuButtonToPDF">
-                    <li><a class="dropdown-item" href="{% url 'tools:image_to_pdf' %}">{% trans 'JPG' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:word_to_pdf' %}">{% trans 'WORD' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:odt_to_pdf_view' %}">ODT {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/jpg-to-pdf/' %}active{% endif %}" href="{% url 'tools:image_to_pdf' %}">{% trans 'JPG' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/word-to-pdf/' %}active{% endif %}" href="{% url 'tools:word_to_pdf' %}">{% trans 'WORD' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/odt-to-pdf/' %}active{% endif %}" href="{% url 'tools:odt_to_pdf_view' %}">ODT {% trans 'To' %} {% trans 'PDF' %} </a></li>
                     
-                    <li><a class="dropdown-item" href="{% url 'tools:powerpoint_to_pdf' %}">{% trans 'POWERPOINT' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:odp_to_pdf_view' %}">ODP {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/powerpoint-to-pdf/' %}active{% endif %}" href="{% url 'tools:powerpoint_to_pdf' %}">{% trans 'POWERPOINT' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/odp-to-pdf/' %}active{% endif %}" href="{% url 'tools:odp_to_pdf_view' %}">ODP {% trans 'To' %} {% trans 'PDF' %} </a></li>
                     
-                    <li><a class="dropdown-item" href="{% url 'tools:excel_to_pdf' %}">{% trans 'EXCEL' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:ods_to_pdf' %}">ODS {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/excel-to-pdf/' %}active{% endif %}" href="{% url 'tools:excel_to_pdf' %}">{% trans 'EXCEL' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/ods-to-pdf/' %}active{% endif %}" href="{% url 'tools:ods_to_pdf' %}">ODS {% trans 'To' %} {% trans 'PDF' %} </a></li>
 
-                    <li><a class="dropdown-item" href="{% url 'tools:rtf_to_pdf_view' %}">RTF {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/rtf-to-pdf/' %}active{% endif %}" href="{% url 'tools:rtf_to_pdf_view' %}">RTF {% trans 'To' %} {% trans 'PDF' %} </a></li>
                     
-                    <li><a class="dropdown-item" href="{% url 'tools:html_to_pdf' %}">{% trans 'HTML' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:json_to_pdf' %}">{% trans 'JSON' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:xml_to_pdf' %}">{% trans 'XML' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:base64_to_pdf' %}">{% trans 'Base64' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:tiff_to_pdf' %}">{% trans 'TIFF' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/html-to-pdf/' %}active{% endif %}" href="{% url 'tools:html_to_pdf' %}">{% trans 'HTML' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/json-to-pdf/' %}active{% endif %}" href="{% url 'tools:json_to_pdf' %}">{% trans 'JSON' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/xml-to-pdf/' %}active{% endif %}" href="{% url 'tools:xml_to_pdf' %}">{% trans 'XML' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/bse64-to-pdf/' %}active{% endif %}" href="{% url 'tools:base64_to_pdf' %}">{% trans 'Base64' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/tiff-to-pdf/' %}active{% endif %}" href="{% url 'tools:tiff_to_pdf' %}">{% trans 'TIFF' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
                 </ul>
             </div>
 
@@ -79,40 +77,38 @@
                     PDF to
                 </button>
                 <ul class="dropdown-menu dropdown-scroll dropdown-menu-dark" aria-labelledby="dropdownMenuButton">
-                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_image' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'JPG' %} </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_word' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'WORD' %} </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_pptx' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'POWERPOINT' %} </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_excel' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'EXCEL' %} ({% trans 'XLSX' %}) </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_csv' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'EXCEL' %}  ({% trans 'CSV' %}) </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_html' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'HTML' %} </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_json' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'JSON' %} </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_xml' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'XML' %} </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:string_to_base64' %}">{% trans 'String' %} {% trans 'To' %} {% trans 'Base64' %} </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_base64' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'Base64' %} </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:pdf_to_tiff' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'TIFF' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/pdf-to-jpg/' %}active{% endif %}" href="{% url 'tools:pdf_to_image' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'JPG' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/pdf-to-word/' %}active{% endif %}" href="{% url 'tools:pdf_to_word' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'WORD' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/pdf-to-pptx/' %}active{% endif %}" href="{% url 'tools:pdf_to_pptx' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'POWERPOINT' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/pdf-to-excel/' %}active{% endif %}" href="{% url 'tools:pdf_to_excel' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'EXCEL' %} ({% trans 'XLSX' %}) </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/pdf-to-csv/' %}active{% endif %}" href="{% url 'tools:pdf_to_csv' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'EXCEL' %}  ({% trans 'CSV' %}) </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/pdf-to-html/' %}active{% endif %}" href="{% url 'tools:pdf_to_html' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'HTML' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/pdf-to-json/' %}active{% endif %}" href="{% url 'tools:pdf_to_json' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'JSON' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/pdf-to-xml/' %}active{% endif %}" href="{% url 'tools:pdf_to_xml' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'XML' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/string-to-base64/' %}active{% endif %}" href="{% url 'tools:string_to_base64' %}">{% trans 'String' %} {% trans 'To' %} {% trans 'Base64' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/pdf-to-base64/' %}active{% endif %}" href="{% url 'tools:pdf_to_base64' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'Base64' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/pdf-to-tiff/' %}active{% endif %}" href="{% url 'tools:pdf_to_tiff' %}">{% trans 'PDF' %} {% trans 'To' %} {% trans 'TIFF' %} </a></li>
                 </ul>
             </div>
 
-            
             <div class="dropdown">
                 <button class="btn btn-light dropdown-toggle fs-7" type="button" id="dropdownMenuButtonMore" data-bs-toggle="dropdown" aria-expanded="false">
                     More
                 </button>
                 <ul class="dropdown-menu dropdown-scroll dropdown-menu-dark" aria-labelledby="dropdownMenuButton">
-                    <li><a class="dropdown-item" href="{% url 'tools:odp_to_pptx_view' %}">ODP to  POWERPOINT </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:ods_to_xlsx_view' %}">ODS to Excel(XLSX) </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:odt_to_docx_view' %}">ODT to Word(Docx)  </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:rtf_to_docx_view' %}">RTF to Word(Docx) </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:docx_to_rtf_view' %}">Word (Docx) to RTF </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:docx_to_odt_view' %}">Word (Docx) to ODT </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:xlsx_to_ods_view' %}">Excel (XLSX) to ODS </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:pptx_to_odp_view' %}">PowerPoint(PPTX) to ODP </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:word_counter_text' %}">Word Counter </a></li>
-                    <li><a class="dropdown-item" href="{% url 'tools:lorem_ipsum_generator' %}">Lorem Ipsum  </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/odp-to-pptx/' %}active{% endif %}" href="{% url 'tools:odp_to_pptx_view' %}">ODP to  POWERPOINT </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/ods-to-xlsx/' %}active{% endif %}" href="{% url 'tools:ods_to_xlsx_view' %}">ODS to Excel(XLSX) </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/odt-to-docx/' %}active{% endif %}" href="{% url 'tools:odt_to_docx_view' %}">ODT to Word(Docx)  </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/rtf-to-docx/' %}active{% endif %}" href="{% url 'tools:rtf_to_docx_view' %}">RTF to Word(Docx) </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/docx-to-rtf/' %}active{% endif %}" href="{% url 'tools:docx_to_rtf_view' %}">Word (Docx) to RTF </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/docx-to-odt/' %}active{% endif %}" href="{% url 'tools:docx_to_odt_view' %}">Word (Docx) to ODT </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/xlsx-to-ods/' %}active{% endif %}" href="{% url 'tools:xlsx_to_ods_view' %}">Excel (XLSX) to ODS </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/pptx-to-odp/' %}active{% endif %}" href="{% url 'tools:pptx_to_odp_view' %}">PowerPoint(PPTX) to ODP </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/word-counter/' %}active{% endif %}" href="{% url 'tools:word_counter_text' %}">Word Counter </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/lorem-ipsum-generator/' %}active{% endif %}" href="{% url 'tools:lorem_ipsum_generator' %}">Lorem Ipsum  </a></li>
                 </ul>
             </div>
 
-            
             <div class="dropdown btn-secondary"> <!-- class = "me-auto"-->
                 {% get_current_language as CURRENT_LANGUAGE %}
                 {% get_available_languages as AVAILABLE_LANGUAGES %}
@@ -147,7 +143,6 @@
                     <li><a class="dropdown-item" href="{% url 'core:privacy_policy' %}">{% trans 'privacy' %}</a></li>
                 </ul>
             </div>
-
-        {% comment %} </div> {% endcomment %}
+        </div>
     </nav>
 </header>
