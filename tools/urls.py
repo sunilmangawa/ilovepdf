@@ -95,40 +95,40 @@ urlpatterns = [
     # path('pdf-to-raw/', views.pdf_to_raw_view, name='pdf_to_raw'),
     # path('raw-to-pdf/', views.raw_to_pdf_view, name='raw_to_pdf'),
 
-    path('odt-to-pdf/', views.odt_to_pdf_view, name='odt_to_pdf_view'),
+    path('odt-to-pdf/', views.odt_to_pdf_view, name='odt_to_pdf'),
     path('odt-to-pdf-file/', views.odt_to_pdf_include, name='odt_to_pdf_include'),
 
     path('ods-to-pdf/', views.ods_to_pdf_view, name='ods_to_pdf'),
     path('ods-to-pdf-file/', views.ods_to_pdf_include, name='ods_to_pdf_include'),
 
-    path('odp-to-pdf/', views.odp_to_pdf_view, name='odp_to_pdf_view'),
+    path('odp-to-pdf/', views.odp_to_pdf_view, name='odp_to_pdf'),
     path('odp-to-pdf-file/', views.odp_to_pdf_include, name='odp_to_pdf_include'),
 
-    path('rtf-to-pdf/', views.rtf_to_pdf_view, name='rtf_to_pdf_view'),
+    path('rtf-to-pdf/', views.rtf_to_pdf_view, name='rtf_to_pdf'),
     path('rtf-to-pdf-file/', views.rtf_to_pdf_include, name='rtf_to_pdf_include'),
 
-    path('odt-to-docx/', views.odt_to_docx_view, name='odt_to_docx_view'),
+    path('odt-to-docx/', views.odt_to_docx_view, name='odt_to_docx'),
     path('odt-to-docx-file/', views.odt_to_docx_include, name='odt_to_docx_include'),
 
-    path('ods-to-xlsx/', views.ods_to_xlsx_view, name='ods_to_xlsx_view'),
+    path('ods-to-xlsx/', views.ods_to_xlsx_view, name='ods_to_xlsx'),
     path('ods-to-xlsx-file/', views.ods_to_xlsx_include, name='ods_to_xlsx_include'),
 
-    path('odp-to-pptx/', views.odp_to_pptx_view, name='odp_to_pptx_view'),
+    path('odp-to-pptx/', views.odp_to_pptx_view, name='odp_to_pptx'),
     path('odp-to-pptx-file/', views.odp_to_pptx_include, name='odp_to_pptx_include'),
 
-    path('rtf-to-docx/', views.rtf_to_docx_view, name='rtf_to_docx_view'),
+    path('rtf-to-docx/', views.rtf_to_docx_view, name='rtf_to_docx'),
     path('rtf-to-docx-file/', views.rtf_to_docx_include, name='rtf_to_docx_include'),
 
-    path('docx-to-rtf/', views.docx_to_rtf_view, name='docx_to_rtf_view'),
+    path('docx-to-rtf/', views.docx_to_rtf_view, name='docx_to_rtf'),
     path('docx-to-rtf-file/', views.docx_to_rtf_include, name='docx_to_rtf_include'),
 
-    path('docx-to-odt/', views.docx_to_odt_view, name='docx_to_odt_view'),
+    path('docx-to-odt/', views.docx_to_odt_view, name='docx_to_odt'),
     path('docx-to-odt-file/', views.docx_to_odt_include, name='docx_to_odt_include'),
 
-    path('xlsx-to-ods/', views.xlsx_to_ods_view, name='xlsx_to_ods_view'),
+    path('xlsx-to-ods/', views.xlsx_to_ods_view, name='xlsx_to_ods'),
     path('xlsx-to-ods-file/', views.xlsx_to_ods_include, name='xlsx_to_ods_include'),
 
-    path('pptx-to-odp/', views.pptx_to_odp_view, name='pptx_to_odp_view'),
+    path('pptx-to-odp/', views.pptx_to_odp_view, name='pptx_to_odp'),
     path('pptx-to-odp-include/', views.pptx_to_odp_include, name='pptx_to_odp_include'),
 
 

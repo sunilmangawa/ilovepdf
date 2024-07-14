@@ -54,15 +54,15 @@
                 <ul class="dropdown-menu dropdown-scroll dropdown-menu-dark" aria-labelledby="dropdownMenuButtonToPDF">
                     <li><a class="dropdown-item {% if request.path == '/tools/jpg-to-pdf/' %}active{% endif %}" href="{% url 'tools:image_to_pdf' %}">{% trans 'JPG' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
                     <li><a class="dropdown-item {% if request.path == '/tools/word-to-pdf/' %}active{% endif %}" href="{% url 'tools:word_to_pdf' %}">{% trans 'WORD' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                    <li><a class="dropdown-item {% if request.path == '/tools/odt-to-pdf/' %}active{% endif %}" href="{% url 'tools:odt_to_pdf_view' %}">ODT {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/odt-to-pdf/' %}active{% endif %}" href="{% url 'tools:odt_to_pdf' %}">ODT {% trans 'To' %} {% trans 'PDF' %} </a></li>
                     
                     <li><a class="dropdown-item {% if request.path == '/tools/powerpoint-to-pdf/' %}active{% endif %}" href="{% url 'tools:powerpoint_to_pdf' %}">{% trans 'POWERPOINT' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
-                    <li><a class="dropdown-item {% if request.path == '/tools/odp-to-pdf/' %}active{% endif %}" href="{% url 'tools:odp_to_pdf_view' %}">ODP {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/odp-to-pdf/' %}active{% endif %}" href="{% url 'tools:odp_to_pdf' %}">ODP {% trans 'To' %} {% trans 'PDF' %} </a></li>
                     
                     <li><a class="dropdown-item {% if request.path == '/tools/excel-to-pdf/' %}active{% endif %}" href="{% url 'tools:excel_to_pdf' %}">{% trans 'EXCEL' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
                     <li><a class="dropdown-item {% if request.path == '/tools/ods-to-pdf/' %}active{% endif %}" href="{% url 'tools:ods_to_pdf' %}">ODS {% trans 'To' %} {% trans 'PDF' %} </a></li>
 
-                    <li><a class="dropdown-item {% if request.path == '/tools/rtf-to-pdf/' %}active{% endif %}" href="{% url 'tools:rtf_to_pdf_view' %}">RTF {% trans 'To' %} {% trans 'PDF' %} </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/rtf-to-pdf/' %}active{% endif %}" href="{% url 'tools:rtf_to_pdf' %}">RTF {% trans 'To' %} {% trans 'PDF' %} </a></li>
                     
                     <li><a class="dropdown-item {% if request.path == '/tools/html-to-pdf/' %}active{% endif %}" href="{% url 'tools:html_to_pdf' %}">{% trans 'HTML' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
                     <li><a class="dropdown-item {% if request.path == '/tools/json-to-pdf/' %}active{% endif %}" href="{% url 'tools:json_to_pdf' %}">{% trans 'JSON' %} {% trans 'To' %} {% trans 'PDF' %} </a></li>
@@ -96,14 +96,14 @@
                     More
                 </button>
                 <ul class="dropdown-menu dropdown-scroll dropdown-menu-dark" aria-labelledby="dropdownMenuButton">
-                    <li><a class="dropdown-item {% if request.path == '/tools/odp-to-pptx/' %}active{% endif %}" href="{% url 'tools:odp_to_pptx_view' %}">ODP to  POWERPOINT </a></li>
-                    <li><a class="dropdown-item {% if request.path == '/tools/ods-to-xlsx/' %}active{% endif %}" href="{% url 'tools:ods_to_xlsx_view' %}">ODS to Excel(XLSX) </a></li>
-                    <li><a class="dropdown-item {% if request.path == '/tools/odt-to-docx/' %}active{% endif %}" href="{% url 'tools:odt_to_docx_view' %}">ODT to Word(Docx)  </a></li>
-                    <li><a class="dropdown-item {% if request.path == '/tools/rtf-to-docx/' %}active{% endif %}" href="{% url 'tools:rtf_to_docx_view' %}">RTF to Word(Docx) </a></li>
-                    <li><a class="dropdown-item {% if request.path == '/tools/docx-to-rtf/' %}active{% endif %}" href="{% url 'tools:docx_to_rtf_view' %}">Word (Docx) to RTF </a></li>
-                    <li><a class="dropdown-item {% if request.path == '/tools/docx-to-odt/' %}active{% endif %}" href="{% url 'tools:docx_to_odt_view' %}">Word (Docx) to ODT </a></li>
-                    <li><a class="dropdown-item {% if request.path == '/tools/xlsx-to-ods/' %}active{% endif %}" href="{% url 'tools:xlsx_to_ods_view' %}">Excel (XLSX) to ODS </a></li>
-                    <li><a class="dropdown-item {% if request.path == '/tools/pptx-to-odp/' %}active{% endif %}" href="{% url 'tools:pptx_to_odp_view' %}">PowerPoint(PPTX) to ODP </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/odp-to-pptx/' %}active{% endif %}" href="{% url 'tools:odp_to_pptx' %}">ODP to  POWERPOINT </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/ods-to-xlsx/' %}active{% endif %}" href="{% url 'tools:ods_to_xlsx' %}">ODS to Excel(XLSX) </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/odt-to-docx/' %}active{% endif %}" href="{% url 'tools:odt_to_docx' %}">ODT to Word(Docx)  </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/rtf-to-docx/' %}active{% endif %}" href="{% url 'tools:rtf_to_docx' %}">RTF to Word(Docx) </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/docx-to-rtf/' %}active{% endif %}" href="{% url 'tools:docx_to_rtf' %}">Word (Docx) to RTF </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/docx-to-odt/' %}active{% endif %}" href="{% url 'tools:docx_to_odt' %}">Word (Docx) to ODT </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/xlsx-to-ods/' %}active{% endif %}" href="{% url 'tools:xlsx_to_ods' %}">Excel (XLSX) to ODS </a></li>
+                    <li><a class="dropdown-item {% if request.path == '/tools/pptx-to-odp/' %}active{% endif %}" href="{% url 'tools:pptx_to_odp' %}">PowerPoint(PPTX) to ODP </a></li>
                     <li><a class="dropdown-item {% if request.path == '/tools/word-counter/' %}active{% endif %}" href="{% url 'tools:word_counter_text' %}">Word Counter </a></li>
                     <li><a class="dropdown-item {% if request.path == '/tools/lorem-ipsum-generator/' %}active{% endif %}" href="{% url 'tools:lorem_ipsum_generator' %}">Lorem Ipsum  </a></li>
                 </ul>
