@@ -1,81 +1,55 @@
-document.getElementById('upload-btn').addEventListener('click', function() {
-    var filesInput = document.getElementById('pdf-files');
-    var files = filesInput.files;
-    var formData = new FormData();
-    
-    for (var i = 0; i < files.length; i++) {
-        formData.append('pdf_files', files[i]);
-    }
-    
-    fetch('/tools/merge-pdf/', { // Adjust the URL based on your configuration
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRFToken': getCookie('csrftoken'), // Ensure CSRF token is included
-        },
-    })
-    .then(response => response.json())
-    .then(data => {
-        displayFilesList(data.files);
-    })
-    .catch(error => console.error('Error:', error));
-});
+// merge_pdf.js
+document.addEventListener('DOMContentLoaded', function() {
+    const dropArea = document.querySelector('.drop-area');
 
-function displayFilesList(files) {
-    const filesList = document.getElementById('files-list');
-    filesList.innerHTML = ''; // Clear existing items
-    files.forEach((file, index) => {
-        const listItem = document.createElement('li');
-        listItem.setAttribute('data-id', file.id); // Assuming each file has a unique ID
-        listItem.textContent = file.name;
-        filesList.appendChild(listItem);
-    });
-    
-    // Show merge button
-    document.getElementById('merge-btn').style.display = 'block';
-    
-    // Initialize drag-and-drop functionality here
-}
+    // Handle multiple file uploads
+    function handleFiles(files) {
+        for (let i = 0; i < files.length; i++) {
+            let file = files[i];
+            if (!file.type.match('application/pdf')) continue;
 
-// Helper to get CSRF token
-function getCookie(name) {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                break;
-            }
+            createThumbnail(file);
         }
     }
-    return cookieValue;
-}
 
-// Add event listener for the merge button
-document.getElementById('merge-btn').addEventListener('click', function() {
-    const filesList = document.getElementById('files-list');
-    const orderedIds = Array.from(filesList.children).map(item => item.getAttribute('data-id'));
-    
-    fetch('/tools/merge/', { // Adjust the URL for the merge operation
-        method: 'POST',
-        body: JSON.stringify({ 'ordered_ids': orderedIds }),
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRFToken': getCookie('csrftoken'),
-        },
-    })
-    .then(response => response.blob())
-    .then(blob => {
-        const url = window.URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.style.display = 'none';
-        a.href = url;
-        a.download = 'merged.pdf';
-        document.body.appendChild(a);
-        a.click();
-        window.URL.revokeObjectURL(url);
-    })
-    .catch(error => console.error('Error:', error));
+    // Display thumbnails in the list
+    function createThumbnail(file) {
+        const li = document.createElement('li');
+        li.className = 'thumbnail';
+        li.draggable = true;
+        li.textContent = file.name;
+
+        // Create a container for the thumbnail image (placeholder for now)
+        const imgContainer = document.createElement('div');
+        imgContainer.className = 'img-container';
+
+        // Show placeholder image
+        const imgPlaceholder = document.createElement('img');
+        imgPlaceholder.src = "{% static 'images/pdf-icon.png' %}";
+        imgPlaceholder.alt = file.name;
+        imgPlaceholder.width = 64;
+
+        imgContainer.appendChild(imgPlaceholder);
+        li.appendChild(imgContainer);
+
+        // Allow drag and drop reordering
+        li.addEventListener('dragstart', function(e) {
+            e.dataTransfer.setData("text/plain", this.textContent);
+            e.target.classList.add('dragging');
+        });
+
+        li.addEventListener('dragend', function() {
+            this.classList.remove('dragging');
+        });
+
+        document.getElementById('fileList').appendChild(li);
+
+        // Clean up files on session end
+        window.addEventListener('beforeunload', () => {
+            sessionStorage.clear();
+            localStorage.removeItem('pdf_files');
+        });
+    }
+
+    dropArea.ondrop = handleFiles;
 });

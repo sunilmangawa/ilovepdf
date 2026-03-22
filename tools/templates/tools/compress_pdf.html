@@ -3,34 +3,149 @@
 {% load static %}
 {% load blog_tags %}
 
-{% block title%}{% trans 'Compress'%} {% trans 'PDF' %} {% endblock %}
+{% block title %}{% trans 'Compress'%} {% trans 'PDF' %}{% endblock %}
+
 {% block content %}
-    <div class="container-fluid poppins-regular text-center pt-2 mt-3">
-        <h1 class="roboto-bold">{% trans 'Compress'%} {% trans 'PDF' %} </h1>
-        <hr><br>
-        <h2>{% trans 'compress_pdf_subtitle' %} </h2><br>
-        <div class="container">
-            <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-2 mt-2">
-                {% csrf_token %}
-                <label for="pdf_file"><h3>{% trans 'Upload' %} {% trans 'PDF' %}:</h3></label>
-                <input type="file" class="form-control btn btn-primary btn-md" name="pdf_file" id="pdf_file" accept="application/pdf" class="form-control btn btn-primary btn-md" required>
-                <br><br>
-                <label for="compress_level">{% trans 'compress_pdf_level' %} (%):</label>
-                <input type="range" name="compress_level" id="compress_level" class="primary-border-subtle" min="10" max="100" value="50" step="10" oninput="this.nextElementSibling.value = this.value">
-                <output>50</output>%
-                <br>
-                <button type="submit" class="btn btn-danger btn-lg">{% trans 'compress' %} {% trans 'PDF' %}</button>
-            </form>
-        </div>
-    </div>
-    
-    <div class="container-fluid mt-3 text-start">
-        {% if tool_attachment %} 
-            <div class="card-body bg-body justify fs-5 p-5">
-                {{tool_attachment.body|markdown}}
-            </div>       
-            <br>
-        {% endif %}
+<div class="container py-5 mt-5">
+    <!-- Hero Section -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-gradient">{% trans 'Compress' %} {% trans 'PDF' %}</h1>
+        <p class="lead text-secondary">Reduce PDF file size while maintaining quality</p>
     </div>
 
+    <!-- Tool Card -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="modern-card">
+                <form method="post" enctype="multipart/form-data" id="compressForm">
+                    {% csrf_token %}
+
+                    <!-- Upload Section -->
+                    <div class="upload-box mb-4" id="uploadBox">
+                        <div class="upload-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+                            </svg>
+                        </div>
+                        <h3 class="mt-3">{% trans 'Upload' %} {% trans 'PDF' %}</h3>
+                        <p class="text-secondary mb-0">Drag & drop your file here or click to browse</p>
+                        <input type="file" class="form-control mt-3" name="pdf_file" id="pdf_file" accept=".pdf" required>
+                    </div>
+
+                    <!-- File info display -->
+                    <div id="fileInfo" class="mb-4" style="display:none;">
+                        <div class="d-flex align-items-center gap-3 p-3" style="background: var(--bg-secondary); border-radius: 12px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" stroke="var(--primary-color)" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <div class="flex-grow-1">
+                                <div class="fw-bold" id="fileName">—</div>
+                                <small class="text-secondary">Original: <span id="fileSize">—</span></small>
+                            </div>
+                            <div class="text-end">
+                                <small class="text-secondary">Estimated:</small>
+                                <div class="fw-bold" style="color: var(--success-color);" id="estimatedSize">—</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Compression Level -->
+                    <div class="mb-4">
+                        <label for="compress_level" class="form-label fw-bold">{% trans 'compress_pdf_level' %}</label>
+                        <div class="d-flex align-items-center gap-3">
+                            <input type="range" name="compress_level" id="compress_level" class="flex-grow-1" min="10" max="100" value="50" step="10">
+                            <span class="badge bg-primary fs-5 px-3 py-2"><span id="compress_value">50</span>%</span>
+                        </div>
+                        <small class="text-secondary">Lower value = smaller file size, higher value = better quality</small>
+                    </div>
+
+                    <!-- Size Warning -->
+                    <div class="file-size-warning" id="sizeWarning"></div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" class="me-2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        {% trans 'compress' %} {% trans 'PDF' %}
+                    </button>
+                </form>
+            </div>
+
+            <!-- Description Section -->
+            {% if tool_attachment %}
+            <div class="modern-card mt-4">
+                <h3 class="card-title">About PDF Compression</h3>
+                <div class="card-text">
+                    {{tool_attachment.body|markdown}}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('pdf_file');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileName = document.getElementById('fileName');
+    const fileSize = document.getElementById('fileSize');
+    const estimatedSize = document.getElementById('estimatedSize');
+    const compressLevel = document.getElementById('compress_level');
+    const compressValue = document.getElementById('compress_value');
+    const sizeWarning = document.getElementById('sizeWarning');
+    const MAX_SIZE = 30 * 1024 * 1024; // 30 MB
+
+    /**
+     * Format bytes to human-readable size string.
+     */
+    function formatSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    /**
+     * Estimate compressed size based on compression level.
+     */
+    function updateEstimate() {
+        if (!fileInput.files.length) return;
+        const originalSize = fileInput.files[0].size;
+        const level = parseInt(compressLevel.value);
+        // Rough estimate: quality% maps to size retention
+        const ratio = level / 100;
+        const estimated = originalSize * (0.2 + 0.6 * ratio);
+        estimatedSize.textContent = '~' + formatSize(estimated);
+    }
+
+    // File selection handler
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            const file = this.files[0];
+            fileInfo.style.display = 'block';
+            fileName.textContent = file.name;
+            fileSize.textContent = formatSize(file.size);
+            updateEstimate();
+
+            // Check 30 MB limit
+            if (file.size > MAX_SIZE) {
+                sizeWarning.style.display = 'block';
+                sizeWarning.textContent = 'File exceeds the 30 MB limit.';
+            } else {
+                sizeWarning.style.display = 'none';
+            }
+        } else {
+            fileInfo.style.display = 'none';
+        }
+    });
+
+    // Slider change handler
+    compressLevel.addEventListener('input', function() {
+        compressValue.textContent = this.value;
+        updateEstimate();
+    });
+</script>
 {% endblock %}

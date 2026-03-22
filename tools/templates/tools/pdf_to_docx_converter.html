@@ -1,17 +1,40 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title>PDF to DOCX Converter</title>
-    {% comment %} <title>{% trans "PDF to DOCX Converter" %}</title> {% endcomment %}
-</head>
-<body>
-    <div style="margin-top: 1%; padding-top: 1%;">
-        <h2 >PDF to DOCX Converter</h2>
-        <form method="post" enctype="multipart/form-data" action="/tools/pdf_to_docx_converter/">
-            {% csrf_token %}
-            <input type="file" name="pdf_file" accept=".pdf" required>
-            <button type="submit">Convert</button>
-        </form>
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+
+{% block title %}{% trans 'PDF' %} {% trans 'To' %} DOCX {% trans 'Converter' %}{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-gradient">{% trans 'PDF' %} {% trans 'To' %} DOCX {% trans 'Converter' %}</h1>
+        <p class="lead text-secondary">Convert PDF files to editable Word documents online for free.</p>
     </div>
-</body>
-</html>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="modern-card">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="upload-box mb-4">
+                        <div class="upload-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+                            </svg>
+                        </div>
+                        <h3 class="mt-3">{% trans 'Upload' %} {% trans 'PDF' %} {% trans 'File' %}</h3>
+                        <p class="text-secondary mb-0">Drag & drop your PDF file here or click to browse</p>
+                        <input type="file" class="form-control mt-3" name="pdf_file" accept=".pdf" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" class="me-2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        {% trans 'Convert' %} → DOCX
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

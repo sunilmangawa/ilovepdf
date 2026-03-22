@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+  {% load static %}
+
+  {% block content %}
+      <div class="container mt-5">
+          <!-- Merged PDF Download Section -->
+          {% if merged_file_url and merged_file_name %}
+              <h2>Download Your Merged File</h2>
+              <p>Your files have been successfully merged. Click the button below to download your file.</p>
+
+              <a href="{{ merged_file_url }}" class="btn btn-primary" download="{{ merged_file_name }}">Download Merged PDF</a>
+          {% else %}
+              <p>Oops! It seems there was an issue with merging your files. Please try again or contact support.</p>
+          {% endif %}
+
+          <!-- Other Tools Section -->
+          <div class="mt-5">
+              <h3>Explore More Tools:</h3>
+              <div class="row tools-row mb-4 justify-content-center align-items-center">
+                  <!-- Tool 1: PDF Splitter -->
+                  <div class="col-md-6 col-lg-3 mb-4">
+                      <a href="{% url 'tools:split_pdf' %}">
+                          <div class="card tool-card">
+                              <img src="{% static 'images/pdf-split.png' %}" alt="Split PDF" class="card-img-top" height="150px">
+                              <div class="card-body">
+                                  <h4>PDF Splitter</h4>
+                                  <p>Effortlessly split your PDF files into multiple parts.</p>
+                              </div>
+                          </div>
+                      </a>
+                  </div>
+
+                  <!-- Tool 2: PDF Compressor -->
+                  <div class="col-md-6 col-lg-3 mb-4">
+                      <a href="{% url 'tools:compress_pdf' %}">
+                          <div class="card tool-card">
+                              <img src="{% static 'images/pdf-compress.png' %}" alt="Compress PDF" class="card-img-top" height="150px">
+                              <div class="card-body">
+                                  <h4>PDF Compressor</h4>
+                                  <p>Reduce the size of your PDF files without compromising quality.</p>
+                              </div>
+                          </div>
+                      </a>
+                  </div>
+
+                  <!-- Tool 3: PDF Encrypter -->
+                  <div class="col-md-6 col-lg-3 mb-4">
+                      <a href="{% url 'tools:encrypt_pdf' %}">
+                          <div class="card tool-card">
+                              <img src="{% static 'images/pdf-lock.png' %}" alt="Encrypt PDF" class="card-img-top" height="150px">
+                              <div class="card-body">
+                                  <h4>PDF Encrypter</h4>
+                                  <p>Secure your documents with robust encryption.</p>
+                              </div>
+                          </div>
+                      </a>
+                  </div>
+
+                  <!-- Tool 4: PDF Decrypter -->
+                  <div class="col-md-6 col-lg-3 mb-4">
+                      <a href="{% url 'tools:decrypt_pdf' %}">
+                          <div class="card tool-card">
+                              <img src="{% static 'images/pdf-unlock.png' %}" alt="Decrypt PDF" class="card-img-top" height="150px">
+                              <div class="card-body">
+                                  <h4>PDF Decrypter</h4>
+                                  <p>Unlocks your PDF files to make them accessible again.</p>
+                              </div>
+                          </div>
+                      </a>
+                  </div>
+              </div>
+          </div>
+
+      </div>
+{% endblock %}

@@ -3,30 +3,42 @@
 {% load static %}
 {% load blog_tags %}
 
-{% block title%} {% trans 'Base64' %}  {% trans 'To' %} {% trans 'PDF' %} {% endblock %}
+{% block title %}{% trans 'Base64' %} {% trans 'To' %} {% trans 'PDF' %}{% endblock %}
 
 {% block content %}
-    <div class="container-fluid poppins-regular text-center bg-body-secondary pt-5" >
-        <h1 class="roboto-bold"> {% trans 'Base64' %}  {% trans 'To' %} {% trans 'PDF' %}</h1>
-        <hr>
-            <div class="container">
-                <h2>{% trans 'base64_2pdf_subtitle' %}</h2>
-                <form action="/tools/base64-to-pdf/" method="post" class="form-control align-items-center p-3 mt-3">
+<div class="container py-5 mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-gradient">{% trans 'Base64' %} {% trans 'To' %} {% trans 'PDF' %}</h1>
+        <p class="lead text-secondary">Convert Base64 encoded string to a PDF document online for free.</p>
+    </div>
+
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="modern-card">
+                <form method="post">
                     {% csrf_token %}
-                    <textarea name="base64_string" class="form-control" rows="9" cols="90" placeholder="{% trans 'base64_2pdf_plcHoldr' %}"></textarea><br>
-                    <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} -> {% trans 'PDF' %}</button>
+                    <div class="mb-4">
+                        <label for="base64_string" class="form-label fw-bold">Enter Base64 String</label>
+                        <textarea class="form-control" name="base64_string" id="base64_string" rows="8" placeholder="Paste your Base64 encoded string here..." required></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" class="me-2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        {% trans 'Convert' %} → {% trans 'PDF' %}
+                    </button>
                 </form>
             </div>
-    </div>
 
-    <div class="container-fluid mt-3 text-start">
-        {% if tool_attachment %} 
-            <div class="card-body bg-body justify fs-5 p-5">
-                {{tool_attachment.body|markdown}}
-            </div>       
-        <br>
-        {% endif %}
+            {% if tool_attachment %}
+            <div class="modern-card mt-4">
+                <h3 class="card-title">About Base64 to PDF Conversion</h3>
+                <div class="card-text">
+                    {{ tool_attachment.body|markdown }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
     </div>
-
-{% endblock %}  
-    
+</div>
+{% endblock %}

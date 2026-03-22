@@ -1,79 +1,114 @@
 {% extends 'base.html' %}
 {% load i18n %}
-
 {% load static %}
 {% load blog_tags %}
 
-{% block title%} {% trans 'wordcounter_title' %} Word Counter Tool{% endblock %}
-
-{% block extraheads %}
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-        }
-        textarea {
-            width: 100%;
-            height: 150px;
-            margin-bottom: 10px;
-        }
-        button {
-            display: block;
-            margin-bottom: 10px;
-        }
-        #word-count {
-            font-weight: bold;
-        }
-    </style>
-
-{% endblock %}
+{% block title %}{% trans 'wordcounter_title' %} — Word Counter Tool{% endblock %}
 
 {% block content %}
-    <div class="container-fluid poppins-regular text-center pt-3 mt-2">
-        <h1 class="roboto-bold">{% trans 'wordcounter_title' %}</h1>
-        <hr><br>
-        <h2>{% trans 'wordcounter_subtitle' %}</h2>
-        <br>
-        <div class="container">
-            <form id="word-counter-form" class="form-control align-items-center p-3 mt-2">
-                {% csrf_token %}
-                <textarea name="text" id="text" placeholder="Enter your text here..."></textarea>
-                <button type="button" id="count-words-button" class="btn btn-danger btn-lg">Count Words</button>
-            </form><br>
-        </div>
-        <div class="form-control align-items-center p-3 ml-2">
-            <p>Word Count: <span id="word-count" >{{ word_count }}</span></p>
-        </div>
-        <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
-
-        <script>
-            $(document).ready(function(){
-                $('#count-words-button').click(function(){
-                    var text = $('#text').val();
-                    $.ajax({
-                        type: 'POST',
-                        url: '',
-                        data: {
-                            'text': text,
-                            'csrfmiddlewaretoken': '{{ csrf_token }}'
-                        },
-                        success: function(response){
-                            $('#word-count').text(response.word_count);
-                        }
-                    });
-                });
-            });
-        </script>
-
+<div class="container py-5 mt-5">
+    <!-- Hero Section -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-gradient">{% trans 'wordcounter_title' %}</h1>
+        <p class="lead text-secondary">{% trans 'wordcounter_subtitle' %}</p>
     </div>
 
-    <div class="container-fluid mt-3 text-start">
-        {% if tool_attachment %} 
-        <div class="card-body bg-body justify fs-5 p-5">
-            {{tool_attachment.body|markdown}}
-        </div>       
-        <br>
-        {% endif %}
-    </div> 
+    <!-- Tool Card -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="modern-card">
+                <!-- Stats Row -->
+                <div class="row g-3 mb-4">
+                    <div class="col-4">
+                        <div class="text-center p-3" style="background: var(--bg-secondary); border-radius: 12px;">
+                            <div class="fs-2 fw-bold" style="background: var(--gradient-primary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" id="wordCount">0</div>
+                            <small class="text-secondary">Words</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-center p-3" style="background: var(--bg-secondary); border-radius: 12px;">
+                            <div class="fs-2 fw-bold" style="background: var(--gradient-secondary); -webkit-background-clip: text; -webkit-text-fill-color: transparent;" id="charCount">0</div>
+                            <small class="text-secondary">Characters</small>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="text-center p-3" style="background: var(--bg-secondary); border-radius: 12px;">
+                            <div class="fs-2 fw-bold" style="color: var(--success-color);" id="sentenceCount">0</div>
+                            <small class="text-secondary">Sentences</small>
+                        </div>
+                    </div>
+                </div>
 
+                <!-- Text Area -->
+                <div class="mb-4">
+                    <textarea id="textInput" class="form-control" rows="10" placeholder="Start typing or paste your text here..." style="resize: vertical; min-height: 200px;"></textarea>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-primary flex-grow-1" id="clearBtn">
+                        Clear Text
+                    </button>
+                    <button type="button" class="btn btn-secondary" id="copyBtn">
+                        Copy Text
+                    </button>
+                </div>
+            </div>
+
+            <!-- Description Section -->
+            {% if tool_attachment %}
+            <div class="modern-card mt-4">
+                <h3 class="card-title">About Word Counter</h3>
+                <div class="card-text">
+                    {{ tool_attachment.body|markdown }}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    const textInput = document.getElementById('textInput');
+    const wordCountEl = document.getElementById('wordCount');
+    const charCountEl = document.getElementById('charCount');
+    const sentenceCountEl = document.getElementById('sentenceCount');
+
+    // Real-time counting on input
+    textInput.addEventListener('input', function() {
+        const text = this.value.trim();
+
+        // Word count
+        const words = text ? text.split(/\s+/).filter(function(w) { return w.length > 0; }) : [];
+        wordCountEl.textContent = words.length;
+
+        // Character count
+        charCountEl.textContent = this.value.length;
+
+        // Sentence count — exclude consecutive dots (.., ...) and dots
+        // at start of words (.config, .env). Only count sentence-ending
+        // punctuation that follows a word character.
+        const sentenceMatches = text.match(/\w[.!?]+(?:\s|$)/g);
+        const sentenceCount = sentenceMatches ? sentenceMatches.length : 0;
+        sentenceCountEl.textContent = sentenceCount;
+    });
+
+    // Clear button
+    document.getElementById('clearBtn').addEventListener('click', function() {
+        textInput.value = '';
+        wordCountEl.textContent = '0';
+        charCountEl.textContent = '0';
+        sentenceCountEl.textContent = '0';
+        textInput.focus();
+    });
+
+    // Copy button
+    document.getElementById('copyBtn').addEventListener('click', function() {
+        textInput.select();
+        document.execCommand('copy');
+        this.textContent = 'Copied!';
+        const btn = this;
+        setTimeout(function() { btn.textContent = 'Copy Text'; }, 2000);
+    });
+</script>
 {% endblock %}

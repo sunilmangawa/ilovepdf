@@ -1,50 +1,68 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>PDF to PSD</title>
-</head>
-<body>
-    <h1>Convert PDF to PSD</h1>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <label for="pdf_file">Select PDF file:</label>
-        <input type="file" id="pdf_file" name="pdf_file" required>
-        <button type="submit">Convert</button>
-    </form>
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
 
-    {% if layers_info %}
-        <h2>Layers Information</h2>
-        <ul>
-            {% for layer in layers_info %}
-                <li>
-                    <strong>Name:</strong> {{ layer.name }} <br>
-                    <strong>Visible:</strong> {{ layer.visible }} <br>
-                    <strong>Opacity:</strong> {{ layer.opacity }} <br>
-                    <strong>Blend Mode:</strong> {{ layer.blend_mode }}
-                </li>
-            {% endfor %}
-        </ul>
-    {% endif %}
-</body>
-</html>
+{% block title %}{% trans 'PDF' %} {% trans 'To' %} PSD{% endblock %}
 
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-gradient">{% trans 'PDF' %} {% trans 'To' %} PSD</h1>
+        <p class="lead text-secondary">Convert PDF pages to Photoshop PSD format with layer information.</p>
+    </div>
 
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="modern-card">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="upload-box mb-4">
+                        <div class="upload-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+                            </svg>
+                        </div>
+                        <h3 class="mt-3">{% trans 'Upload' %} {% trans 'PDF' %} {% trans 'File' %}</h3>
+                        <p class="text-secondary mb-0">Drag & drop your PDF file here or click to browse</p>
+                        <input type="file" class="form-control mt-3" name="pdf_file" accept=".pdf" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" class="me-2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        {% trans 'Convert' %} → PSD
+                    </button>
+                </form>
+            </div>
 
-<!--
-<html>
-<head>
-    <title>Convert PDF to PSD</title>
-</head>
-<body>
-    <h1>Convert PDF to PSD</h1>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        <label for="pdf_file">Select PDF file:</label>
-        <input type="file" id="pdf_file" name="pdf_file" accept="application/pdf" required>
-        <br><br>
-        <button type="submit">Convert to PSD</button>
-    </form>
-</body>
-</html>
--->
+            {% if layers_info %}
+            <div class="modern-card mt-4">
+                <h3 class="card-title">✅ Layers Information</h3>
+                <div class="table-responsive">
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Visible</th>
+                                <th>Opacity</th>
+                                <th>Blend Mode</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for layer in layers_info %}
+                            <tr>
+                                <td>{{ layer.name }}</td>
+                                <td>{{ layer.visible }}</td>
+                                <td>{{ layer.opacity }}</td>
+                                <td>{{ layer.blend_mode }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

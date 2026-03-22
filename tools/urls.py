@@ -7,6 +7,7 @@ urlpatterns = [
 
     path('merge-pdf/', views.merge_pdf_view, name='merge_pdf'),
     path('merge-pdf-files/', views.merge_pdf_include, name='merge_pdf_include'),
+    # path('merge-download/', views.merge_download, name='merge_download'),
     
     path('split-pdf/', views.split_pdf_view, name='split_pdf'),
     path('split-pdf-file/', views.split_pdf_include, name='split_pdf_include'),

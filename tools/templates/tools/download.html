@@ -1,67 +1,37 @@
-<!-- tools/templates/tools/download.html -->
-<!DOCTYPE html>
-<html>
-<head>
-    <title>Download Merged PDF</title>
-</head>
-<body>
-    <h1>Download Merged PDF</h1>
-    <!-- <a href="{% url 'merge_and_download' %}">Download</a> -->
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
 
-    <!-- <a href="{{ pdf_object.pdf_file.url }}" download>Download PDF</a> -->
-    <button id="download-button">Download Merged PDF</button>
+{% block title %}Download Merged PDF{% endblock %}
 
-    <script>
-    document.getElementById('download-button').addEventListener('click', function() {
-        // You could use a basic anchor tag with the download attribute 
-        // or initiate a file download using JavaScript FileSaver.js
-    });
-    </script>
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-gradient">Download Merged PDF</h1>
+        <p class="lead text-secondary">Your merged PDF is ready for download.</p>
+    </div>
 
-</body>
-</html>
-
-
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Download PDF</title>
-</head>
-<body>
-    <a href="{% url 'download_pdf' %}" download><button>Download Merged PDF</button></a>
-</body>
-</html>
- -->
-
-
-
-
-<!-- <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Download PDF</title>
-</head>
-<body>
-    <a href="{{ merged_pdf_path }}" download>Download Merged PDF</a>
-</body>
-</html> -->
-
-
-
-
-<!-- <!DOCTYPE html>
-<html>
-<head>
-    <title>PDF Download</title>
-</head>
-<body>
-    <h1>PDF Download Page</h1>
-    <p>Your file is ready for download:</p>
-    <a href="/tools/download/{{ file_name }}" download><button>Download PDF</button></a>
-    <a href="{% url 'download' file_name=file_name %}" download><button>Download PDF</button></a>
-    <a href="/tools/download/{{ file_name }}" download><button>Download PDF</button></a> 
-</body>
-</html> -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="modern-card text-center">
+                <div class="mb-4">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="80" height="80" fill="none" stroke="var(--success-color, #10b981)" stroke-width="2" viewBox="0 0 24 24">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="16 8 10 16 7 13"></polyline>
+                    </svg>
+                </div>
+                <h3>✅ Merge Complete!</h3>
+                <p class="text-secondary">Your PDF files have been successfully merged.</p>
+                {% if merged_pdf_path %}
+                <a href="{{ merged_pdf_path }}" class="btn btn-primary btn-lg" download>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" class="me-2" viewBox="0 0 24 24">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+                    </svg>
+                    Download Merged PDF
+                </a>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

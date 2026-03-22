@@ -1,5 +1,16 @@
 from django import forms
 from django.forms.widgets import ClearableFileInput
+from ckeditor.widgets import CKEditorWidget
+# from tools.models import ToolAttachment
+
+# class ToolAttachmentForm(forms.ModelForm):
+#     description = forms.CharField(widget=CKEditorWidget()) 
+    
+#     class Meta: 
+#         model = ToolAttachment 
+#         fields = "__all__"
+
+
 # from django.core.exceptions import ValidationError
 
 # def validate_file_type(value):

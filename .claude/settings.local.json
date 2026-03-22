@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//tmp/**)",
+      "Bash(mv /tmp/base_new.html /d/projects/github/self/ilovepdf/templates/base.html)"
+    ]
+  }
+}

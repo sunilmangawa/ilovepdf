@@ -3,30 +3,127 @@
 {% load static %}
 {% load blog_tags %}
 
-{% block title%} {% trans 'Rotate'%} {% trans 'PDF' %}{% endblock %}
+{% block title %}{% trans 'Rotate'%} {% trans 'PDF' %}{% endblock %}
 
 {% block content %}
-  <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
-    <h1> {% trans 'Rotate'%} {% trans 'PDF' %}</h1>
-    <hr>
-    <div class="container">
-      <h2>{% trans 'rotatepdf_subtitle' %}</h2>
-
-      <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-danger btn-lg">{% trans 'Rotate'%} {% trans 'PDF' %}</button>
-      </form>
+<div class="container py-5 mt-5">
+    <!-- Hero Section -->
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-gradient">{% trans 'Rotate' %} {% trans 'PDF' %}</h1>
+        <p class="lead text-secondary">{% trans 'rotatepdf_subtitle' %}</p>
     </div>
-  </div>
 
-  <div class="container-fluid mt-3 text-start">
-    {% if tool_attachment %} 
-    <div class="card-body bg-body justify fs-5 p-5">
-        {{tool_attachment.body|markdown}}
-    </div>       
-  <br>
-    {% endif %}
-  </div>
+    <!-- Tool Card -->
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="modern-card">
+                <form method="post" enctype="multipart/form-data" id="rotateForm">
+                    {% csrf_token %}
 
-{% endblock %}  
+                    <!-- Upload Section -->
+                    <div class="upload-box mb-4" id="uploadBox">
+                        <div class="upload-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+                            </svg>
+                        </div>
+                        <h3 class="mt-3">{% trans 'Upload' %} {% trans 'PDF' %}</h3>
+                        <p class="text-secondary mb-0">Drag & drop your PDF file here or click to browse</p>
+                        <input type="file" class="form-control mt-3" name="pdf_file" id="pdf_file" accept=".pdf" required>
+                    </div>
+
+                    <!-- File info display -->
+                    <div id="fileInfo" class="mb-4" style="display:none;">
+                        <div class="d-flex align-items-center gap-3 p-3" style="background: var(--bg-secondary); border-radius: 12px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" stroke="var(--primary-color)" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                <polyline points="14 2 14 8 20 8"></polyline>
+                            </svg>
+                            <div>
+                                <div class="fw-bold" id="fileName">—</div>
+                                <small class="text-secondary" id="fileSize">—</small>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rotation Angle -->
+                    <div class="mb-4">
+                        <label for="rotation_angle" class="form-label fw-bold">Rotation Angle</label>
+                        <select name="rotation_angle" id="rotation_angle" class="form-control">
+                            <option value="0">0° (No rotation)</option>
+                            <option value="90" selected>90° Clockwise</option>
+                            <option value="180">180°</option>
+                            <option value="270">270° Counter-clockwise</option>
+                        </select>
+                    </div>
+
+                    <!-- Pages -->
+                    <div class="mb-4">
+                        <label for="pages" class="form-label fw-bold">Pages to Rotate</label>
+                        <input type="text" name="pages" id="pages" class="form-control" placeholder="e.g., 1,2,3 or 1-3">
+                        <small class="text-secondary">Leave blank to rotate all pages</small>
+                    </div>
+
+                    <!-- Size Warning -->
+                    <div class="file-size-warning" id="sizeWarning"></div>
+
+                    <!-- Submit Button -->
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" class="me-2" viewBox="0 0 24 24">
+                            <path d="M23 4v6h-6M1 20v-6h6M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+                        </svg>
+                        {% trans 'Rotate'%} {% trans 'PDF' %}
+                    </button>
+                </form>
+            </div>
+
+            <!-- Description Section -->
+            {% if tool_attachment %}
+            <div class="modern-card mt-4">
+                <h3 class="card-title">About PDF Rotation</h3>
+                <div class="card-text">
+                    {{tool_attachment.body|markdown}}
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+
+<script>
+    const fileInput = document.getElementById('pdf_file');
+    const fileInfo = document.getElementById('fileInfo');
+    const fileNameEl = document.getElementById('fileName');
+    const fileSizeEl = document.getElementById('fileSize');
+    const sizeWarning = document.getElementById('sizeWarning');
+    const MAX_SIZE = 30 * 1024 * 1024;
+
+    /**
+     * Format bytes to human-readable size string.
+     */
+    function formatSize(bytes) {
+        if (bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) {
+            const file = this.files[0];
+            fileInfo.style.display = 'block';
+            fileNameEl.textContent = file.name;
+            fileSizeEl.textContent = formatSize(file.size);
+            if (file.size > MAX_SIZE) {
+                sizeWarning.style.display = 'block';
+                sizeWarning.textContent = 'File exceeds the 30 MB limit.';
+            } else {
+                sizeWarning.style.display = 'none';
+            }
+        } else {
+            fileInfo.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

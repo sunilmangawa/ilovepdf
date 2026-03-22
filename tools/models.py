@@ -6,6 +6,7 @@ from ckeditor_uploader.fields import RichTextUploadingField
 
 # Create your models here.
 class ToolAttachment(models.Model):
+    # description = RichTextField(blank=True, null=True, default=None)
     function_name = models.CharField(max_length=50, unique=True, blank=True, null=True, default=None, help_text="Unique identifier for the tool's function")
     template_name = models.CharField(max_length=100, blank=True, null=True, default=None, help_text="Template path for the tool's function")
     body=RichTextField(blank=True, null=True, default=None, config_name='awesome_ckeditor')
@@ -17,7 +18,6 @@ class ToolAttachment(models.Model):
 
     def __str__(self):
         return self.function_name
-
 
 # class ConvertedPDF(models.Model):
 #     pdf_file = models.FileField(upload_to='pdfs/')

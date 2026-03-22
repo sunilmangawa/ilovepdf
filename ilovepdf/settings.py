@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+from ckeditor.fields import RichTextField
+from ckeditor.widgets import CKEditorWidget
 from django.utils.translation import gettext_lazy as _
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -36,6 +38,8 @@ INSTALLED_APPS = [
     'tools.apps.ToolsConfig',
     'taggit',
     'ckeditor',
+    'ckeditor_uploader',
+    'django_ckeditor_5',
     'rosetta',
     'parler',
     
@@ -331,8 +335,14 @@ CKEDITOR_CONFIGS = {
         'height': 300,
         'width': 900,
         'versionCheck': False, # To hide the admin msg "This CKEditor 4.22.1 version is not secure. Consider upgrading to the latest one, 4.24.0-lts."
+
     },
+    "default": {
+        "removePlugins": "stylesheetparser",
+    }
 }
+
+SILENCED_SYSTEM_CHECKS = ['ckeditor.W001'] #17-03-2026
 
 # for django-celery-beat
 CELERY_BROKER_URL = 'redis://localhost:6379'  # Or your preferred broker

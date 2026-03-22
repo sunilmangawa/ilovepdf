@@ -3,35 +3,46 @@
 {% load static %}
 {% load blog_tags %}
 
-{% block title%} {% trans 'Convert' %} {% trans 'ODS' %} {% trans 'To' %} {% trans 'EXCEL' %} ({% trans 'XLSX' %}) {% endblock %}
+{% block title %}ODS {% trans 'To' %} XLSX{% endblock %}
 
 {% block content %}
-    <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
-        <h1>{% trans 'Convert' %} {% trans 'ODS' %} {% trans 'To' %} {% trans 'EXCEL' %} ({% trans 'XLSX' %}) </h1>
-        <hr>
-        <div class="container">
-            <h2>{% trans 'ODS2XLSX_subtitle' %}</h2>
-            <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-3 mt-3">
-            {% csrf_token %}
-            <label for="odp_file">{% trans 'Upload' %} {% trans 'ODS' %} {% trans 'File' %}:</label>
-            <input type="file" name="ods_file" id="ods_file" class="form-control btn btn-primary btn-md" accept=".ods" required>
-            <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} {% trans 'To' %} {% trans 'XLSX' %}</button>
-        </form>
-        {% if error_message %}
-            <p style="color: red;">{{ error_message }}</p>
-        {% endif %}
-
-        </div>
+<div class="container py-5 mt-5">
+    <div class="text-center mb-5">
+        <h1 class="display-4 fw-bold text-gradient">ODS {% trans 'To' %} XLSX</h1>
+        <p class="lead text-secondary">Convert OpenDocument Spreadsheet (.ods) to Microsoft Excel (.xlsx) online for free.</p>
     </div>
 
-    <div class="container-fluid mt-3 text-start">
-    {% if tool_attachment %} 
-        <div class="card-body bg-body justify fs-5 p-5">
-            {{tool_attachment.body|markdown}}
-        </div>       
-        <br>
-    {% endif %}
-</div> 
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="modern-card">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    <div class="upload-box mb-4">
+                        <div class="upload-icon">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
+                            </svg>
+                        </div>
+                        <h3 class="mt-3">{% trans 'Upload' %} ODS {% trans 'File' %}</h3>
+                        <p class="text-secondary mb-0">Drag & drop your file here or click to browse</p>
+                        <input type="file" class="form-control mt-3" name="ods_file" accept=".ods" required>
+                    </div>
+                    <button type="submit" class="btn btn-primary btn-lg w-100">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" class="me-2" viewBox="0 0 24 24">
+                            <polyline points="20 6 9 17 4 12"></polyline>
+                        </svg>
+                        {% trans 'Convert' %} → XLSX
+                    </button>
+                </form>
+            </div>
 
-{% endblock %}  
-
+            {% if tool_attachment %}
+            <div class="modern-card mt-4">
+                <h3 class="card-title">About ODS to XLSX Conversion</h3>
+                <div class="card-text">{{ tool_attachment.body|markdown }}</div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}
