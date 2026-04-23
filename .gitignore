@@ -13,8 +13,13 @@ pdfsizeopt/
 .idea/
 # Media files (usually uploaded by users)
 
+# Other folder
+.claude/
+.agent/
+.vscode/
+.idea/
 # Virtual environment
-ilvenv/
+.venv
 
 
 __pycache__
@@ -31,7 +36,8 @@ __pycache__
 *.docx
 *.xls
 *.xlsx
-
+err2.txt
+error_log.txt
 
 LC_MESSAGES/
 *.po

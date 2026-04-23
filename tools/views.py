@@ -418,22 +418,27 @@ def rotate_pdf_include(request):
 # -----------------------------------------================================
 
 # Working on Server — uses get_libreoffice_path() for cross-platform support
+
 def word_to_pdf_logic(view_func):
     """Decorator to handle Word to PDF conversion via LibreOffice."""
     def wrapper_function(request, *args, **kwargs):
         if request.method == "POST" and request.FILES.get('word_file'):
             try:
                 word_file = request.FILES['word_file']
-
-                # Generate unique temporary file name
-                temp_filename = f"{uuid.uuid4()}.docx"
-                out_path = os.path.join(
-                    settings.MEDIA_ROOT, 'word_to_pdf'
-                )
+                
+                # Get the original name and strip extension
+                original_name = word_file.name
+                base_name = os.path.splitext(original_name)[0]
+                
+                # Use a unique prefix to prevent overwriting files with the same name
+                unique_prefix = uuid.uuid4().hex[:8]
+                temp_filename = f"{unique_prefix}_{original_name}"
+                
+                out_path = os.path.join(settings.MEDIA_ROOT, 'word_to_pdf')
                 os.makedirs(out_path, exist_ok=True)
                 temp_file_path = os.path.join(out_path, temp_filename)
 
-                # Save uploaded Word file to temporary location
+                # Save file
                 fs = FileSystemStorage(location=out_path)
                 fs.save(temp_filename, word_file)
 
@@ -441,54 +446,33 @@ def word_to_pdf_logic(view_func):
                 env['HOME'] = out_path
 
                 lo_path = get_libreoffice_path()
-                result = subprocess.run(
+                subprocess.run(
                     [lo_path, '--headless', '--convert-to', 'pdf',
                      '--outdir', out_path, temp_file_path],
-                    env=env, capture_output=True, text=True
+                    env=env, capture_output=True, text=True, check=True
                 )
-                if result.returncode != 0:
-                    raise Exception(
-                        f"LibreOffice conversion failed: {result.stderr}"
-                    )
 
-                output_pdf_path = os.path.join(
-                    out_path,
-                    temp_filename.replace(
-                        temp_filename.split('.')[1], 'pdf'
-                    )
-                )
+                # The output PDF will match the saved temp_filename but with .pdf
+                output_pdf_path = os.path.join(out_path, f"{os.path.splitext(temp_filename)[0]}.pdf")
 
                 if os.path.exists(output_pdf_path):
                     response = FileResponse(
                         open(output_pdf_path, 'rb'),
                         content_type='application/pdf'
                     )
-                    response['Content-Disposition'] = (
-                        f'attachment; filename='
-                        f'{os.path.basename(output_pdf_path)}'
-                    )
-                    response.cleanup_files = [
-                        temp_file_path, output_pdf_path
-                    ]
+                    # Set the download name back to the original base name + .pdf
+                    response['Content-Disposition'] = f'attachment; filename="{base_name}.pdf"'
+                    
+                    response.cleanup_files = [temp_file_path, output_pdf_path]
                     return response
                 else:
-                    return HttpResponse(
-                        "Error converting file to PDF. "
-                        "Ensure LibreOffice is installed.",
-                        status=500
-                    )
-            except FileNotFoundError:
-                return HttpResponse(
-                    "LibreOffice is not installed. "
-                    "See INSTALL_DEPENDENCIES.md for setup.",
-                    status=500
-                )
+                    return HttpResponse("Conversion failed.", status=500)
+                    
             except Exception as e:
                 return HttpResponse(status=500, content=str(e))
         else:
             return view_func(request, *args, **kwargs)
     return wrapper_function
-
 
 
 @word_to_pdf_logic
@@ -1095,48 +1079,114 @@ def excel_to_pdf_include(request):
 # -----------------------------------------================================
 
 
-def pdf_to_excel_logic(func):
-    def wrapper(request, *args, **kwargs):
-        if request.method == 'POST' and request.FILES.get('pdf_file'):
-            pdf_file = request.FILES['pdf_file']
+# def pdf_to_excel_logic(func):
+#     def wrapper(request, *args, **kwargs):
+#         if request.method == 'POST' and request.FILES.get('pdf_file'):
+#             pdf_file = request.FILES['pdf_file']
 
-            # Save the uploaded PDF file to uploads directory
-            upload_folder = os.path.join(settings.MEDIA_ROOT, 'uploads')
-            os.makedirs(upload_folder, exist_ok=True)
-            pdf_file_path = os.path.join(upload_folder, pdf_file.name)
+#             # Save the uploaded PDF file to uploads directory
+#             upload_folder = os.path.join(settings.MEDIA_ROOT, 'uploads')
+#             os.makedirs(upload_folder, exist_ok=True)
+#             pdf_file_path = os.path.join(upload_folder, pdf_file.name)
             
-            with open(pdf_file_path, 'wb') as destination:
-                for chunk in pdf_file.chunks():
-                    destination.write(chunk)
+#             with open(pdf_file_path, 'wb') as destination:
+#                 for chunk in pdf_file.chunks():
+#                     destination.write(chunk)
 
-            try:
-                # Convert PDF to CSV using tabula
-                csv_file_path = os.path.join(upload_folder, 'PDF2Excel_ilovepdfconverteronline.com.csv')
-                tabula.convert_into(input_path=pdf_file_path, output_path=csv_file_path, output_format='csv', pages='all', stream=True)
+#             try:
+#                 # Convert PDF to CSV using tabula
+#                 csv_file_path = os.path.join(upload_folder, 'PDF2Excel_ilovepdfconverteronline.com.csv')
+#                 tabula.convert_into(input_path=pdf_file_path, output_path=csv_file_path, output_format='csv', pages='all', stream=True)
 
-                # Convert CSV to XLSX using pandas
-                xlsx_file_path = os.path.join(upload_folder, 'PDF2Excel_ilovepdfconverteronline.com.xlsx')
-                read_file = pd.read_csv(csv_file_path)
-                read_file.to_excel(xlsx_file_path, index=None, header=True)
+#                 # Convert CSV to XLSX using pandas
+#                 xlsx_file_path = os.path.join(upload_folder, 'PDF2Excel_ilovepdfconverteronline.com.xlsx')
+#                 read_file = pd.read_csv(csv_file_path)
+#                 read_file.to_excel(xlsx_file_path, index=None, header=True)
 
-                # Provide the XLSX file for download
-                with open(xlsx_file_path, 'rb') as excel_file:
-                    response = HttpResponse(excel_file.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-                    response['Content-Disposition'] = 'attachment; filename=PDF2Excel_ilovepdfconverteronline.com.xlsx'
-                    response.cleanup_files = [pdf_file_path, csv_file_path, xlsx_file_path]  # Add files for cleanup
-                    return response
+#                 # Provide the XLSX file for download
+#                 with open(xlsx_file_path, 'rb') as excel_file:
+#                     response = HttpResponse(excel_file.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+#                     response['Content-Disposition'] = 'attachment; filename=PDF2Excel_ilovepdfconverteronline.com.xlsx'
+#                     response.cleanup_files = [pdf_file_path, csv_file_path, xlsx_file_path]  # Add files for cleanup
+#                     return response
 
-            except Exception as e:
-                return HttpResponse(f"Conversion failed. Error: {str(e)}")
+#             except Exception as e:
+#                 return HttpResponse(f"Conversion failed. Error: {str(e)}")
 
-        # If GET request or no pdf_file in POST
-        return func(request, *args, **kwargs)
+#         # If GET request or no pdf_file in POST
+#         return func(request, *args, **kwargs)
 
-    return wrapper
+#     return wrapper
 
 
-@pdf_to_excel_logic
+# @pdf_to_excel_logic
+# def pdf_to_excel_view(request):
+#     meta = Meta(
+#         title='iLovePdfConverterOnline - PDF to XLSX file converter online',
+#         description='Convert PDF to XLSX file online in free.',
+#         keywords= ['pdf', 'file', 'excel', 'xlsx', 'xls'],
+#         og_title='iLovePdfConverterOnline - PDF to XLSX file converter online',
+#         og_description='Convert PDF to XLSX file online in free.',
+#     )
+#     tool_attachment = ToolAttachment.objects.get(function_name='pdf_to_excel_view')
+#     context = {'meta': meta, 'tool_attachment': tool_attachment}
+#     return render(request, 'tools/pdf_to_excel.html', context)
+
+# @pdf_to_excel_logic
+# def pdf_to_excel_include(request):
+#     meta = Meta(
+#         title='iLovePdfConverterOnline - PDF to XLSX file converter online',
+#         description='Convert PDF to XLSX file online in free.',
+#         keywords= ['pdf', 'file', 'excel', 'xlsx', 'xls'],
+#         og_title='iLovePdfConverterOnline - PDF to XLSX file converter online',
+#         og_description='Convert PDF to XLSX file online in free.',
+#     )
+#     context = {'meta': meta}
+#     return render(request, 'tools/pdf_to_excel_include.html', context)
+
+#-------------------------------------------------------------
+# 
+#  PDF TO EXCEL
+import os
+import uuid
+import tempfile
+import io
+import logging
+import re
+from pathlib import Path
+from django.http import JsonResponse, HttpResponse, FileResponse
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.shortcuts import render, redirect
+from django.conf import settings
+from django.utils import translation
+from django.template.loader import get_template
+from django.contrib import messages
+
+import pandas as pd
+import numpy as np
+import camelot
+import pdfplumber
+import tabula
+import pypdfium2 as pdfium
+from openpyxl import Workbook
+from reportlab.lib import colors
+from reportlab.lib.pagesizes import letter
+from reportlab.pdfgen import canvas
+from reportlab.lib.styles import getSampleStyleSheet
+from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
+from reportlab.lib.units import inch
+
+logger = logging.getLogger(__name__)
+
 def pdf_to_excel_view(request):
+    """
+    Advanced PDF to Excel converter with intelligent table detection
+    and mixed content handling
+    """
+    if request.method == 'POST':
+        return handle_pdf_to_excel_upload(request)
+
     meta = Meta(
         title='iLovePdfConverterOnline - PDF to XLSX file converter online',
         description='Convert PDF to XLSX file online in free.',
@@ -1144,12 +1194,23 @@ def pdf_to_excel_view(request):
         og_title='iLovePdfConverterOnline - PDF to XLSX file converter online',
         og_description='Convert PDF to XLSX file online in free.',
     )
-    tool_attachment = ToolAttachment.objects.get(function_name='pdf_to_excel_view')
+    # Using fallback to avoid undefined ToolAttachment variable if not imported
+    # Assuming ToolAttachment is available since it's used elsewhere
+    try:
+        tool_attachment = ToolAttachment.objects.get(function_name='pdf_to_excel_view')
+    except:
+        tool_attachment = None
     context = {'meta': meta, 'tool_attachment': tool_attachment}
     return render(request, 'tools/pdf_to_excel.html', context)
 
-@pdf_to_excel_logic
 def pdf_to_excel_include(request):
+    """
+    Advanced PDF to Excel converter with intelligent table detection
+    and mixed content handling
+    """
+    if request.method == 'POST':
+        return handle_pdf_to_excel_upload(request)
+
     meta = Meta(
         title='iLovePdfConverterOnline - PDF to XLSX file converter online',
         description='Convert PDF to XLSX file online in free.',
@@ -1160,6 +1221,331 @@ def pdf_to_excel_include(request):
     context = {'meta': meta}
     return render(request, 'tools/pdf_to_excel_include.html', context)
 
+
+def handle_pdf_to_excel_upload(request):
+    """
+    Handle file upload and perform intelligent PDF to Excel conversion
+    """
+    if 'pdf_file' not in request.FILES:
+        messages.error(request, 'No PDF file uploaded.')
+        return redirect('pdf_to_excel')
+
+    pdf_file = request.FILES['pdf_file']
+
+    # Generate unique filename for processed files
+    unique_id = str(uuid.uuid4())
+    original_filename = f"converted_{unique_id}_{pdf_file.name}"
+    output_filename = f"{Path(original_filename).stem}.xlsx"
+
+    try:
+        # Save uploaded PDF temporarily
+        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_file:
+            for chunk in pdf_file.chunks():
+                temp_file.write(chunk)
+            temp_pdf_path = temp_file.name
+
+        # Perform advanced conversion
+        converted_file_path = convert_pdf_to_excel_advanced(temp_pdf_path, original_filename)
+
+        # Clean up temp file
+        os.unlink(temp_pdf_path)
+
+        # Read the converted Excel file for download
+        if os.path.exists(converted_file_path):
+            excel_content = open(converted_file_path, 'rb').read()
+            response = HttpResponse(excel_content, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
+            response['Content-Disposition'] = f'attachment; filename="{output_filename}"'
+
+            # Clean up converted file
+            os.unlink(converted_file_path)
+
+            messages.success(request, 'PDF converted to Excel successfully!')
+            return response
+        else:
+            messages.error(request, 'Conversion failed. Could not create Excel file.')
+            return redirect('pdf_to_excel')
+
+    except Exception as e:
+        logger.error(f"PDF to Excel conversion error: {str(e)}")
+        try:
+            os.unlink(temp_pdf_path)
+        except:
+            pass
+        messages.error(request, f'Conversion error: {str(e)}')
+        return redirect('pdf_to_excel')
+
+
+def convert_pdf_to_excel_advanced(pdf_path, output_name):
+    """
+    Advanced PDF to Excel converter that handles:
+    - Single/multiple tables
+    - Tables spanning multiple pages
+    - PDFs with headers repeated on each page
+    - Mixed content (text and tables)
+    - Different table structures and layouts
+    """
+
+    # Create output directory in media
+    output_dir = os.path.join(settings.MEDIA_ROOT, 'converted_files')
+    os.makedirs(output_dir, exist_ok=True)
+
+    output_path = os.path.join(output_dir, output_name)
+
+    # Analyze PDF structure first
+    pdf_info = analyze_pdf_structure(pdf_path)
+
+    # Determine conversion strategy based on PDF analysis
+    if pdf_info['has_tables']:
+        return convert_pdf_with_tables(pdf_path, output_path, pdf_info)
+    else:
+        return convert_pdf_text_only(pdf_path, output_path)
+
+
+def analyze_pdf_structure(pdf_path):
+    """
+    Analyze PDF to determine structure:
+    - Number of pages
+    - Whether tables exist
+    - Header patterns
+    - Table locations
+    """
+    info = {
+        'num_pages': 0,
+        'has_tables': False,
+        'table_count': 0,
+        'header_pages': [],
+        'table_pages': [],
+        'repeating_headers': False
+    }
+
+    try:
+        # Use pdfplumber for detailed analysis
+        with pdfplumber.open(pdf_path) as pdf:
+            info['num_pages'] = len(pdf.pages)
+
+            table_counts = []
+            header_patterns = []
+
+            for i, page in enumerate(pdf.pages):
+                tables = page.extract_tables()
+                table_texts = []
+
+                if tables:
+                    info['has_tables'] = True
+                    info['table_count'] += len(tables)
+                    info['table_pages'].append(i + 1)
+                    table_counts.append(len(tables))
+
+                    # Extract text for header analysis
+                    text = page.extract_text() or ""
+                    table_texts.append(text)
+
+                    # Check for repeating headers (simple heuristic)
+                    if i < len(pdf.pages) - 1:
+                        next_text = pdf.pages[i + 1].extract_text() or ""
+                        if text and next_text and len(text) > 50:
+                            if text[:min(100, len(text))] == next_text[:min(100, len(next_text))]:
+                                info['repeating_headers'] = True
+                                info['header_pages'].append(i + 1)
+
+        # Also try tabula for cross-validation
+        try:
+            tables = tabula.read_pdf(pdf_path, pages='all')
+            if isinstance(tables, list) and len(tables) > 0:
+                info['has_tables'] = True
+                info['table_count'] = len([t for t in tables if not t.empty])
+        except:
+            pass
+
+    except Exception as e:
+        logger.error(f"PDF analysis error: {str(e)}")
+
+    return info
+
+
+def convert_pdf_with_tables(pdf_path, output_path, pdf_info):
+    """
+    Convert PDF with tables to Excel with intelligent handling:
+    - Group tables from pages with repeating headers
+    - Create separate sheets for distinct tables
+    - Handle complex table structures
+    """
+
+    wb = excel_workbook = Workbook()
+
+    # Strategy 1: Try camelot first (best for tabular data)
+    try:
+        tables = camelot.read_pdf(
+            pdf_path,
+            pages='all',
+            flavor='lattice',  # For tables with lines
+            suppress_warnings=True
+        )
+
+        if tables.n > 0:
+            logger.info(f"Camelot found {tables.n} tables using lattice flavor")
+            return convert_tables_to_excel(camelot_tables=tables, wb=excel_workbook, output_path=output_path)
+
+    except Exception as e:
+        logger.warning(f"Camelot lattice failed: {str(e)}")
+        try:
+            # Try stream flavor for tables without clear lines
+            tables = camelot.read_pdf(
+                pdf_path,
+                pages='all',
+                flavor='stream',
+                suppress_warnings=True
+            )
+
+            if tables.n > 0:
+                logger.info(f"Camelot found {tables.n} tables using stream flavor")
+                return convert_tables_to_excel(camelot_tables=tables, wb=excel_workbook, output_path=output_path)
+
+        except Exception as e:
+            logger.warning(f"Camelot stream also failed: {str(e)}")
+
+    # Strategy 2: Use pdfplumber for table extraction
+    try:
+        return convert_with_pdfplumber(pdf_path, output_path, pdf_info)
+    except Exception as e:
+        logger.error(f"All conversion strategies failed: {str(e)}")
+        raise
+
+
+def convert_tables_to_excel(camelot_tables, wb, output_path):
+    """
+    Convert camelot tables to Excel workbook with intelligent sheet naming
+    """
+    sheets_created = 0
+
+    for i, table in enumerate(camelot_tables):
+        # Convert camelot table to DataFrame
+        df = table.df
+        df = pd.DataFrame(df)
+
+        # Clean the DataFrame
+        df = clean_dataframe(df)
+
+        # Create sheet name
+        sheet_name = f"Table {i + 1}"
+
+        # Write to Excel
+        df.to_excel(output_path, sheet_name=sheet_name, index=False)
+        sheets_created += 1
+
+    return output_path if sheets_created > 0 else None
+
+
+def convert_with_pdfplumber(pdf_path, output_path, pdf_info):
+    """
+    Convert PDF using pdfplumber for better table detection
+    """
+    wb = Workbook()
+
+    with pdfplumber.open(pdf_path) as pdf:
+        tables_created = 0
+
+        for page_num, page in enumerate(pdf.pages):
+            tables = page.extract_tables()
+
+            if not tables:
+                continue
+
+            for table_idx, table in enumerate(tables):
+                if not table or not any(cell for cell in table):
+                    continue
+
+                # Create DataFrame
+                df = pd.DataFrame(table[1:], columns=table[0]) if len(table) > 1 else pd.DataFrame(table)
+                df = clean_dataframe(df)
+
+                if df.empty:
+                    continue
+
+                # Determine sheet naming strategy
+                if tables_created == 0:
+                    sheet_name = "Sheet1"
+                else:
+                    sheet_name = f"Table {page_num + 1}-{table_idx + 1}"
+
+                # Write to Excel
+                if tables_created == 0:
+                    df.to_excel(output_path, sheet_name=sheet_name, index=False)
+                else:
+                    with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
+                        df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+                tables_created += 1
+
+    return output_path if tables_created > 0 else None
+
+
+def convert_pdf_text_only(pdf_path, output_path):
+    """
+    Fallback: Convert PDF text content to Excel (non-tabular data)
+    """
+    wb = Workbook()
+
+    with pdfplumber.open(pdf_path) as pdf:
+        for i, page in enumerate(pdf.pages):
+            text = page.extract_text() or ""
+
+            # Clean text
+            text = re.sub(r'\s+', ' ', text).strip()
+
+            if not text:
+                continue
+
+            # Convert each page to a row
+            df = pd.DataFrame({'Page Text': [text]})
+
+            sheet_name = f"Page {i + 1}"
+
+            if i == 0:
+                df.to_excel(output_path, sheet_name=sheet_name, index=False)
+            else:
+                with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
+                    df.to_excel(writer, sheet_name=sheet_name, index=False)
+
+    return output_path
+
+
+def clean_dataframe(df):
+    """
+    Clean DataFrame by:
+    - Removing empty rows/columns
+    - Converting numeric values
+    - Handling missing values
+    """
+    # Remove completely empty rows and columns
+    df = df.dropna(how='all')
+    df = df.dropna(axis=1, how='all')
+
+    # Strip whitespace from string values
+    for col in df.select_dtypes(include=['object']).columns:
+        df[col] = df[col].astype(str).str.strip()
+
+    # Try to convert to numeric where possible
+    for col in df.columns:
+        df[col] = pd.to_numeric(df[col], errors='coerce')
+
+    return df
+
+
+def render_pdf_to_pdf(request):
+    """
+    Render PDF to PDF (placeholder for future functionality)
+    """
+    if request.method == 'POST':
+        return handle_pdf_to_pdf_upload(request)
+
+    meta = {
+        'og_title': 'iLovePdfConverterOnline - PDF to PDF converter',
+        'og_description': 'Convert PDF to PDF online in free.',
+    }
+    context = {'meta': meta}
+    return render(request, 'tools/pdf_to_pdf_include.html', context)
+ 
 # -----------------------------------------================================
 
 

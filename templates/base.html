@@ -7,7 +7,9 @@
 {% load pwa %} 
   
 
-<html lang="en" prefix="og: https://ilovepdfconverteronline.com/" dir="{% trans 'dir' %}">
+{% get_current_language as LANGUAGE_CODE %}
+{% get_current_language_bidi as LANGUAGE_BIDI %}
+<html lang="{{ LANGUAGE_CODE }}" prefix="og: https://ilovepdfconverteronline.com/" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
   {% progressive_web_app_meta %}
 
   <head>  

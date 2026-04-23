@@ -1,7 +1,5 @@
 import os
 from pathlib import Path
-from ckeditor.fields import RichTextField
-from ckeditor.widgets import CKEditorWidget
 from django.utils.translation import gettext_lazy as _
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -48,6 +46,7 @@ INSTALLED_APPS = [
 
     'meta',
     'pwa',
+    'camelot'
 
 ]
 
@@ -130,7 +129,8 @@ AUTH_PASSWORD_VALIDATORS = [
 LANGUAGE_CODE = 'en'
 
 LANGUAGES = [
-    ('af', _('Afrikaans')),
+    # ('en-us', _('English (US)')),
+    ('en', _('English')),
     ('ar', _('Arabic')),
     ('az', _('Azerbaijani')),
     ('bg', _('Bulgarian')),
@@ -214,7 +214,8 @@ PARLER_DEFAULT_LANGUAGE_CODE = 'en'
 
 PARLER_LANGUAGES = {
     1 : (
-        {'code' : 'af'},
+        # {'code' : 'en-us'},
+        {'code' : 'en'},
         {'code' : 'ar'},
         {'code' : 'az'},
         {'code' : 'bg'},
@@ -290,13 +291,16 @@ PARLER_LANGUAGES = {
         {'code' : 'ur'},
         {'code' : 'vi'},
         {'code' : 'zh-cn'},
-        {'code' : 'zh-tw'},
+        {'code' : 'zh-tw'}
     ),
     'default':{
         'fallbacks': 'en',
         'hide_untranslated': False,
     }
 }
+
+ROSETTA_LANGUAGE_GROUPS = True
+# set-language = True
 
 TIME_ZONE = 'UTC'
 

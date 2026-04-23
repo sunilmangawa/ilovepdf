@@ -20,7 +20,11 @@ sitemaps = {
     'tools': ToolsSitemap,
 }
 
-urlpatterns = i18n_patterns(
+urlpatterns = [
+]
+
+urlpatterns += i18n_patterns(
+    path('set-language/', set_language, name='set_language'),
     path('robots.txt/', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
 
     path('admin/', admin.site.urls),
@@ -33,8 +37,6 @@ urlpatterns = i18n_patterns(
     path('', include('blog.urls', namespace='blog')),
     path('tools/', include('tools.urls')),
     path('sitemap.xml', sitemap, {'sitemaps': sitemaps}, name='django.contrib.sitemaps.views.sitemap'),
-    # path(r'^set-language/$', set_language, name='set_language'),
-    re_path(r'^set-language/$', set_language, name='set_language'),
     path('ckeditor/', include('ckeditor_uploader.urls')),
     path("", include("pwa.urls")),
 

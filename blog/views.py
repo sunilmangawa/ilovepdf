@@ -13,7 +13,6 @@ from django.utils import translation
 from django.utils.translation import get_language#, set_current_language
 from django.views.decorators.http import require_POST
 from django.views.generic import ListView, DetailView
-from django.views.i18n import set_language
 from meta.views import Meta
 from parler.models import TranslationDoesNotExist
 from parler.utils.context import switch_language

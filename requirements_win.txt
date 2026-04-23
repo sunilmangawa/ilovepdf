@@ -158,7 +158,7 @@ trio
 trio-websocket
 types-python-dateutil
 typing_extensions
-tzdata
+tzdata==2023.3
 Unidecode
 unoserver
 update
