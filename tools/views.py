@@ -221,110 +221,433 @@ def split_pdf_include(request):
 # -----------------------------------------================================
 
 
-def get_pdf_settings(compress_level):
-    """Returns the Ghostscript PDFSETTINGS parameter based on the compression level."""
+# def get_pdf_settings(compress_level):
+#     """Returns the Ghostscript PDFSETTINGS parameter based on the compression level."""
+#     if compress_level <= 25:
+#         return "screen"  # Low quality
+#     elif compress_level <= 50:
+#         return "ebook"  # Medium quality
+#     elif compress_level <= 75:
+#         return "printer"  # High quality
+#     else:
+#         return "prepress"  # Maximum quality
+
+# def compress_pdf_logic(view_func):
+#     """Decorator to handle PDF compression via Ghostscript."""
+#     def wrapper_function(request, *args, **kwargs):
+#         if request.method == 'POST':
+#             pdf_file = request.FILES.get('pdf_file')
+#             compress_level = int(request.POST.get('compress_level', 50))
+
+#             if pdf_file:
+#                 # Use unique filename to avoid conflicts
+#                 unique_id = uuid.uuid4().hex
+#                 temp_pdf_path = default_storage.save(
+#                     f'temp_upload_{unique_id}.pdf',
+#                     ContentFile(pdf_file.read())
+#                 )
+#                 temp_pdf_full_path = os.path.join(
+#                     default_storage.location, temp_pdf_path
+#                 )
+#                 compressed_pdf_path = os.path.join(
+#                     settings.MEDIA_ROOT,
+#                     f'compressed_{unique_id}.pdf'
+#                 )
+
+#                 cargs = [
+#                     "ps2pdf",
+#                     "-dNOPAUSE", "-dBATCH", "-dSAFER",
+#                     "-sDEVICE=pdfwrite",
+#                     f"-dCompatibilityLevel=1.4",
+#                     f"-dPDFSETTINGS=/{get_pdf_settings(compress_level)}",
+#                     f"-sOutputFile={compressed_pdf_path}",
+#                     temp_pdf_full_path
+#                 ]
+
+#                 encoding = locale.getpreferredencoding()
+#                 cargs = [a.encode(encoding) for a in cargs]
+
+#                 try:
+#                     ghostscript.Ghostscript(*cargs)
+#                 except ghostscript.GhostscriptError as e:
+#                     # Clean up temp file on error
+#                     default_storage.delete(temp_pdf_path)
+#                     return HttpResponse(
+#                         f"Error processing file with Ghostscript: {e}",
+#                         status=500
+#                     )
+
+#                 # Clean up uploaded temp file
+#                 default_storage.delete(temp_pdf_path)
+
+#                 # Read compressed file into memory, then delete
+#                 try:
+#                     with open(compressed_pdf_path, 'rb') as pdf:
+#                         pdf_data = pdf.read()
+#                     response = HttpResponse(
+#                         pdf_data, content_type='application/pdf'
+#                     )
+#                     response['Content-Disposition'] = (
+#                         'attachment; filename="compressed_output.pdf"'
+#                     )
+#                     return response
+#                 finally:
+#                     # Delete file after reading into memory
+#                     try:
+#                         os.remove(compressed_pdf_path)
+#                     except OSError:
+#                         pass
+#         else:
+#             return view_func(request, *args, **kwargs)
+#     return wrapper_function
+
+# @compress_pdf_logic
+# def compress_pdf_view(request):
+#     meta = Meta(
+#         title='Compress PDF file online',
+#         description='Compress PDF to reduce the file size with percentage level.',
+#         keywords=['compress', 'reduce', 'small'],
+#         og_title='Compress PDF file online',
+#         og_description='Compress PDF file online in percentage level you want just within clicks.',
+#     )    
+#     tool_attachment = ToolAttachment.objects.get(function_name='compress_pdf_view')
+#     context = {'meta': meta, 'tool_attachment': tool_attachment}
+#     return render(request, 'tools/compress_pdf.html', context)
+
+# @compress_pdf_logic
+# def compress_pdf_include(request):
+#     meta = Meta(
+#         title='Compress PDF file online',
+#         description='Compress PDF to reduce the file size with percentage level.',
+#         keywords=['compress', 'reduce', 'small'],
+#         og_title='Compress PDF file online',
+#         og_description='Compress PDF file online in percentage level you want just within clicks.',
+#     ) 
+#     context = {'meta': meta}
+#     return render(request, 'tools/compress_pdf_include.html', context)
+
+import logging
+import os
+import shutil
+import subprocess
+import tempfile
+from functools import wraps
+from pathlib import Path
+
+from django.conf import settings
+from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseServerError
+from django.shortcuts import render
+
+logger = logging.getLogger(__name__)
+
+# Set this in settings.py as well (shown below).
+MAX_PDF_UPLOAD_SIZE = getattr(
+    settings,
+    "MAX_PDF_UPLOAD_SIZE",
+    150 * 1024 * 1024,  # 150 MB
+)
+
+PDF_COMPRESSION_TIMEOUT_SECONDS = getattr(
+    settings,
+    "PDF_COMPRESSION_TIMEOUT_SECONDS",
+    180,  # 3 minutes
+)
+
+GHOSTSCRIPT_COMMAND = getattr(settings, "GHOSTSCRIPT_COMMAND", "gs")
+
+
+def get_compression_profile(compress_level: int) -> dict:
+    """
+    Map UI quality level (10-100) to a Ghostscript profile.
+
+    Lower level = smaller output / lower visual quality.
+    Higher level = better visual quality / less compression.
+    """
     if compress_level <= 25:
-        return "screen"  # Low quality
-    elif compress_level <= 50:
-        return "ebook"  # Medium quality
-    elif compress_level <= 75:
-        return "printer"  # High quality
-    else:
-        return "prepress"  # Maximum quality
+        return {
+            "preset": "screen",
+            "dpi": 72,
+            "jpeg_quality": 40,
+        }
+
+    if compress_level <= 50:
+        return {
+            "preset": "ebook",
+            "dpi": 110,
+            "jpeg_quality": 55,
+        }
+
+    if compress_level <= 75:
+        return {
+            "preset": "printer",
+            "dpi": 150,
+            "jpeg_quality": 70,
+        }
+
+    return {
+        "preset": "prepress",
+        "dpi": 220,
+        "jpeg_quality": 85,
+    }
+
+
+def is_probably_pdf(uploaded_file) -> bool:
+    """
+    Basic PDF signature check. This is not a replacement for a malware scanner,
+    but it rejects common incorrect uploads before Ghostscript is called.
+    """
+    try:
+        header = uploaded_file.read(1024)
+        uploaded_file.seek(0)
+        return b"%PDF-" in header
+    except Exception:
+        return False
+
+
+def make_download_filename(original_name: str) -> str:
+    """
+    Make a safe, predictable filename for download.
+    """
+    stem = Path(original_name).stem or "document"
+    safe_stem = "".join(
+        character if character.isalnum() or character in ("-", "_") else "_"
+        for character in stem
+    ).strip("_")
+
+    return f"{safe_stem or 'document'}_compressed.pdf"
+
+
+def build_ghostscript_command(input_path: str, output_path: str, level: int) -> list[str]:
+    """
+    Build Ghostscript command with image compression settings.
+    """
+    profile = get_compression_profile(level)
+    dpi = profile["dpi"]
+    jpeg_quality = profile["jpeg_quality"]
+
+    return [
+        GHOSTSCRIPT_COMMAND,
+        "-dSAFER",
+        "-dBATCH",
+        "-dNOPAUSE",
+        "-dQUIET",
+        "-sDEVICE=pdfwrite",
+        "-dCompatibilityLevel=1.5",
+
+        # Ghostscript's general preset.
+        f"-dPDFSETTINGS=/{profile['preset']}",
+
+        # General PDF optimization.
+        "-dDetectDuplicateImages=true",
+        "-dCompressFonts=true",
+        "-dSubsetFonts=true",
+        "-dNOPAUSE",
+        "-dBATCH",
+
+        # Color images.
+        "-dDownsampleColorImages=true",
+        "-dColorImageDownsampleType=/Bicubic",
+        f"-dColorImageResolution={dpi}",
+        f"-dColorImageDownsampleThreshold={dpi / 1.5}",
+        f"-dJPEGQ={jpeg_quality}",
+
+        # Grayscale images.
+        "-dDownsampleGrayImages=true",
+        "-dGrayImageDownsampleType=/Bicubic",
+        f"-dGrayImageResolution={dpi}",
+        f"-dGrayImageDownsampleThreshold={dpi / 1.5}",
+
+        # Monochrome images.
+        "-dDownsampleMonoImages=true",
+        "-dMonoImageDownsampleType=/Subsample",
+        f"-dMonoImageResolution={min(dpi * 2, 300)}",
+        f"-dMonoImageDownsampleThreshold={dpi}",
+
+        f"-sOutputFile={output_path}",
+        input_path,
+    ]
+
+
+def compress_uploaded_pdf(uploaded_file, compress_level: int) -> tuple[bytes, bool]:
+    """
+    Compress a PDF and return:
+        (pdf_content, was_compressed)
+
+    Critical behavior:
+    If Ghostscript output is not smaller than the input, return the original.
+    """
+    original_size = uploaded_file.size
+
+    with tempfile.TemporaryDirectory(prefix="pdf_compress_") as temporary_dir:
+        input_path = os.path.join(temporary_dir, "input.pdf")
+        output_path = os.path.join(temporary_dir, "output.pdf")
+
+        # Stream upload to disk rather than reading the whole PDF into memory.
+        with open(input_path, "wb") as destination:
+            for chunk in uploaded_file.chunks():
+                destination.write(chunk)
+
+        command = build_ghostscript_command(
+            input_path=input_path,
+            output_path=output_path,
+            level=compress_level,
+        )
+
+        try:
+            completed_process = subprocess.run(
+                command,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+                timeout=PDF_COMPRESSION_TIMEOUT_SECONDS,
+                check=False,
+            )
+        except FileNotFoundError:
+            raise RuntimeError(
+                "Ghostscript is not installed or GHOSTSCRIPT_COMMAND is incorrect."
+            )
+        except subprocess.TimeoutExpired:
+            raise RuntimeError(
+                "Compression took too long. Please try a smaller PDF."
+            )
+
+        if completed_process.returncode != 0:
+            logger.error(
+                "Ghostscript PDF compression failed. Return code: %s. Error: %s",
+                completed_process.returncode,
+                completed_process.stderr.decode("utf-8", errors="replace")[:2000],
+            )
+            raise RuntimeError(
+                "The PDF could not be processed. It may be corrupted, encrypted, "
+                "or contain unsupported content."
+            )
+
+        if not os.path.exists(output_path) or os.path.getsize(output_path) == 0:
+            raise RuntimeError("Compression did not produce a valid output file.")
+
+        with open(input_path, "rb") as original_file:
+            original_data = original_file.read()
+
+        with open(output_path, "rb") as compressed_file:
+            compressed_data = compressed_file.read()
+
+        # Never return a larger file. This is the most important safeguard.
+        if len(compressed_data) >= original_size:
+            return original_data, False
+
+        return compressed_data, True
+
 
 def compress_pdf_logic(view_func):
-    """Decorator to handle PDF compression via Ghostscript."""
+    """
+    Reusable decorator for both compress_pdf_view and compress_pdf_include.
+    GET renders the normal page; POST returns a PDF download.
+    """
+    @wraps(view_func)
     def wrapper_function(request, *args, **kwargs):
-        if request.method == 'POST':
-            pdf_file = request.FILES.get('pdf_file')
-            compress_level = int(request.POST.get('compress_level', 50))
-
-            if pdf_file:
-                # Use unique filename to avoid conflicts
-                unique_id = uuid.uuid4().hex
-                temp_pdf_path = default_storage.save(
-                    f'temp_upload_{unique_id}.pdf',
-                    ContentFile(pdf_file.read())
-                )
-                temp_pdf_full_path = os.path.join(
-                    default_storage.location, temp_pdf_path
-                )
-                compressed_pdf_path = os.path.join(
-                    settings.MEDIA_ROOT,
-                    f'compressed_{unique_id}.pdf'
-                )
-
-                cargs = [
-                    "ps2pdf",
-                    "-dNOPAUSE", "-dBATCH", "-dSAFER",
-                    "-sDEVICE=pdfwrite",
-                    f"-dCompatibilityLevel=1.4",
-                    f"-dPDFSETTINGS=/{get_pdf_settings(compress_level)}",
-                    f"-sOutputFile={compressed_pdf_path}",
-                    temp_pdf_full_path
-                ]
-
-                encoding = locale.getpreferredencoding()
-                cargs = [a.encode(encoding) for a in cargs]
-
-                try:
-                    ghostscript.Ghostscript(*cargs)
-                except ghostscript.GhostscriptError as e:
-                    # Clean up temp file on error
-                    default_storage.delete(temp_pdf_path)
-                    return HttpResponse(
-                        f"Error processing file with Ghostscript: {e}",
-                        status=500
-                    )
-
-                # Clean up uploaded temp file
-                default_storage.delete(temp_pdf_path)
-
-                # Read compressed file into memory, then delete
-                try:
-                    with open(compressed_pdf_path, 'rb') as pdf:
-                        pdf_data = pdf.read()
-                    response = HttpResponse(
-                        pdf_data, content_type='application/pdf'
-                    )
-                    response['Content-Disposition'] = (
-                        'attachment; filename="compressed_output.pdf"'
-                    )
-                    return response
-                finally:
-                    # Delete file after reading into memory
-                    try:
-                        os.remove(compressed_pdf_path)
-                    except OSError:
-                        pass
-        else:
+        if request.method != "POST":
             return view_func(request, *args, **kwargs)
+
+        uploaded_file = request.FILES.get("pdf_file")
+
+        if not uploaded_file:
+            return HttpResponseBadRequest("Please select a PDF file.")
+
+        if uploaded_file.size <= 0:
+            return HttpResponseBadRequest("The uploaded file is empty.")
+
+        if uploaded_file.size > MAX_PDF_UPLOAD_SIZE:
+            return HttpResponseBadRequest(
+                f"File is too large. Maximum allowed size is "
+                f"{MAX_PDF_UPLOAD_SIZE // (1024 * 1024)} MB."
+            )
+
+        if not uploaded_file.name.lower().endswith(".pdf") or not is_probably_pdf(uploaded_file):
+            return HttpResponseBadRequest("Only valid PDF files are allowed.")
+
+        try:
+            compress_level = int(request.POST.get("compress_level", 50))
+        except (TypeError, ValueError):
+            return HttpResponseBadRequest("Invalid compression level.")
+
+        compress_level = max(10, min(compress_level, 100))
+
+        original_size = uploaded_file.size
+
+        try:
+            pdf_data, was_compressed = compress_uploaded_pdf(
+                uploaded_file=uploaded_file,
+                compress_level=compress_level,
+            )
+        except RuntimeError as error:
+            return HttpResponseServerError(str(error))
+        except Exception:
+            logger.exception("Unexpected PDF compression error")
+            return HttpResponseServerError(
+                "An unexpected error occurred while processing the PDF."
+            )
+
+        output_size = len(pdf_data)
+        saved_bytes = max(0, original_size - output_size)
+        saved_percent = (
+            round((saved_bytes / original_size) * 100, 1)
+            if original_size
+            else 0
+        )
+
+        response = HttpResponse(pdf_data, content_type="application/pdf")
+        response["Content-Disposition"] = (
+            f'attachment; filename="{make_download_filename(uploaded_file.name)}"'
+        )
+        response["Content-Length"] = str(output_size)
+
+        # These are used by compress_pdf.html.
+        response["X-Original-Size"] = str(original_size)
+        response["X-Output-Size"] = str(output_size)
+        response["X-Compression-Saved-Bytes"] = str(saved_bytes)
+        response["X-Compression-Saved-Percent"] = str(saved_percent)
+        response["X-Compression-Status"] = (
+            "compressed" if was_compressed else "original-retained"
+        )
+
+        return response
+
     return wrapper_function
+
 
 @compress_pdf_logic
 def compress_pdf_view(request):
     meta = Meta(
-        title='Compress PDF file online',
-        description='Compress PDF to reduce the file size with percentage level.',
-        keywords=['compress', 'reduce', 'small'],
-        og_title='Compress PDF file online',
-        og_description='Compress PDF file online in percentage level you want just within clicks.',
-    )    
-    tool_attachment = ToolAttachment.objects.get(function_name='compress_pdf_view')
-    context = {'meta': meta, 'tool_attachment': tool_attachment}
-    return render(request, 'tools/compress_pdf.html', context)
+        title="Compress PDF file online",
+        description="Compress PDF files safely while preserving the original if no reduction is possible.",
+        keywords=["compress", "reduce", "small", "pdf"],
+        og_title="Compress PDF file online",
+        og_description="Reduce PDF file size while preserving quality.",
+    )
+
+    tool_attachment = ToolAttachment.objects.filter(
+        function_name="compress_pdf_view"
+    ).first()
+
+    context = {
+        "meta": meta,
+        "tool_attachment": tool_attachment,
+        "max_upload_mb": MAX_PDF_UPLOAD_SIZE // (1024 * 1024),
+    }
+    return render(request, "tools/compress_pdf.html", context)
+
 
 @compress_pdf_logic
 def compress_pdf_include(request):
     meta = Meta(
-        title='Compress PDF file online',
-        description='Compress PDF to reduce the file size with percentage level.',
-        keywords=['compress', 'reduce', 'small'],
-        og_title='Compress PDF file online',
-        og_description='Compress PDF file online in percentage level you want just within clicks.',
-    ) 
-    context = {'meta': meta}
-    return render(request, 'tools/compress_pdf_include.html', context)
+        title="Compress PDF file online",
+        description="Compress PDF files safely while preserving the original if no reduction is possible.",
+        keywords=["compress", "reduce", "small", "pdf"],
+        og_title="Compress PDF file online",
+        og_description="Reduce PDF file size while preserving quality.",
+    )
+
+    return render(request, "tools/compress_pdf_include.html", {"meta": meta})
+
 
 # -----------------------------------------================================
 

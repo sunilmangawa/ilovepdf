@@ -3,82 +3,155 @@
 {% load static %}
 {% load blog_tags %}
 
-{% block title %}{% trans 'Compress'%} {% trans 'PDF' %}{% endblock %}
+{% block title %}{% trans 'Compress' %} {% trans 'PDF' %}{% endblock %}
 
 {% block content %}
 <div class="container py-5 mt-5">
-    <!-- Hero Section -->
     <div class="text-center mb-5">
-        <h1 class="display-4 fw-bold text-gradient">{% trans 'Compress' %} {% trans 'PDF' %}</h1>
-        <p class="lead text-secondary">Reduce PDF file size while maintaining quality</p>
+        <h1 class="display-4 fw-bold text-gradient">
+            {% trans 'Compress' %} {% trans 'PDF' %}
+        </h1>
+        <p class="lead text-secondary">
+            Reduce PDF size without returning a larger file.
+        </p>
     </div>
 
-    <!-- Tool Card -->
     <div class="row justify-content-center">
         <div class="col-lg-8">
             <div class="modern-card">
-                <form method="post" enctype="multipart/form-data" id="compressForm">
+                <form method="post"
+                      enctype="multipart/form-data"
+                      id="compressForm"
+                      novalidate>
                     {% csrf_token %}
 
-                    <!-- Upload Section -->
                     <div class="upload-box mb-4" id="uploadBox">
                         <div class="upload-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64"
+                                 fill="none" stroke="currentColor" stroke-width="2"
+                                 viewBox="0 0 24 24">
                                 <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
                             </svg>
                         </div>
+
                         <h3 class="mt-3">{% trans 'Upload' %} {% trans 'PDF' %}</h3>
-                        <p class="text-secondary mb-0">Drag & drop your file here or click to browse</p>
-                        <input type="file" class="form-control mt-3" name="pdf_file" id="pdf_file" accept=".pdf" required>
+                        <p class="text-secondary mb-0">
+                            Drag and drop a PDF here, or click to browse.
+                            Maximum size: {{ max_upload_mb }} MB.
+                        </p>
+
+                        <input type="file"
+                               class="form-control mt-3"
+                               name="pdf_file"
+                               id="pdf_file"
+                               accept="application/pdf,.pdf"
+                               required>
                     </div>
 
-                    <!-- File info display -->
-                    <div id="fileInfo" class="mb-4" style="display:none;">
-                        <div class="d-flex align-items-center gap-3 p-3" style="background: var(--bg-secondary); border-radius: 12px;">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="none" stroke="var(--primary-color)" stroke-width="2" viewBox="0 0 24 24">
+                    <div id="fileInfo" class="mb-4 d-none">
+                        <div class="d-flex align-items-center gap-3 p-3"
+                             style="background: var(--bg-secondary); border-radius: 12px;">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32"
+                                 fill="none" stroke="var(--primary-color)"
+                                 stroke-width="2" viewBox="0 0 24 24">
                                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
                                 <polyline points="14 2 14 8 20 8"></polyline>
                             </svg>
-                            <div class="flex-grow-1">
-                                <div class="fw-bold" id="fileName">—</div>
-                                <small class="text-secondary">Original: <span id="fileSize">—</span></small>
-                            </div>
-                            <div class="text-end">
-                                <small class="text-secondary">Estimated:</small>
-                                <div class="fw-bold" style="color: var(--success-color);" id="estimatedSize">—</div>
+
+                            <div class="flex-grow-1 overflow-hidden">
+                                <div class="fw-bold text-truncate" id="fileName">—</div>
+                                <small class="text-secondary">
+                                    Original size: <span id="fileSize">—</span>
+                                </small>
                             </div>
                         </div>
                     </div>
 
-                    <!-- Compression Level -->
                     <div class="mb-4">
-                        <label for="compress_level" class="form-label fw-bold">{% trans 'compress_pdf_level' %}</label>
+                        <label for="compress_level" class="form-label fw-bold">
+                            {% trans 'compress_pdf_level' %}
+                        </label>
+
                         <div class="d-flex align-items-center gap-3">
-                            <input type="range" name="compress_level" id="compress_level" class="flex-grow-1" min="10" max="100" value="50" step="10">
-                            <span class="badge bg-primary fs-5 px-3 py-2"><span id="compress_value">50</span>%</span>
+                            <input type="range"
+                                   name="compress_level"
+                                   id="compress_level"
+                                   class="flex-grow-1"
+                                   min="10"
+                                   max="100"
+                                   value="50"
+                                   step="5">
+
+                            <span class="badge bg-primary fs-5 px-3 py-2">
+                                <span id="compress_value">50</span>%
+                            </span>
                         </div>
-                        <small class="text-secondary">Lower value = smaller file size, higher value = better quality</small>
+
+                        <div class="d-flex justify-content-between mt-2 small text-secondary">
+                            <span>Smaller file</span>
+                            <span id="qualityLabel">Balanced quality</span>
+                            <span>Better quality</span>
+                        </div>
                     </div>
 
-                    <!-- Size Warning -->
-                    <div class="file-size-warning" id="sizeWarning"></div>
+                    <div id="alertBox" class="alert d-none" role="alert"></div>
 
-                    <!-- Submit Button -->
-                    <button type="submit" class="btn btn-primary btn-lg w-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" class="me-2" viewBox="0 0 24 24">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        {% trans 'compress' %} {% trans 'PDF' %}
+                    <div id="progressArea" class="mb-4 d-none" aria-live="polite">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span id="progressText">Preparing upload…</span>
+                            <span id="progressPercent">0%</span>
+                        </div>
+
+                        <div class="progress" style="height: 10px;">
+                            <div id="progressBar"
+                                 class="progress-bar progress-bar-striped progress-bar-animated"
+                                 role="progressbar"
+                                 style="width: 0%;"
+                                 aria-valuemin="0"
+                                 aria-valuemax="100"
+                                 aria-valuenow="0">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="submit"
+                            class="btn btn-primary btn-lg w-100"
+                            id="submitButton">
+                        <span id="buttonText">
+                            {% trans 'compress' %} {% trans 'PDF' %}
+                        </span>
                     </button>
                 </form>
             </div>
 
-            <!-- Description Section -->
+            <div id="resultCard" class="modern-card mt-4 d-none">
+                <h3 class="card-title mb-3">Compression result</h3>
+
+                <div class="row text-center g-3">
+                    <div class="col-md-4">
+                        <small class="text-secondary d-block">Original</small>
+                        <strong id="resultOriginalSize">—</strong>
+                    </div>
+
+                    <div class="col-md-4">
+                        <small class="text-secondary d-block">Final size</small>
+                        <strong id="resultOutputSize">—</strong>
+                    </div>
+
+                    <div class="col-md-4">
+                        <small class="text-secondary d-block">Space saved</small>
+                        <strong id="resultSaved" class="text-success">—</strong>
+                    </div>
+                </div>
+
+                <p id="resultMessage" class="text-center mt-3 mb-0"></p>
+            </div>
+
             {% if tool_attachment %}
             <div class="modern-card mt-4">
                 <h3 class="card-title">About PDF Compression</h3>
                 <div class="card-text">
-                    {{tool_attachment.body|markdown}}
+                    {{ tool_attachment.body|markdown }}
                 </div>
             </div>
             {% endif %}
@@ -87,65 +160,295 @@
 </div>
 
 <script>
-    const fileInput = document.getElementById('pdf_file');
-    const fileInfo = document.getElementById('fileInfo');
-    const fileName = document.getElementById('fileName');
-    const fileSize = document.getElementById('fileSize');
-    const estimatedSize = document.getElementById('estimatedSize');
-    const compressLevel = document.getElementById('compress_level');
-    const compressValue = document.getElementById('compress_value');
-    const sizeWarning = document.getElementById('sizeWarning');
-    const MAX_SIZE = 30 * 1024 * 1024; // 30 MB
+(function () {
+    "use strict";
 
-    /**
-     * Format bytes to human-readable size string.
-     */
+    const form = document.getElementById("compressForm");
+    const fileInput = document.getElementById("pdf_file");
+    const uploadBox = document.getElementById("uploadBox");
+    const fileInfo = document.getElementById("fileInfo");
+    const fileName = document.getElementById("fileName");
+    const fileSize = document.getElementById("fileSize");
+    const compressionLevel = document.getElementById("compress_level");
+    const compressionValue = document.getElementById("compress_value");
+    const qualityLabel = document.getElementById("qualityLabel");
+
+    const submitButton = document.getElementById("submitButton");
+    const buttonText = document.getElementById("buttonText");
+    const alertBox = document.getElementById("alertBox");
+
+    const progressArea = document.getElementById("progressArea");
+    const progressText = document.getElementById("progressText");
+    const progressPercent = document.getElementById("progressPercent");
+    const progressBar = document.getElementById("progressBar");
+
+    const resultCard = document.getElementById("resultCard");
+    const resultOriginalSize = document.getElementById("resultOriginalSize");
+    const resultOutputSize = document.getElementById("resultOutputSize");
+    const resultSaved = document.getElementById("resultSaved");
+    const resultMessage = document.getElementById("resultMessage");
+
+    const MAX_SIZE = {{ max_upload_mb }} * 1024 * 1024;
+    let serverProgressTimer = null;
+
     function formatSize(bytes) {
-        if (bytes === 0) return '0 B';
-        const k = 1024;
-        const sizes = ['B', 'KB', 'MB', 'GB'];
-        const i = Math.floor(Math.log(bytes) / Math.log(k));
-        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+        if (!bytes) return "0 B";
+
+        const units = ["B", "KB", "MB", "GB"];
+        const index = Math.floor(Math.log(bytes) / Math.log(1024));
+        const value = bytes / Math.pow(1024, index);
+
+        return `${value.toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
     }
 
-    /**
-     * Estimate compressed size based on compression level.
-     */
-    function updateEstimate() {
-        if (!fileInput.files.length) return;
-        const originalSize = fileInput.files[0].size;
-        const level = parseInt(compressLevel.value);
-        // Rough estimate: quality% maps to size retention
-        const ratio = level / 100;
-        const estimated = originalSize * (0.2 + 0.6 * ratio);
-        estimatedSize.textContent = '~' + formatSize(estimated);
+    function setAlert(message, type = "danger") {
+        alertBox.textContent = message;
+        alertBox.className = `alert alert-${type}`;
     }
 
-    // File selection handler
-    fileInput.addEventListener('change', function() {
-        if (this.files.length > 0) {
-            const file = this.files[0];
-            fileInfo.style.display = 'block';
-            fileName.textContent = file.name;
-            fileSize.textContent = formatSize(file.size);
-            updateEstimate();
+    function clearAlert() {
+        alertBox.textContent = "";
+        alertBox.className = "alert d-none";
+    }
 
-            // Check 30 MB limit
-            if (file.size > MAX_SIZE) {
-                sizeWarning.style.display = 'block';
-                sizeWarning.textContent = 'File exceeds the 30 MB limit.';
-            } else {
-                sizeWarning.style.display = 'none';
-            }
-        } else {
-            fileInfo.style.display = 'none';
+    function setProgress(value, message) {
+        const boundedValue = Math.max(0, Math.min(100, value));
+
+        progressArea.classList.remove("d-none");
+        progressBar.style.width = `${boundedValue}%`;
+        progressBar.setAttribute("aria-valuenow", boundedValue);
+        progressPercent.textContent = `${Math.round(boundedValue)}%`;
+        progressText.textContent = message;
+    }
+
+    function stopServerProgress() {
+        if (serverProgressTimer) {
+            window.clearInterval(serverProgressTimer);
+            serverProgressTimer = null;
         }
+    }
+
+    /*
+     * Upload percentage is real. Server-side compression time cannot be
+     * measured from a single synchronous HTTP request, so this moves gently
+     * from 80% to 99% until the server responds.
+     */
+    function startServerProgress() {
+        let value = 80;
+
+        setProgress(value, "Uploading complete. Compressing PDF…");
+
+        serverProgressTimer = window.setInterval(() => {
+            if (value < 96) {
+                value += 1;
+            } else if (value < 99) {
+                value += 0.25;
+            }
+
+            setProgress(value, "Compressing PDF and optimizing images…");
+        }, 700);
+    }
+
+    function updateQualityText() {
+        const value = Number(compressionLevel.value);
+        compressionValue.textContent = value;
+
+        if (value <= 25) {
+            qualityLabel.textContent = "Maximum compression";
+        } else if (value <= 50) {
+            qualityLabel.textContent = "Balanced compression";
+        } else if (value <= 75) {
+            qualityLabel.textContent = "High quality";
+        } else {
+            qualityLabel.textContent = "Best quality";
+        }
+    }
+
+    function showSelectedFile(file) {
+        clearAlert();
+        resultCard.classList.add("d-none");
+
+        if (!file) {
+            fileInfo.classList.add("d-none");
+            return;
+        }
+
+        if (!file.name.toLowerCase().endsWith(".pdf")) {
+            fileInput.value = "";
+            fileInfo.classList.add("d-none");
+            setAlert("Please select a PDF file.");
+            return;
+        }
+
+        if (file.size > MAX_SIZE) {
+            fileInput.value = "";
+            fileInfo.classList.add("d-none");
+            setAlert(`File exceeds the ${formatSize(MAX_SIZE)} upload limit.`);
+            return;
+        }
+
+        fileName.textContent = file.name;
+        fileSize.textContent = formatSize(file.size);
+        fileInfo.classList.remove("d-none");
+    }
+
+    function handleFiles(files) {
+        if (!files || !files.length) return;
+
+        const file = files[0];
+
+        // Set drag-dropped file into the normal input.
+        const transfer = new DataTransfer();
+        transfer.items.add(file);
+        fileInput.files = transfer.files;
+
+        showSelectedFile(file);
+    }
+
+    fileInput.addEventListener("change", function () {
+        showSelectedFile(this.files[0]);
     });
 
-    // Slider change handler
-    compressLevel.addEventListener('input', function() {
-        compressValue.textContent = this.value;
-        updateEstimate();
+    compressionLevel.addEventListener("input", updateQualityText);
+    updateQualityText();
+
+    ["dragenter", "dragover"].forEach(eventName => {
+        uploadBox.addEventListener(eventName, event => {
+            event.preventDefault();
+            uploadBox.classList.add("border", "border-primary");
+        });
     });
+
+    ["dragleave", "drop"].forEach(eventName => {
+        uploadBox.addEventListener(eventName, event => {
+            event.preventDefault();
+            uploadBox.classList.remove("border", "border-primary");
+        });
+    });
+
+    uploadBox.addEventListener("drop", event => {
+        handleFiles(event.dataTransfer.files);
+    });
+
+    form.addEventListener("submit", function (event) {
+        event.preventDefault();
+
+        const selectedFile = fileInput.files[0];
+
+        if (!selectedFile) {
+            setAlert("Please select a PDF file first.");
+            return;
+        }
+
+        if (selectedFile.size > MAX_SIZE) {
+            setAlert(`File exceeds the ${formatSize(MAX_SIZE)} upload limit.`);
+            return;
+        }
+
+        clearAlert();
+        resultCard.classList.add("d-none");
+        stopServerProgress();
+
+        submitButton.disabled = true;
+        buttonText.textContent = "Uploading…";
+        setProgress(0, "Preparing upload…");
+
+        const request = new XMLHttpRequest();
+        const formData = new FormData(form);
+
+        request.open("POST", form.action || window.location.href, true);
+        request.responseType = "blob";
+        request.setRequestHeader("X-Requested-With", "XMLHttpRequest");
+
+        request.upload.addEventListener("progress", function (uploadEvent) {
+            if (!uploadEvent.lengthComputable) {
+                return;
+            }
+
+            // Upload occupies the first 80% of the progress bar.
+            const progress = (uploadEvent.loaded / uploadEvent.total) * 80;
+            setProgress(progress, "Uploading PDF…");
+
+            if (uploadEvent.loaded === uploadEvent.total) {
+                buttonText.textContent = "Compressing…";
+                startServerProgress();
+            }
+        });
+
+        request.addEventListener("load", function () {
+            stopServerProgress();
+
+            if (request.status < 200 || request.status >= 300) {
+                const reader = new FileReader();
+
+                reader.onload = function () {
+                    setAlert(reader.result || "PDF compression failed.");
+                };
+
+                reader.readAsText(request.response);
+                return;
+            }
+
+            setProgress(100, "Your PDF is ready.");
+            buttonText.textContent = "Download started";
+
+            const originalBytes = Number(request.getResponseHeader("X-Original-Size") || 0);
+            const outputBytes = Number(request.getResponseHeader("X-Output-Size") || 0);
+            const savedBytes = Number(request.getResponseHeader("X-Compression-Saved-Bytes") || 0);
+            const savedPercent = request.getResponseHeader("X-Compression-Saved-Percent") || "0";
+            const status = request.getResponseHeader("X-Compression-Status");
+
+            resultOriginalSize.textContent = formatSize(originalBytes);
+            resultOutputSize.textContent = formatSize(outputBytes);
+            resultSaved.textContent = savedBytes > 0
+                ? `${formatSize(savedBytes)} (${savedPercent}%)`
+                : "No reduction possible";
+
+            if (status === "compressed") {
+                resultMessage.textContent =
+                    `Compressed successfully. ${savedPercent}% of space was saved.`;
+                resultMessage.className = "text-center mt-3 mb-0 text-success";
+            } else {
+                resultMessage.textContent =
+                    "This PDF was already optimized or could not be reduced safely. The original file was returned instead.";
+                resultMessage.className = "text-center mt-3 mb-0 text-secondary";
+            }
+
+            resultCard.classList.remove("d-none");
+
+            const disposition = request.getResponseHeader("Content-Disposition") || "";
+            const filenameMatch = disposition.match(/filename="([^"]+)"/i);
+            const filename = filenameMatch
+                ? filenameMatch[1]
+                : "compressed_document.pdf";
+
+            const blobUrl = window.URL.createObjectURL(request.response);
+            const downloadLink = document.createElement("a");
+
+            downloadLink.href = blobUrl;
+            downloadLink.download = filename;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            downloadLink.remove();
+
+            window.setTimeout(() => {
+                window.URL.revokeObjectURL(blobUrl);
+            }, 1000);
+        });
+
+        request.addEventListener("error", function () {
+            stopServerProgress();
+            setAlert("A network error occurred. Please try again.");
+        });
+
+        request.addEventListener("loadend", function () {
+            stopServerProgress();
+            submitButton.disabled = false;
+            buttonText.textContent = "Compress PDF";
+        });
+
+        request.send(formData);
+    });
+})();
 </script>
 {% endblock %}

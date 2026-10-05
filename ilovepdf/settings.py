@@ -46,7 +46,6 @@ INSTALLED_APPS = [
 
     'meta',
     'pwa',
-    'camelot'
 
 ]
 
@@ -688,3 +687,11 @@ PWA_APP_SCREENSHOTS = [
 #         },
 #     },
 # }
+
+
+# PDF compression configuration
+GHOSTSCRIPT_COMMAND = "gs"
+MAX_PDF_UPLOAD_SIZE = 150 * 1024 * 1024  # 150 MB
+PDF_COMPRESSION_TIMEOUT_SECONDS = 180
+DATA_UPLOAD_MAX_MEMORY_SIZE = 160 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024

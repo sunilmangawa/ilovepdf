@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "items": [
+    {
+      "title": "Inspect project setup and reproduce the runserver failure",
+      "status": "done"
+    },
+    {
+      "title": "Fix the startup blockers with focused changes",
+      "status": "in-progress"
+    },
+    {
+      "title": "Verify Django checks, tests, and the runserver command",
+      "status": "pending"
+    }
+  ],
+  "updated_at": "2026-10-01T06:50:11.681Z",
+  "session_id": "01a0f636-1d78-702b-a1f1-03b003e27f1f"
+}
