@@ -695,3 +695,24 @@ MAX_PDF_UPLOAD_SIZE = 150 * 1024 * 1024  # 150 MB
 PDF_COMPRESSION_TIMEOUT_SECONDS = 180
 DATA_UPLOAD_MAX_MEMORY_SIZE = 160 * 1024 * 1024
 FILE_UPLOAD_MAX_MEMORY_SIZE = 10 * 1024 * 1024
+
+
+# HTML to PDF configuration
+# settings.py
+HTML_TO_PDF_MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+HTML_TO_PDF_NAVIGATION_TIMEOUT_MS = 45_000
+HTML_TO_PDF_ALLOWED_SCHEMES = {"http", "https"}
+HTML_TO_PDF_OUTPUT_FILENAME = "HTML2PDF_ilovepdfconverteronline.com.pdf"
+HTML_TO_PDF_PLAYWRIGHT_HEADLESS = os.getenv("HTML_TO_PDF_HEADLESS", "true").lower() == "true"
+
+
+# PDF to Excel configuration
+PDF_TO_EXCEL_MAX_UPLOAD_BYTES = 25 * 1024 * 1024  # 25 MB
+# If the project has global upload caps, make them consistent:
+DATA_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024
+FILE_UPLOAD_MAX_MEMORY_SIZE = 30 * 1024 * 1024
+
+
+# settings.py
+PDF_TO_EXCEL_USE_CAMELOT_FALLBACK = False  # Leave disabled for speed.
+PDF_TO_EXCEL_COLUMN_GAP = 14               # Points; tune only for unusually dense tables.

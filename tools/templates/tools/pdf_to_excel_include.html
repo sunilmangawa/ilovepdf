@@ -1,30 +1,56 @@
 {% extends 'base2.html' %}
 {% load i18n %}
+{% load static %}
 {% load blog_tags %}
 
-{% load static %}
-
-{% block title%} {% trans 'PDF' %} {% trans 'To' %} {% trans 'EXCEL' %} ({% trans 'XLSX' %}) {% endblock %}
+{% block title %}{% trans 'PDF' %} {% trans 'To' %} {% trans 'EXCEL' %}{% endblock %}
 
 {% block extraheads %}
-    <link rel="canonical" href="https://ilovepdfconverteronlne.com/tools/pdf-to-excel" />
+<link rel="canonical" href="https://ilovepdfconverteronline.com/tools/pdf-to-excel" />
 {% endblock %}
 
-
 {% block content %}
-  <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
-    <h1>{% trans 'PDF' %} {% trans 'To' %} {% trans 'EXCEL' %} ({% trans 'XLSX' %})</h1>
-    <hr>
-    <div class="container">
-      <h2>{% trans 'p2xl_subtitle' %}</h2>
-      {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
-      <form method="post" enctype="multipart/form-data" action="/tools/pdf-to-excel/" class="form-control align-items-center p-3 mt-3">
-          {% csrf_token %}
-          <input type="file" name="pdf_file" class="form-control btn btn-primary btn-md" accept=".pdf" required><br>
-          <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert' %} {% trans 'To' %} {% trans 'EXCEL' %} ({% trans 'XLSX' %})</button>
-      </form>
-
-    </div>
+<div class="container-fluid poppins-regular text-center pt-5 mt-5">
+  <h1>{% trans 'PDF' %} {% trans 'To' %} {% trans 'EXCEL' %}</h1>
+  <hr>
+  <div class="container" style="max-width: 760px;">
+    <h2 class="h4 text-secondary">Turn PDF tables into an Excel workbook</h2>
+    <form method="post" enctype="multipart/form-data" class="form-control p-4 mt-4" id="pdfToExcelIncludeForm">
+      {% csrf_token %}
+      <label class="form-label fw-bold" for="pdf_file_include">Choose your PDF</label>
+      <input type="file" class="form-control" name="pdf_file" id="pdf_file_include" accept="application/pdf,.pdf" required>
+      <div class="form-text mb-3">PDF only · Maximum {{ max_upload_mb|default:25 }} MB</div>
+      <div class="alert alert-danger text-start" id="includeError" hidden role="alert"></div>
+      <button type="submit" class="btn btn-danger btn-lg w-100" id="includeConvertButton">
+        <span>{% trans 'Convert' %} → {% trans 'EXCEL' %}</span>
+      </button>
+    </form>
   </div>
 
-{% endblock %}  
+  {% if tool_attachment %}
+  <div class="container-fluid mt-3 text-start">
+    <div class="card-body bg-body fs-5 p-5">{{ tool_attachment.body|markdown }}</div>
+  </div>
+  {% endif %}
+</div>
+<script>
+(() => {
+  const form = document.getElementById('pdfToExcelIncludeForm');
+  const input = document.getElementById('pdf_file_include');
+  const error = document.getElementById('includeError');
+  const button = document.getElementById('includeConvertButton');
+  const maxBytes = {{ max_upload_mb|default:25 }} * 1024 * 1024;
+  form.addEventListener('submit', event => {
+    const file = input.files[0];
+    if (!file || !file.name.toLowerCase().endsWith('.pdf') || file.size > maxBytes) {
+      event.preventDefault();
+      error.textContent = !file ? 'Choose a PDF file first.' : 'Please select a PDF within the allowed upload limit.';
+      error.hidden = false;
+      return;
+    }
+    button.disabled = true;
+    button.querySelector('span').textContent = 'Preparing your workbook…';
+  });
+})();
+</script>
+{% endblock %}

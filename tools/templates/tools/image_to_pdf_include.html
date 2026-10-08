@@ -4,31 +4,24 @@
 {% load meta %}
 {% load blog_tags %}
 
-{% block title%}{% trans 'Image' %} ({% trans 'JPG' %}|{% trans 'JPEG' %}|{% trans 'PNG' %}) {% trans 'To' %} {% trans 'PDF' %} {% endblock %}
-
-{% block extraheads %}
-    <link rel="canonical" href="https://ilovepdfconverteronlne.com/tools/jpeg-to-pdf" />
-{% endblock %}
-
+{% block title %}{% trans 'Image to PDF' %}{% endblock %}
+{% block extraheads %}<link rel="canonical" href="https://ilovepdfconverteronlne.com/tools/jpeg-to-pdf" />{% endblock %}
 
 {% block content %}
-  <div class="container poppins-regular text-center" >
-    <p class="roboto-bold text-uppercase fs-1"> {% trans 'Image' %} ({% trans 'JPG' %}|{% trans 'JPEG' %}|{% trans 'PNG' %}) {% trans 'To' %} {% trans 'PDF' %} Converter </p>
-    <hr><br>
-    <div class="container bg-light ">
-      <p class="roboto-bold text-uppercase fs-2"> {% trans 'Image' %} ({% trans 'JPG' %}|{% trans 'JPEG' %}|{% trans 'PNG' %}) {% trans 'To' %} {% trans 'PDF' %} Convereter Online Tool Page </p>
-        <div class="container text-center">
-          <form method="post" enctype="multipart/form-data" action="{% url 'tools:image_to_pdf_include' %}">
-            {% csrf_token %}
-            <label for="image_file"> 
-              <span id="file-label"><h2>{% trans 'Upload' %} {% trans 'Image' %} {% trans 'File' %}</h2></span>    
-            </label>    
-            <input id="image_file" type="file" name="images" class="form-control btn btn-primary btn-md" accept="image/jpg, image/jpeg, image/png" multiple required>
-            <br>
-            <button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert' %} {% trans 'To' %} {% trans 'PDF' %}</button><br><br><br>
-          </form>
-
-    </div>
+<div class="container poppins-regular text-center">
+  <p class="roboto-bold text-uppercase fs-1">{% trans 'Image to PDF Converter' %}</p><hr><br>
+  <div class="container bg-light py-4">
+    {% if conversion_error %}<div class="alert alert-danger" role="alert">{{ conversion_error }}</div>{% endif %}
+    <form method="post" enctype="multipart/form-data" action="{% url 'tools:image_to_pdf_include' %}">
+      {% csrf_token %}
+      <label for="image_file" class="form-label"><h2>{% trans 'Upload Image Files' %}</h2></label>
+      <input id="image_file" type="file" name="images" class="form-control btn btn-primary btn-md" accept="image/jpeg,image/png,.jpg,.jpeg,.png" multiple required>
+      <div class="mt-3 text-start mx-auto" style="max-width: 550px;">
+        <div class="form-check"><input class="form-check-input" type="radio" name="conversion_mode" id="includeSingle" value="single" checked><label class="form-check-label" for="includeSingle">{% trans 'Single PDF (all images)' %}</label></div>
+        <div class="form-check"><input class="form-check-input" type="radio" name="conversion_mode" id="includeMultiple" value="multiple"><label class="form-check-label" for="includeMultiple">{% trans 'Multiple PDFs (download as ZIP)' %}</label></div>
+      </div>
+      <br><button class="btn btn-danger btn-lg" type="submit">{% trans 'Convert to PDF' %}</button>
+    </form>
   </div>
-{% endblock %}  
-
+</div>
+{% endblock %}

@@ -1,3 +1,8 @@
+sudo apt install ghostscript
+
+
+
+
 
 coder@code:~$ wget -O find_uno.py https://gist.githubusercontent.com/regebro/036da022dc7d5241a0ee97efdf1458eb/raw/find_uno.py python3 find_uno.py
 --2024-02-25 04:49:46--  https://gist.githubusercontent.com/regebro/036da022dc7d5241a0ee97efdf1458eb/raw/find_uno.py

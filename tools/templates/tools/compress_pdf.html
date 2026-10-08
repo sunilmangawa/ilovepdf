@@ -59,19 +59,19 @@
                             </svg>
 
                             <div class="flex-grow-1 overflow-hidden">
-                                <div class="fw-bold text-truncate" id="fileName">—</div>
+                                <div class="fw-bold text-dark" id="fileName">—</div>
                                 <small class="text-secondary">
                                     Original size: <span id="fileSize">—</span>
                                 </small>
                             </div>
                         </div>
                     </div>
-
+                    <!--
                     <div class="mb-4">
                         <label for="compress_level" class="form-label fw-bold">
                             {% trans 'compress_pdf_level' %}
                         </label>
-
+                        
                         <div class="d-flex align-items-center gap-3">
                             <input type="range"
                                    name="compress_level"
@@ -86,13 +86,13 @@
                                 <span id="compress_value">50</span>%
                             </span>
                         </div>
-
+                        
                         <div class="d-flex justify-content-between mt-2 small text-secondary">
                             <span>Smaller file</span>
                             <span id="qualityLabel">Balanced quality</span>
                             <span>Better quality</span>
                         </div>
-                    </div>
+                    </div>-->
 
                     <div id="alertBox" class="alert d-none" role="alert"></div>
 
@@ -188,7 +188,7 @@
     const resultSaved = document.getElementById("resultSaved");
     const resultMessage = document.getElementById("resultMessage");
 
-    const MAX_SIZE = {{ max_upload_mb }} * 1024 * 1024;
+    const MAX_SIZE = { max_upload_mb } * 1024 * 1024;
     let serverProgressTimer = null;
 
     function formatSize(bytes) {
@@ -199,17 +199,17 @@
         const value = bytes / Math.pow(1024, index);
 
         return `${value.toFixed(index === 0 ? 0 : 1)} ${units[index]}`;
-    }
+    };
 
     function setAlert(message, type = "danger") {
         alertBox.textContent = message;
         alertBox.className = `alert alert-${type}`;
-    }
+    };
 
     function clearAlert() {
         alertBox.textContent = "";
         alertBox.className = "alert d-none";
-    }
+    };
 
     function setProgress(value, message) {
         const boundedValue = Math.max(0, Math.min(100, value));
@@ -219,14 +219,14 @@
         progressBar.setAttribute("aria-valuenow", boundedValue);
         progressPercent.textContent = `${Math.round(boundedValue)}%`;
         progressText.textContent = message;
-    }
+    };
 
     function stopServerProgress() {
         if (serverProgressTimer) {
             window.clearInterval(serverProgressTimer);
             serverProgressTimer = null;
         }
-    }
+    };
 
     /*
      * Upload percentage is real. Server-side compression time cannot be
@@ -247,7 +247,7 @@
 
             setProgress(value, "Compressing PDF and optimizing images…");
         }, 700);
-    }
+    };
 
     function updateQualityText() {
         const value = Number(compressionLevel.value);
@@ -262,7 +262,7 @@
         } else {
             qualityLabel.textContent = "Best quality";
         }
-    }
+    };
 
     function showSelectedFile(file) {
         clearAlert();
@@ -290,7 +290,7 @@
         fileName.textContent = file.name;
         fileSize.textContent = formatSize(file.size);
         fileInfo.classList.remove("d-none");
-    }
+    };
 
     function handleFiles(files) {
         if (!files || !files.length) return;
@@ -303,7 +303,7 @@
         fileInput.files = transfer.files;
 
         showSelectedFile(file);
-    }
+    };
 
     fileInput.addEventListener("change", function () {
         showSelectedFile(this.files[0]);
@@ -417,7 +417,7 @@
             resultCard.classList.remove("d-none");
 
             const disposition = request.getResponseHeader("Content-Disposition") || "";
-            const filenameMatch = disposition.match(/filename="([^"]+)"/i);
+            const filenameMatch = disposition.match('/filename="([^"]+)"'/i);
             const filename = filenameMatch
                 ? filenameMatch[1]
                 : "compressed_document.pdf";

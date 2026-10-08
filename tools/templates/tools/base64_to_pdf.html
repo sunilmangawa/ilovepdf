@@ -9,7 +9,7 @@
 <div class="container py-5 mt-5">
     <div class="text-center mb-5">
         <h1 class="display-4 fw-bold text-gradient">{% trans 'Base64' %} {% trans 'To' %} {% trans 'PDF' %}</h1>
-        <p class="lead text-secondary">Convert Base64 encoded string to a PDF document online for free.</p>
+        <p class="lead text-secondary">Decode Base64 text, then export the decoded text as a PDF.</p>
     </div>
 
     <div class="row justify-content-center">
@@ -19,26 +19,73 @@
                     {% csrf_token %}
                     <div class="mb-4">
                         <label for="base64_string" class="form-label fw-bold">Enter Base64 String</label>
-                        <textarea class="form-control" name="base64_string" id="base64_string" rows="8" placeholder="Paste your Base64 encoded string here..." required></textarea>
+                        <textarea class="form-control" name="base64_string" id="base64_string" rows="8" placeholder="Paste your Base64 encoded string here..." required>{{ base64_string|default:'' }}</textarea>
                     </div>
                     <button type="submit" class="btn btn-primary btn-lg w-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" class="me-2" viewBox="0 0 24 24">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        {% trans 'Convert' %} → {% trans 'PDF' %}
+                        {% trans 'Convert' %} → {% trans 'String' %}
                     </button>
                 </form>
             </div>
 
+            {% if error %}
+            <div class="alert alert-danger mt-4" role="alert">{{ error }}</div>
+            {% endif %}
+
+            {% if decoded_string is not None %}
+            <div class="modern-card mt-4">
+                <h3 class="card-title">✅ Decoded {% trans 'String' %}</h3>
+                <textarea class="form-control" id="decoded_string" rows="8" readonly onclick="this.select()">{{ decoded_string }}</textarea>
+                <button type="button" class="btn btn-secondary mt-3" onclick="copyDecodedString(this)">Copy to Clipboard</button>
+                <button type="button" class="btn btn-danger mt-3 ms-2" onclick="exportDecodedStringToPdf()">Export to PDF</button>
+            </div>
+            {% endif %}
+
             {% if tool_attachment %}
             <div class="modern-card mt-4">
                 <h3 class="card-title">About Base64 to PDF Conversion</h3>
-                <div class="card-text">
-                    {{ tool_attachment.body|markdown }}
-                </div>
+                <div class="card-text">{{ tool_attachment.body|markdown }}</div>
             </div>
             {% endif %}
         </div>
     </div>
 </div>
+
+{% if decoded_string is not None %}
+<script>
+    function copyDecodedString(button) {
+        navigator.clipboard.writeText(document.getElementById('decoded_string').value);
+        button.textContent = 'Copied!';
+        setTimeout(() => button.textContent = 'Copy to Clipboard', 2000);
+    }
+
+    function exportDecodedStringToPdf() {
+        const base64String = document.getElementById('base64_string').value;
+        const decodedString = document.getElementById('decoded_string').value;
+        const escapeHtml = value => value.replace(/[&<>"']/g, character => ({
+            '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;'
+        })[character]);
+        const pdfWindow = window.open('', '_blank');
+        if (!pdfWindow) {
+            alert('Please allow pop-ups to export the PDF.');
+            return;
+        }
+
+        pdfWindow.document.write(`<!doctype html>
+            <html><head><title>Base64 Conversion</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; color: #212529; }
+                h1 { color: #0d6efd; }
+                h2 { margin-top: 28px; font-size: 18px; color: #343a40; }
+                pre { white-space: pre-wrap; overflow-wrap: anywhere; padding: 14px; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; }
+            </style></head><body>
+                <h1>Base64 Conversion</h1>
+                <h2>Input: Base64 Encoded String</h2><pre>${escapeHtml(base64String)}</pre>
+                <h2>Output: Base64 Decoded String</h2><pre>${escapeHtml(decodedString)}</pre>
+            </body></html>`);
+        pdfWindow.document.close();
+        pdfWindow.focus();
+        pdfWindow.print();
+    }
+</script>
+{% endif %}
 {% endblock %}

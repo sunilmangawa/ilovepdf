@@ -3,37 +3,73 @@
 {% load static %}
 {% load blog_tags %}
 
-{% block title%}{% trans 'EXCEL' %} {% trans 'To' %} {% trans 'PDF' %} {% endblock %}
+{% block title %}{% trans 'EXCEL' %} {% trans 'To' %} {% trans 'PDF' %}{% endblock %}
 
 {% block extraheads %}
-    <link rel="canonical" href="https://ilovepdfconverteronlne.com/tools/excel-to-pdf" />
+    <link rel="canonical" href="https://ilovepdfconverteronline.com/tools/excel-to-pdf" />
 {% endblock %}
 
-
 {% block content %}
-  <div class="container-fluid poppins-regular text-center pt-5 mt-5" >
+<div class="container-fluid poppins-regular text-center pt-5 mt-5">
     <h1>{% trans 'EXCEL' %} {% trans 'To' %} {% trans 'PDF' %}</h1>
-    
     <hr>
-    <div class="container">
-        <h2>{% trans 'xl2p_subtitle'%}</h2>
-        <br>
+    
+    <div class="container" style="max-width: 720px;">
+        <h2>{% trans 'xl2p_subtitle' %}</h2>
+        <p class="text-secondary">{% trans 'Supports XLSX, XLS, CSV, XLSM, XLTX, XLTM, TSV formats with zero temporary disk files' %}</p>
 
-        <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-3 mt-3">
+        {% if error %}
+        <div class="alert alert-danger text-start mb-3" role="alert">
+            <strong>{% trans 'Error' %}:</strong> {{ error }}
+        </div>
+        {% endif %}
+
+        <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-4 mt-3 shadow-sm rounded-3 text-start" id="includeForm">
             {% csrf_token %}
-            <input type="file" class="form-control btn btn-primary btn-md" name="excel_file" accept=".xlsx, .xlsm, .xltx, .xltm" required><br>
-            <button type="submit" class="btn btn-danger btn-lg">{% trans 'Convert'%} -> {% trans 'PDF'%} </button>
+            
+            <div class="mb-3">
+                <label class="form-label fw-bold">{% trans 'Select Excel or CSV File' %}</label>
+                <input type="file" class="form-control" name="excel_file" id="inc_file" accept=".xlsx, .xls, .csv, .xlsm, .xltx, .xltm, .tsv" required>
+            </div>
+
+            <div class="row g-2 mb-3">
+                <div class="col-6">
+                    <label class="form-label small">{% trans 'Orientation' %}</label>
+                    <select class="form-select form-select-sm" name="orientation">
+                        <option value="auto" selected>{% trans 'Auto' %}</option>
+                        <option value="landscape">{% trans 'Landscape' %}</option>
+                        <option value="portrait">{% trans 'Portrait' %}</option>
+                    </select>
+                </div>
+                <div class="col-6">
+                    <label class="form-label small">{% trans 'Page Size' %}</label>
+                    <select class="form-select form-select-sm" name="page_size">
+                        <option value="letter" selected>Letter</option>
+                        <option value="a4">A4</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-check mb-3">
+                <input class="form-check-input" type="checkbox" name="gridlines" value="true" id="inc_grid" checked>
+                <label class="form-check-label small" for="inc_grid">
+                    {% trans 'Include Grid Lines' %}
+                </label>
+            </div>
+
+            <button type="submit" class="btn btn-danger btn-lg w-100" id="inc_btn">
+                {% trans 'Convert' %} → {% trans 'PDF' %}
+            </button>
         </form>
     </div>
 
-    <div class="container-fluid mt-3 text-start">
-      {% if tool_attachment %} 
+    <div class="container-fluid mt-4 text-start">
+        {% if tool_attachment %}
         <div class="card-body bg-body fs-5 p-5">
-            {{tool_attachment.body|markdown}}
-        </div>       
+            {{ tool_attachment.body|markdown }}
+        </div>
         <br>
-      {% endif %}
+        {% endif %}
     </div>
-    
-  </div>
-{% endblock %}  
+</div>
+{% endblock %}

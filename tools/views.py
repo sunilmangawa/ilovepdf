@@ -7,7 +7,7 @@ from django.core.files.storage import FileSystemStorage, default_storage
 from django.core.signals import request_finished
 from django.dispatch import receiver
 from django.forms import Form
-from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseBadRequest, Http404
+from django.http import HttpResponse, JsonResponse, FileResponse, HttpResponseBadRequest, Http404, HttpResponseServerError
 from django.shortcuts import render, redirect
 from django.template import TemplateDoesNotExist
 from django.utils.text import slugify
@@ -39,27 +39,32 @@ from .topdf.imgtopdf import convert_to_pdf
 from .topdf.powerpoint_to_pdf_converter import convert_ppt_to_pdf
 from .topdf.word_to_pdf_converter import clean_temp_files, convert_to_pdf#, convert_word_to_pdf
 
+import base64
+import binascii
+import docxtopdf
+import ghostscript
+
+import img2pdf
+import json
+import locale
+import logging
+import pandas as pd
+import pdf2image
+import pdfkit
+import PyPDF2
 
 import os
 import re
-import docxtopdf
-import img2pdf
-import pdfkit
 import requests
+import shutil
 import subprocess
-import tempfile
-import zipfile
-
-import base64
-import ghostscript
-import json
-import locale
-import pandas as pd
-import pdf2image
-import PyPDF2
 import tabula
+import tempfile
 import traceback
 import uuid
+import warnings
+import zipfile
+
 
 
 from io import BytesIO
@@ -71,9 +76,11 @@ from PyPDF2 import PdfMerger
 
 from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
+from pathlib import Path
+
 from pdfminer.high_level import extract_text_to_fp
-from PIL import Image, ImageSequence
+from PIL import Image, ImageSequence, ImageOps, UnidentifiedImageError
 
 from reportlab.lib import colors
 from reportlab.lib.pagesizes import letter, landscape, legal
@@ -84,8 +91,13 @@ from functools import wraps
 
 from .topdf.word_to_pdf_converter import convert_to_pdf#, LibreOfficeError, sanitize_filename
 
+# HTML to PDF conversion import
+from django.utils.translation import gettext_lazy as _
+from .forms import HtmlToPdfForm
+from .services.html_to_pdf import PdfConversionError, convert_html_to_pdf, convert_url_to_pdf
 
-import logging
+
+#-----
 import platform
 logger = logging.getLogger(__name__)
 
@@ -326,19 +338,6 @@ def split_pdf_include(request):
 #     context = {'meta': meta}
 #     return render(request, 'tools/compress_pdf_include.html', context)
 
-import logging
-import os
-import shutil
-import subprocess
-import tempfile
-from functools import wraps
-from pathlib import Path
-
-from django.conf import settings
-from django.http import HttpResponse, HttpResponseBadRequest, HttpResponseServerError
-from django.shortcuts import render
-
-logger = logging.getLogger(__name__)
 
 # Set this in settings.py as well (shown below).
 MAX_PDF_UPLOAD_SIZE = getattr(
@@ -960,66 +959,297 @@ def pdf_to_html_include(request):
 
 # -----------------------------------------================================
 
-def image_to_pdf_logic(view_func):
-    def wrapper_function(request, *args, **kwargs):
-        pdf_data=False
-        if request.method == "POST" and request.FILES.getlist('images'):
-            image_files = request.FILES.getlist('images')         
-            temp_directory = os.path.join(settings.MEDIA_ROOT, 'temporary')
-            os.makedirs(temp_directory, exist_ok=True)
+# def image_to_pdf_logic(view_func):
+#     def wrapper_function(request, *args, **kwargs):
+#         pdf_data=False
+#         if request.method == "POST" and request.FILES.getlist('images'):
+#             image_files = request.FILES.getlist('images')         
+#             temp_directory = os.path.join(settings.MEDIA_ROOT, 'temporary')
+#             os.makedirs(temp_directory, exist_ok=True)
             
-            image_paths = []
-            for img_file in image_files:
-                image_path = os.path.join(temp_directory, img_file.name)
-                with open(image_path, 'wb') as f:
-                    for chunk in img_file.chunks():
-                        f.write(chunk)
-                image_paths.append(image_path)
-                # pdf_data = img2pdf.convert(image_paths)
-            try:
-                pdf_data = img2pdf.convert(image_paths)
-            except:
-                os.remove(image_path)
-                os.rmdir(temp_directory)
-            if pdf_data:
-                response = HttpResponse(pdf_data, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename="Image_to_PDF_iLovePDFconverteronline.com.pdf"'
+#             image_paths = []
+#             for img_file in image_files:
+#                 image_path = os.path.join(temp_directory, img_file.name)
+#                 with open(image_path, 'wb') as f:
+#                     for chunk in img_file.chunks():
+#                         f.write(chunk)
+#                 image_paths.append(image_path)
+#                 # pdf_data = img2pdf.convert(image_paths)
+#             try:
+#                 pdf_data = img2pdf.convert(image_paths)
+#             except:
+#                 os.remove(image_path)
+#                 os.rmdir(temp_directory)
+#             if pdf_data:
+#                 response = HttpResponse(pdf_data, content_type='application/pdf')
+#                 response['Content-Disposition'] = 'attachment; filename="Image_to_PDF_iLovePDFconverteronline.com.pdf"'
                 
-                for image_path in image_paths:
-                    os.remove(image_path)
-                os.rmdir(temp_directory)
+#                 for image_path in image_paths:
+#                     os.remove(image_path)
+#                 os.rmdir(temp_directory)
 
-                return response
-            else:
-                return render(request, 'tools/image_to_pdf.html')
-        else:
-            return view_func(request, *args, **kwargs)  
-    return wrapper_function
+#                 return response
+#             else:
+#                 return render(request, 'tools/image_to_pdf.html')
+#         else:
+#             return view_func(request, *args, **kwargs)  
+#     return wrapper_function
 
-@image_to_pdf_logic
+# @image_to_pdf_logic
+# def image_to_pdf_view(request):
+#     meta = Meta(
+#         title='JPG|JPEG|PNG Image to PDF',
+#         description='Convert JPG/JPEG Image file in to PDF. Image will be converted to PDF.',
+#         keywords=['png', 'image', 'jpg', 'jpeg'],
+#         og_title='JPG|JPEG|PNG Image to PDF',
+#         og_description='Convert JPG/JPEG Image file in to PDF. Image will be converted to PDF',
+#     )
+#     tool_attachment = ToolAttachment.objects.get(function_name='image_to_pdf_view')
+#     context = {'meta': meta, 'tool_attachment':tool_attachment}
+#     return render(request, 'tools/image_to_pdf.html', context) 
+
+# @image_to_pdf_logic
+# def image_to_pdf_include(request):
+#     meta = Meta(
+#         title='Image to PDF',
+#         description='Convert image file (jpg, jpeg, png) to PDF file format',
+#         keywords=['png', 'image', 'jpg', 'jpeg'],
+#         og_title='Image to PDF',
+#         og_description='Convert image file (jpg, jpeg, png) to PDF file format',
+#     )
+#     context = {'meta': meta}
+#     return render(request, 'tools/image_to_pdf_include.html')  
+
+# Image to PDF Tool
+ALLOWED_IMAGE_TYPES = {"JPEG", "PNG"}
+MAX_IMAGE_COUNT = 50
+MAX_FILE_SIZE = 50 * 1024 * 1024          # 50 MB per uploaded image
+MAX_TOTAL_UPLOAD_SIZE = 250 * 1024 * 1024 # 250 MB per request
+MAX_OUTPUT_DIMENSION = 12_000              # pixels, longest edge
+MAX_IMAGE_PIXELS = 80_000_000              # reject decompression bombs
+JPEG_QUALITY = 90
+
+class ImageToPdfError(Exception):
+    """A validation/conversion error that can safely be shown to a visitor."""
+    
+
+
+def _temporary_root():
+    """Return a controlled, writable temporary root outside user file names."""
+    root = os.path.join(settings.MEDIA_ROOT, "temporary", "image-to-pdf")
+    os.makedirs(root, exist_ok=True)
+    return root
+
+
+def _save_upload(upload, destination):
+    """Write an UploadedFile in chunks so a source file is never loaded at once."""
+    with open(destination, "wb") as target:
+        for chunk in upload.chunks(chunk_size=1024 * 1024):
+            target.write(chunk)
+
+
+def _normalise_image(source_path, destination_path):
+    """Create a compatible 8-bit JPEG for img2pdf without retaining large RAM.
+
+    img2pdf correctly rejects 16-bit PNGs with alpha channels. Pillow converts
+    all accepted input to a standard 8-bit RGB JPEG, flattens transparency onto
+    white, applies EXIF rotation, and bounds excessive dimensions.
+    """
+    try:
+        with warnings.catch_warnings():
+            warnings.simplefilter("error", Image.DecompressionBombWarning)
+            with Image.open(source_path) as opened:
+                if opened.format not in ALLOWED_IMAGE_TYPES:
+                    raise ImageToPdfError("Only JPG, JPEG, and PNG images are supported.")
+                if opened.width * opened.height > MAX_IMAGE_PIXELS:
+                    raise ImageToPdfError("An image is too large to process safely.")
+
+                # load() is deliberate: it exposes malformed/truncated images now,
+                # while this one image is the only decoded image in memory.
+                opened.load()
+                image = ImageOps.exif_transpose(opened)
+
+                # Any alpha channel (including a palette PNG with transparency) is
+                # composited instead of being passed to img2pdf as 16-bit alpha.
+                has_alpha = image.mode in {"RGBA", "LA"} or "transparency" in image.info
+                if has_alpha:
+                    rgba = image.convert("RGBA")
+                    background = Image.new("RGB", rgba.size, "white")
+                    background.paste(rgba, mask=rgba.getchannel("A"))
+                    image = background
+                else:
+                    image = image.convert("RGB")
+
+                # Avoid enormous PDF pages and control peak memory for huge photos.
+                image.thumbnail(
+                    (MAX_OUTPUT_DIMENSION, MAX_OUTPUT_DIMENSION),
+                    Image.Resampling.LANCZOS,
+                )
+                image.save(
+                    destination_path,
+                    format="JPEG",
+                    quality=JPEG_QUALITY,
+                    optimize=True,
+                    progressive=True,
+                )
+    except Image.DecompressionBombError as exc:
+        raise ImageToPdfError("An image is too large to process safely.") from exc
+    except (UnidentifiedImageError, OSError, ValueError) as exc:
+        raise ImageToPdfError("One of the uploaded files is not a valid JPG, JPEG, or PNG image.") from exc
+
+
+def _make_download_response(output_path, download_name, content_type):
+    """Stream a disk file and remove it only after Django finishes sending it."""
+    response = FileResponse(
+        open(output_path, "rb"),
+        as_attachment=True,
+        filename=download_name,
+        content_type=content_type,
+    )
+    # FileResponse closes its file first. The extra closer then removes this
+    # request's output; no periodic cleanup job is required for successful jobs.
+    response._resource_closers.append(lambda: os.path.exists(output_path) and os.unlink(output_path))
+    return response
+
+
+def _convert_images_to_response(uploaded_images, conversion_mode):
+    """Create a single PDF or a ZIP of individual PDFs using disk, not RAM."""
+    if not uploaded_images:
+        raise ImageToPdfError("Choose at least one image.")
+    if len(uploaded_images) > MAX_IMAGE_COUNT:
+        raise ImageToPdfError(f"You can convert up to {MAX_IMAGE_COUNT} images at once.")
+
+    total_size = sum(upload.size for upload in uploaded_images)
+    if total_size > MAX_TOTAL_UPLOAD_SIZE:
+        raise ImageToPdfError("The combined upload size is too large. Please use 250 MB or less.")
+
+    for upload in uploaded_images:
+        if upload.size > MAX_FILE_SIZE:
+            raise ImageToPdfError(f'"{upload.name}" is larger than 50 MB.')
+
+    if conversion_mode not in {"single", "multiple"}:
+        raise ImageToPdfError("Choose either Single PDF or Multiple PDFs.")
+
+    temporary_root = _temporary_root()
+    job_directory = tempfile.mkdtemp(prefix="job-", dir=temporary_root)
+    output_path = None
+
+    try:
+        normalised_paths = []
+        for position, upload in enumerate(uploaded_images, start=1):
+            source_path = os.path.join(job_directory, f"source-{position}-{uuid.uuid4().hex}")
+            normalised_path = os.path.join(job_directory, f"page-{position}.jpg")
+            _save_upload(upload, source_path)
+            _normalise_image(source_path, normalised_path)
+            normalised_paths.append(normalised_path)
+
+        suffix = ".zip" if conversion_mode == "multiple" else ".pdf"
+        descriptor, output_path = tempfile.mkstemp(prefix="image-to-pdf-", suffix=suffix, dir=temporary_root)
+        os.close(descriptor)
+
+        if conversion_mode == "single":
+            # outputstream avoids img2pdf returning the complete PDF as bytes.
+            with open(output_path, "wb") as output_file:
+                img2pdf.convert(*normalised_paths, outputstream=output_file)
+            return _make_download_response(
+                output_path,
+                "images-to-pdf.pdf",
+                "application/pdf",
+            )
+
+        # A browser downloads one file per response, so Multiple PDFs are delivered
+        # as one ZIP. Each intermediate PDF is written to disk and released before
+        # the next image, which remains stable for large batches.
+        with zipfile.ZipFile(output_path, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=6) as archive:
+            for position, normalised_path in enumerate(normalised_paths, start=1):
+                individual_pdf = os.path.join(job_directory, f"image-{position}.pdf")
+                with open(individual_pdf, "wb") as pdf_file:
+                    img2pdf.convert(normalised_path, outputstream=pdf_file)
+                archive.write(individual_pdf, arcname=f"image-{position}.pdf")
+                os.remove(individual_pdf)
+
+        return _make_download_response(
+            output_path,
+            "images-to-pdf.zip",
+            "application/zip",
+        )
+
+    except ImageToPdfError:
+        if output_path and os.path.exists(output_path):
+            os.remove(output_path)
+        raise
+    except Exception as exc:
+        # Keep the diagnostic in server logs; never expose an internal traceback.
+        logger.exception("Image-to-PDF conversion failed")
+        if output_path and os.path.exists(output_path):
+            os.remove(output_path)
+        raise ImageToPdfError("We could not convert these images. Try fewer or smaller files.") from exc
+    finally:
+        # Input and normalized files are no longer needed once img2pdf has finished.
+        shutil.rmtree(job_directory, ignore_errors=True)
+
+
+def image_to_pdf_logic(template_name, context_builder):
+    """Shared POST handler while preserving separate main/include views."""
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper_function(request, *args, **kwargs):
+            if request.method == "POST":
+                try:
+                    return _convert_images_to_response(
+                        request.FILES.getlist("images"),
+                        request.POST.get("conversion_mode", "single"),
+                    )
+                except ImageToPdfError as exc:
+                    context = context_builder()
+                    context["conversion_error"] = str(exc)
+                    return render(request, template_name, context, status=400)
+            return view_func(request, *args, **kwargs)
+        return wrapper_function
+    return decorator
+
+
+def _main_image_to_pdf_context():
+    meta = Meta(
+        title="JPG|JPEG|PNG Image to PDF",
+        description="Convert JPG, JPEG, or PNG image files to PDF.",
+        keywords=["png", "image", "jpg", "jpeg", "pdf"],
+        og_title="JPG|JPEG|PNG Image to PDF",
+        og_description="Convert JPG, JPEG, or PNG images to PDF.",
+    )
+    return {
+        "meta": meta,
+        "tool_attachment": ToolAttachment.objects.get(function_name="image_to_pdf_view"),
+    }
+
+
+def _include_image_to_pdf_context():
+    return {
+        "meta": Meta(
+            title="Image to PDF",
+            description="Convert JPG, JPEG, or PNG image files to PDF.",
+            keywords=["png", "image", "jpg", "jpeg", "pdf"],
+            og_title="Image to PDF",
+            og_description="Convert JPG, JPEG, or PNG images to PDF.",
+        )
+    }
+
+
+@image_to_pdf_logic("tools/image_to_pdf.html", _main_image_to_pdf_context)
 def image_to_pdf_view(request):
-    meta = Meta(
-        title='JPG|JPEG|PNG Image to PDF',
-        description='Convert JPG/JPEG Image file in to PDF. Image will be converted to PDF.',
-        keywords=['png', 'image', 'jpg', 'jpeg'],
-        og_title='JPG|JPEG|PNG Image to PDF',
-        og_description='Convert JPG/JPEG Image file in to PDF. Image will be converted to PDF',
-    )
-    tool_attachment = ToolAttachment.objects.get(function_name='image_to_pdf_view')
-    context = {'meta': meta, 'tool_attachment':tool_attachment}
-    return render(request, 'tools/image_to_pdf.html', context) 
+    return render(request, "tools/image_to_pdf.html", _main_image_to_pdf_context())
 
-@image_to_pdf_logic
+
+@image_to_pdf_logic("tools/image_to_pdf_include.html", _include_image_to_pdf_context)
 def image_to_pdf_include(request):
-    meta = Meta(
-        title='Image to PDF',
-        description='Convert image file (jpg, jpeg, png) to PDF file format',
-        keywords=['png', 'image', 'jpg', 'jpeg'],
-        og_title='Image to PDF',
-        og_description='Convert image file (jpg, jpeg, png) to PDF file format',
-    )
-    context = {'meta': meta}
-    return render(request, 'tools/image_to_pdf_include.html')  
+    return render(request, "tools/image_to_pdf_include.html", _include_image_to_pdf_context())
+
+
+
+
+
+
+
 
 
 # -----------------------------------------================================
@@ -1286,651 +1516,682 @@ def pdf_to_pptx_include(request):
 # -----------------------------------------================================
 
 #Working for XLSX, XLSM, XLTX XLTM including XLS & CSV (created with Excel but not Downloaded)
+# def excel_to_pdf_logic(view_func):
+#     def wrapper_function(request, *args, **kwargs):
+#         if request.method == 'POST' and request.FILES.get('excel_file'):
+#             excel_file = request.FILES['excel_file']
+#             file_name = excel_file.name.lower()
+#             file_extension = os.path.splitext(file_name)[1]
+
+#             # Save uploaded file to MEDIA_ROOT
+#             file_path = os.path.join(settings.MEDIA_ROOT, excel_file.name)
+#             with open(file_path, 'wb') as destination:
+#                 for chunk in excel_file.chunks():
+#                     destination.write(chunk)
+
+#             # Create PDF
+#             pdf_path = os.path.join(settings.MEDIA_ROOT, 'output.pdf')
+#             c = canvas.Canvas(pdf_path, pagesize=landscape(letter))
+
+#             top_margin = 0.5 * inch
+#             left_margin = 0.5 * inch
+#             bottom_margin = 0.5 * inch
+#             right_margin = 0.5 * inch
+
+#             page_width, page_height = landscape(letter)
+
+#             cell_height = 20
+#             font_size = 10  # Starting font size
+#             font = 'Helvetica'  # Font family
+
+#             if file_extension in ['.xlsx', '.xlsm', '.xltx', '.xltm']:
+#                 workbook = load_workbook(file_path)
+#                 worksheet = workbook.active
+#                 max_row = worksheet.max_row
+#                 max_column = worksheet.max_column
+#                 ws_range = worksheet.iter_rows(values_only=True)
+#             elif file_extension == '.xls':
+#                 workbook = open_workbook(file_path)
+#                 worksheet = workbook.sheet_by_index(0)
+#                 max_row = worksheet.nrows
+#                 max_column = worksheet.ncols
+#                 ws_range = (worksheet.row_values(row) for row in range(max_row))
+#             elif file_extension == '.csv':
+#                 try:
+#                     with open(file_path, newline='', encoding='utf-8') as csvfile:
+#                         reader = csv.reader(csvfile)
+#                         data = list(reader)
+#                 except UnicodeDecodeError:
+#                     return HttpResponse("Unable to decode the CSV file. Please ensure it is encoded in UTF-8.", content_type="text/plain")
+
+#                 max_row = len(data)
+#                 max_column = len(data[0]) if max_row > 0 else 0
+#                 ws_range = iter(data)
+#             else:
+#                 return HttpResponse("Unsupported file type.", content_type="text/plain")
+
+#             cell_width = (page_width - left_margin - right_margin) / max_column
+#             max_text_width = cell_width - 2  # Subtracting a bit for padding
+
+#             y = page_height - top_margin  # Initial y position
+
+#             for row in ws_range:
+#                 for col_num, cell in enumerate(row):
+#                     x = left_margin + col_num * cell_width
+#                     text = str(cell)
+#                     current_font_size = font_size
+#                     while c.stringWidth(text, font, current_font_size) > max_text_width and current_font_size > 1:
+#                         current_font_size -= 1
+#                     c.setFont(font, current_font_size)
+#                     c.drawString(x, y, text)
+                
+#                 y -= cell_height
+                
+#                 if y < bottom_margin:
+#                     c.showPage()
+#                     y = page_height - top_margin
+
+#             c.save()
+
+#             # Provide the PDF file for download
+#             with open(pdf_path, 'rb') as pdf_file:
+#                 response = HttpResponse(pdf_file.read(), content_type='application/pdf')
+#                 response['Content-Disposition'] = 'attachment; filename=Excel2PDF_ilovepdfconverteronline.com.pdf'
+#                 response.cleanup_files = [file_path, pdf_path]
+#                 return response
+
+#         return view_func(request, *args, **kwargs)  # Continue with the original view function
+
+#     return wrapper_function
+
+# @excel_to_pdf_logic
+# def excel_to_pdf_view(request):
+#     meta = Meta(
+#         title='iLovePdfConverterOnline - Excel to PDF converter',
+#         description='Convert XLSX, XLSM, XLTX, XLTM, XLS & CSV file in to PDF file format.',
+#         keywords=['XLSX', 'XLSM', 'XLTX', 'XLTM', 'XLS'  'CSV', 'pdf'],
+#         og_title='iLovePdfConverterOnline - Excel to PDF converter',
+#         og_description='Convert XLSX, XLSM, XLTX, XLTM, XLS & CSV file in to PDF file format.',
+#     )    
+#     tool_attachment = ToolAttachment.objects.get(function_name='excel_to_pdf_view')
+#     context = {'meta': meta, 'tool_attachment': tool_attachment}
+#     return render(request, 'tools/excel_to_pdf.html', context)
+
+# @excel_to_pdf_logic
+# def excel_to_pdf_include(request):
+#     meta = Meta(
+#         title='iLovePdfConverterOnline - Excel to PDF converter',
+#         description='Convert XLSX, XLSM, XLTX, XLTM, XLS & CSV file in to PDF file format.',
+#         keywords=['XLSX', 'XLSM', 'XLTX', 'XLTM', 'XLS'  'CSV', 'pdf'],
+#         og_title='iLovePdfConverterOnline - Excel to PDF converter',
+#         og_description='Convert XLSX, XLSM, XLTX, XLTM, XLS & CSV file in to PDF file format.',
+#     )    
+#     context = {'meta': meta}
+#     return render(request, 'tools/excel_to_pdf_include.html')
+
+
+import os
+import logging
+from django.conf import settings
+from django.shortcuts import render
+from django.http import HttpResponse
+
+# Import converter (adjust module path based on your folder structure)
+try:
+    from .topdf.excel_to_pdf_converter import convert_excel_to_pdf
+except ImportError:
+    from .Topdf.excel_to_pdf_converter import convert_excel_to_pdf
+
+logger = logging.getLogger(__name__)
+
+
 def excel_to_pdf_logic(view_func):
+    """
+    Decorator for Excel to PDF conversion views.
+    Handles form submission, processes files in-memory without saving temporary files to disk,
+    and returns a direct PDF download attachment.
+    """
     def wrapper_function(request, *args, **kwargs):
-        if request.method == 'POST' and request.FILES.get('excel_file'):
-            excel_file = request.FILES['excel_file']
-            file_name = excel_file.name.lower()
-            file_extension = os.path.splitext(file_name)[1]
+        if request.method == "POST" and request.FILES.get("excel_file"):
+            excel_file = request.FILES["excel_file"]
 
-            # Save uploaded file to MEDIA_ROOT
-            file_path = os.path.join(settings.MEDIA_ROOT, excel_file.name)
-            with open(file_path, 'wb') as destination:
-                for chunk in excel_file.chunks():
-                    destination.write(chunk)
+            # Extract user configuration options
+            options = {
+                "orientation": request.POST.get("orientation", "auto"),
+                "page_size": request.POST.get("page_size", "letter"),
+                "sheet_mode": request.POST.get("sheet_mode", "all"),
+                "gridlines": request.POST.get("gridlines", "true").lower() in ["true", "1", "on", "yes"],
+                "engine": request.POST.get("engine", "auto"),
+            }
 
-            # Create PDF
-            pdf_path = os.path.join(settings.MEDIA_ROOT, 'output.pdf')
-            c = canvas.Canvas(pdf_path, pagesize=landscape(letter))
+            try:
+                # Convert completely in-memory (zero files created in MEDIA_ROOT or disk)
+                pdf_bytes, output_filename = convert_excel_to_pdf(
+                    file_input=excel_file,
+                    filename=excel_file.name,
+                    options=options
+                )
 
-            top_margin = 0.5 * inch
-            left_margin = 0.5 * inch
-            bottom_margin = 0.5 * inch
-            right_margin = 0.5 * inch
-
-            page_width, page_height = landscape(letter)
-
-            cell_height = 20
-            font_size = 10  # Starting font size
-            font = 'Helvetica'  # Font family
-
-            if file_extension in ['.xlsx', '.xlsm', '.xltx', '.xltm']:
-                workbook = load_workbook(file_path)
-                worksheet = workbook.active
-                max_row = worksheet.max_row
-                max_column = worksheet.max_column
-                ws_range = worksheet.iter_rows(values_only=True)
-            elif file_extension == '.xls':
-                workbook = open_workbook(file_path)
-                worksheet = workbook.sheet_by_index(0)
-                max_row = worksheet.nrows
-                max_column = worksheet.ncols
-                ws_range = (worksheet.row_values(row) for row in range(max_row))
-            elif file_extension == '.csv':
-                try:
-                    with open(file_path, newline='', encoding='utf-8') as csvfile:
-                        reader = csv.reader(csvfile)
-                        data = list(reader)
-                except UnicodeDecodeError:
-                    return HttpResponse("Unable to decode the CSV file. Please ensure it is encoded in UTF-8.", content_type="text/plain")
-
-                max_row = len(data)
-                max_column = len(data[0]) if max_row > 0 else 0
-                ws_range = iter(data)
-            else:
-                return HttpResponse("Unsupported file type.", content_type="text/plain")
-
-            cell_width = (page_width - left_margin - right_margin) / max_column
-            max_text_width = cell_width - 2  # Subtracting a bit for padding
-
-            y = page_height - top_margin  # Initial y position
-
-            for row in ws_range:
-                for col_num, cell in enumerate(row):
-                    x = left_margin + col_num * cell_width
-                    text = str(cell)
-                    current_font_size = font_size
-                    while c.stringWidth(text, font, current_font_size) > max_text_width and current_font_size > 1:
-                        current_font_size -= 1
-                    c.setFont(font, current_font_size)
-                    c.drawString(x, y, text)
-                
-                y -= cell_height
-                
-                if y < bottom_margin:
-                    c.showPage()
-                    y = page_height - top_margin
-
-            c.save()
-
-            # Provide the PDF file for download
-            with open(pdf_path, 'rb') as pdf_file:
-                response = HttpResponse(pdf_file.read(), content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename=Excel2PDF_ilovepdfconverteronline.com.pdf'
-                response.cleanup_files = [file_path, pdf_path]
+                # Return PDF download response directly
+                response = HttpResponse(pdf_bytes, content_type="application/pdf")
+                response["Content-Disposition"] = f'attachment; filename="{output_filename}"'
+                response["Content-Length"] = len(pdf_bytes)
                 return response
 
-        return view_func(request, *args, **kwargs)  # Continue with the original view function
+            except Exception as e:
+                logger.exception("Excel to PDF conversion failed: %s", e)
+                # Store error message on request to display alert banner to user
+                request.conversion_error = str(e)
+
+        return view_func(request, *args, **kwargs)
 
     return wrapper_function
+
 
 @excel_to_pdf_logic
 def excel_to_pdf_view(request):
     meta = Meta(
-        title='iLovePdfConverterOnline - Excel to PDF converter',
-        description='Convert XLSX, XLSM, XLTX, XLTM, XLS & CSV file in to PDF file format.',
-        keywords=['XLSX', 'XLSM', 'XLTX', 'XLTM', 'XLS'  'CSV', 'pdf'],
-        og_title='iLovePdfConverterOnline - Excel to PDF converter',
-        og_description='Convert XLSX, XLSM, XLTX, XLTM, XLS & CSV file in to PDF file format.',
-    )    
-    tool_attachment = ToolAttachment.objects.get(function_name='excel_to_pdf_view')
-    context = {'meta': meta, 'tool_attachment': tool_attachment}
-    return render(request, 'tools/excel_to_pdf.html', context)
+        title="iLovePdfConverterOnline - Excel to PDF converter",
+        description="Convert XLSX, XLSM, XLTX, XLTM, XLS & CSV files to high-quality PDF format.",
+        keywords=["XLSX", "XLSM", "XLTX", "XLTM", "XLS", "CSV", "TSV", "pdf"],
+        og_title="iLovePdfConverterOnline - Excel to PDF converter",
+        og_description="Convert XLSX, XLSM, XLTX, XLTM, XLS & CSV files to high-quality PDF format.",
+    )
+    try:
+        tool_attachment = ToolAttachment.objects.get(function_name="excel_to_pdf_view")
+    except Exception:
+        tool_attachment = None
+
+    context = {
+        "meta": meta,
+        "tool_attachment": tool_attachment,
+        "error": getattr(request, "conversion_error", None),
+    }
+    return render(request, "tools/excel_to_pdf.html", context)
+
 
 @excel_to_pdf_logic
 def excel_to_pdf_include(request):
     meta = Meta(
-        title='iLovePdfConverterOnline - Excel to PDF converter',
-        description='Convert XLSX, XLSM, XLTX, XLTM, XLS & CSV file in to PDF file format.',
-        keywords=['XLSX', 'XLSM', 'XLTX', 'XLTM', 'XLS'  'CSV', 'pdf'],
-        og_title='iLovePdfConverterOnline - Excel to PDF converter',
-        og_description='Convert XLSX, XLSM, XLTX, XLTM, XLS & CSV file in to PDF file format.',
-    )    
-    context = {'meta': meta}
-    return render(request, 'tools/excel_to_pdf_include.html')
+        title="iLovePdfConverterOnline - Excel to PDF converter",
+        description="Convert XLSX, XLSM, XLTX, XLTM, XLS & CSV files to high-quality PDF format.",
+        keywords=["XLSX", "XLSM", "XLTX", "XLTM", "XLS", "CSV", "TSV", "pdf"],
+        og_title="iLovePdfConverterOnline - Excel to PDF converter",
+        og_description="Convert XLSX, XLSM, XLTX, XLTM, XLS & CSV files to high-quality PDF format.",
+    )
+    context = {
+        "meta": meta,
+        "error": getattr(request, "conversion_error", None),
+    }
+    return render(request, "tools/excel_to_pdf_include.html", context)
+
+
+
+
 
 # -----------------------------------------================================
 
 
-# def pdf_to_excel_logic(func):
-#     def wrapper(request, *args, **kwargs):
-#         if request.method == 'POST' and request.FILES.get('pdf_file'):
-#             pdf_file = request.FILES['pdf_file']
-
-#             # Save the uploaded PDF file to uploads directory
-#             upload_folder = os.path.join(settings.MEDIA_ROOT, 'uploads')
-#             os.makedirs(upload_folder, exist_ok=True)
-#             pdf_file_path = os.path.join(upload_folder, pdf_file.name)
-            
-#             with open(pdf_file_path, 'wb') as destination:
-#                 for chunk in pdf_file.chunks():
-#                     destination.write(chunk)
-
-#             try:
-#                 # Convert PDF to CSV using tabula
-#                 csv_file_path = os.path.join(upload_folder, 'PDF2Excel_ilovepdfconverteronline.com.csv')
-#                 tabula.convert_into(input_path=pdf_file_path, output_path=csv_file_path, output_format='csv', pages='all', stream=True)
-
-#                 # Convert CSV to XLSX using pandas
-#                 xlsx_file_path = os.path.join(upload_folder, 'PDF2Excel_ilovepdfconverteronline.com.xlsx')
-#                 read_file = pd.read_csv(csv_file_path)
-#                 read_file.to_excel(xlsx_file_path, index=None, header=True)
-
-#                 # Provide the XLSX file for download
-#                 with open(xlsx_file_path, 'rb') as excel_file:
-#                     response = HttpResponse(excel_file.read(), content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-#                     response['Content-Disposition'] = 'attachment; filename=PDF2Excel_ilovepdfconverteronline.com.xlsx'
-#                     response.cleanup_files = [pdf_file_path, csv_file_path, xlsx_file_path]  # Add files for cleanup
-#                     return response
-
-#             except Exception as e:
-#                 return HttpResponse(f"Conversion failed. Error: {str(e)}")
-
-#         # If GET request or no pdf_file in POST
-#         return func(request, *args, **kwargs)
-
-#     return wrapper
-
-
-# @pdf_to_excel_logic
-# def pdf_to_excel_view(request):
-#     meta = Meta(
-#         title='iLovePdfConverterOnline - PDF to XLSX file converter online',
-#         description='Convert PDF to XLSX file online in free.',
-#         keywords= ['pdf', 'file', 'excel', 'xlsx', 'xls'],
-#         og_title='iLovePdfConverterOnline - PDF to XLSX file converter online',
-#         og_description='Convert PDF to XLSX file online in free.',
-#     )
-#     tool_attachment = ToolAttachment.objects.get(function_name='pdf_to_excel_view')
-#     context = {'meta': meta, 'tool_attachment': tool_attachment}
-#     return render(request, 'tools/pdf_to_excel.html', context)
-
-# @pdf_to_excel_logic
-# def pdf_to_excel_include(request):
-#     meta = Meta(
-#         title='iLovePdfConverterOnline - PDF to XLSX file converter online',
-#         description='Convert PDF to XLSX file online in free.',
-#         keywords= ['pdf', 'file', 'excel', 'xlsx', 'xls'],
-#         og_title='iLovePdfConverterOnline - PDF to XLSX file converter online',
-#         og_description='Convert PDF to XLSX file online in free.',
-#     )
-#     context = {'meta': meta}
-#     return render(request, 'tools/pdf_to_excel_include.html', context)
-
-#-------------------------------------------------------------
-# 
-#  PDF TO EXCEL
-import os
-import uuid
-import tempfile
+# By Gemini 3.8
 import io
 import logging
+import os
 import re
+from datetime import datetime
 from pathlib import Path
-from django.http import JsonResponse, HttpResponse, FileResponse
-from django.core.files.storage import default_storage
-from django.core.files.base import ContentFile
-from django.shortcuts import render, redirect
-from django.conf import settings
-from django.utils import translation
-from django.template.loader import get_template
-from django.contrib import messages
+from typing import Any, Dict, List, Optional, Tuple, Union
 
-import pandas as pd
-import numpy as np
-import camelot
 import pdfplumber
-import tabula
-import pypdfium2 as pdfium
+from django.conf import settings
+from django.contrib import messages
+from django.http import FileResponse
+from django.shortcuts import redirect, render
+from django.utils.text import get_valid_filename
 from openpyxl import Workbook
-from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter
-from reportlab.pdfgen import canvas
-from reportlab.lib.styles import getSampleStyleSheet
-from reportlab.platypus import SimpleDocTemplate, Paragraph, Table, TableStyle
-from reportlab.lib.units import inch
+from openpyxl.styles import Alignment, Border, Font, PatternFill, Side
+from openpyxl.utils import get_column_letter
 
 logger = logging.getLogger(__name__)
 
-def pdf_to_excel_view(request):
-    """
-    Advanced PDF to Excel converter with intelligent table detection
-    and mixed content handling
-    """
-    if request.method == 'POST':
-        return handle_pdf_to_excel_upload(request)
+PDF_MIME_TYPES = {"application/pdf", "application/x-pdf"}
+MAX_PDF_UPLOAD_BYTES = getattr(settings, "PDF_TO_EXCEL_MAX_UPLOAD_BYTES", 25 * 1024 * 1024)
 
+DATE_FORMATS = (
+    "%Y-%m-%d",
+    "%d/%m/%Y",
+    "%m/%d/%Y",
+    "%d-%m-%Y",
+    "%d.%m.%Y",
+    "%Y/%m/%d",
+)
+
+# Common header keywords used to recognize table column headers across business documents
+HEADER_KEYWORDS = {
+    "id", "no", "num", "number", "code", "name", "title", "desc", "description",
+    "item", "product", "qty", "quantity", "rate", "price", "cost", "amount",
+    "total", "subtotal", "date", "time", "status", "type", "category", "unit",
+    "address", "city", "state", "zip", "country", "phone", "email", "tax",
+    "notes", "remarks", "comment", "balance", "debit", "credit", "percent", "%",
+    "lead", "budget", "population", "salary", "department", "customer", "sku", "warehouse"
+}
+
+
+class PdfConversionError(Exception):
+    """Expected, user-safe PDF-to-Excel conversion error."""
+
+
+def _pdf_to_excel_context(include=False):
     meta = Meta(
-        title='iLovePdfConverterOnline - PDF to XLSX file converter online',
-        description='Convert PDF to XLSX file online in free.',
-        keywords= ['pdf', 'file', 'excel', 'xlsx', 'xls'],
-        og_title='iLovePdfConverterOnline - PDF to XLSX file converter online',
-        og_description='Convert PDF to XLSX file online in free.',
+        title="iLovePdfConverterOnline - PDF to XLSX file converter online",
+        description="Convert PDF tables to XLSX online.",
+        keywords=["pdf", "table", "excel", "xlsx"],
+        og_title="iLovePdfConverterOnline - PDF to XLSX file converter online",
+        og_description="Convert PDF tables to XLSX online.",
     )
-    # Using fallback to avoid undefined ToolAttachment variable if not imported
-    # Assuming ToolAttachment is available since it's used elsewhere
-    try:
-        tool_attachment = ToolAttachment.objects.get(function_name='pdf_to_excel_view')
-    except:
-        tool_attachment = None
-    context = {'meta': meta, 'tool_attachment': tool_attachment}
-    return render(request, 'tools/pdf_to_excel.html', context)
+    context = {
+        "meta": meta,
+        "max_upload_mb": MAX_PDF_UPLOAD_BYTES // (1024 * 1024),
+    }
+    if not include:
+        context["tool_attachment"] = ToolAttachment.objects.filter(
+            function_name="pdf_to_excel_view"
+        ).first()
+    return context
+
+
+def pdf_to_excel_view(request):
+    """Normal PDF-to-Excel page and POST endpoint used by `tools.urls`."""
+    if request.method == "POST":
+        return handle_pdf_to_excel_upload(request)
+    return render(request, "tools/pdf_to_excel.html", _pdf_to_excel_context())
+
 
 def pdf_to_excel_include(request):
-    """
-    Advanced PDF to Excel converter with intelligent table detection
-    and mixed content handling
-    """
-    if request.method == 'POST':
+    """Embedded PDF-to-Excel page; uses the same upload handler."""
+    if request.method == "POST":
         return handle_pdf_to_excel_upload(request)
-
-    meta = Meta(
-        title='iLovePdfConverterOnline - PDF to XLSX file converter online',
-        description='Convert PDF to XLSX file online in free.',
-        keywords= ['pdf', 'file', 'excel', 'xlsx', 'xls'],
-        og_title='iLovePdfConverterOnline - PDF to XLSX file converter online',
-        og_description='Convert PDF to XLSX file online in free.',
+    return render(
+        request,
+        "tools/pdf_to_excel_include.html",
+        _pdf_to_excel_context(include=True),
     )
-    context = {'meta': meta}
-    return render(request, 'tools/pdf_to_excel_include.html', context)
 
 
 def handle_pdf_to_excel_upload(request):
-    """
-    Handle file upload and perform intelligent PDF to Excel conversion
-    """
-    if 'pdf_file' not in request.FILES:
-        messages.error(request, 'No PDF file uploaded.')
-        return redirect('pdf_to_excel')
-
-    pdf_file = request.FILES['pdf_file']
-
-    # Generate unique filename for processed files
-    unique_id = str(uuid.uuid4())
-    original_filename = f"converted_{unique_id}_{pdf_file.name}"
-    output_filename = f"{Path(original_filename).stem}.xlsx"
+    """Handle PDF upload, convert tables, and stream XLSX response without leaving temp files."""
+    pdf_file = request.FILES.get("pdf_file")
+    if not pdf_file:
+        return _conversion_error(request, "Choose a PDF file first.")
+    if Path(pdf_file.name).suffix.lower() != ".pdf":
+        return _conversion_error(request, "Only .pdf files can be converted.")
+    if pdf_file.size == 0:
+        return _conversion_error(request, "The uploaded file is empty.")
+    if pdf_file.size > MAX_PDF_UPLOAD_BYTES:
+        limit = MAX_PDF_UPLOAD_BYTES // (1024 * 1024)
+        return _conversion_error(request, f"The PDF is too large. The current limit is {limit} MB.")
 
     try:
-        # Save uploaded PDF temporarily
-        with tempfile.NamedTemporaryFile(delete=False, suffix='.pdf') as temp_file:
-            for chunk in pdf_file.chunks():
-                temp_file.write(chunk)
-            temp_pdf_path = temp_file.name
+        # In-memory buffer: avoids creating any temporary files on disk inside the project
+        pdf_stream = io.BytesIO()
+        for chunk in pdf_file.chunks():
+            pdf_stream.write(chunk)
+        pdf_stream.seek(0)
 
-        # Perform advanced conversion
-        converted_file_path = convert_pdf_to_excel_advanced(temp_pdf_path, original_filename)
+        # Validate PDF magic header
+        header = pdf_stream.read(5)
+        if not header.startswith(b"%PDF-"):
+            raise PdfConversionError("This file is not a valid PDF document.")
+        pdf_stream.seek(0)
 
-        # Clean up temp file
-        os.unlink(temp_pdf_path)
-
-        # Read the converted Excel file for download
-        if os.path.exists(converted_file_path):
-            excel_content = open(converted_file_path, 'rb').read()
-            response = HttpResponse(excel_content, content_type='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
-            response['Content-Disposition'] = f'attachment; filename="{output_filename}"'
-
-            # Clean up converted file
-            os.unlink(converted_file_path)
-
-            messages.success(request, 'PDF converted to Excel successfully!')
-            return response
-        else:
-            messages.error(request, 'Conversion failed. Could not create Excel file.')
-            return redirect('pdf_to_excel')
-
-    except Exception as e:
-        logger.error(f"PDF to Excel conversion error: {str(e)}")
-        try:
-            os.unlink(temp_pdf_path)
-        except:
-            pass
-        messages.error(request, f'Conversion error: {str(e)}')
-        return redirect('pdf_to_excel')
-
-
-def convert_pdf_to_excel_advanced(pdf_path, output_name):
-    """
-    Advanced PDF to Excel converter that handles:
-    - Single/multiple tables
-    - Tables spanning multiple pages
-    - PDFs with headers repeated on each page
-    - Mixed content (text and tables)
-    - Different table structures and layouts
-    """
-
-    # Create output directory in media
-    output_dir = os.path.join(settings.MEDIA_ROOT, 'converted_files')
-    os.makedirs(output_dir, exist_ok=True)
-
-    output_path = os.path.join(output_dir, output_name)
-
-    # Analyze PDF structure first
-    pdf_info = analyze_pdf_structure(pdf_path)
-
-    # Determine conversion strategy based on PDF analysis
-    if pdf_info['has_tables']:
-        return convert_pdf_with_tables(pdf_path, output_path, pdf_info)
-    else:
-        return convert_pdf_text_only(pdf_path, output_path)
-
-
-def analyze_pdf_structure(pdf_path):
-    """
-    Analyze PDF to determine structure:
-    - Number of pages
-    - Whether tables exist
-    - Header patterns
-    - Table locations
-    """
-    info = {
-        'num_pages': 0,
-        'has_tables': False,
-        'table_count': 0,
-        'header_pages': [],
-        'table_pages': [],
-        'repeating_headers': False
-    }
-
-    try:
-        # Use pdfplumber for detailed analysis
-        with pdfplumber.open(pdf_path) as pdf:
-            info['num_pages'] = len(pdf.pages)
-
-            table_counts = []
-            header_patterns = []
-
-            for i, page in enumerate(pdf.pages):
-                tables = page.extract_tables()
-                table_texts = []
-
-                if tables:
-                    info['has_tables'] = True
-                    info['table_count'] += len(tables)
-                    info['table_pages'].append(i + 1)
-                    table_counts.append(len(tables))
-
-                    # Extract text for header analysis
-                    text = page.extract_text() or ""
-                    table_texts.append(text)
-
-                    # Check for repeating headers (simple heuristic)
-                    if i < len(pdf.pages) - 1:
-                        next_text = pdf.pages[i + 1].extract_text() or ""
-                        if text and next_text and len(text) > 50:
-                            if text[:min(100, len(text))] == next_text[:min(100, len(next_text))]:
-                                info['repeating_headers'] = True
-                                info['header_pages'].append(i + 1)
-
-        # Also try tabula for cross-validation
-        try:
-            tables = tabula.read_pdf(pdf_path, pages='all')
-            if isinstance(tables, list) and len(tables) > 0:
-                info['has_tables'] = True
-                info['table_count'] = len([t for t in tables if not t.empty])
-        except:
-            pass
-
-    except Exception as e:
-        logger.error(f"PDF analysis error: {str(e)}")
-
-    return info
-
-
-def convert_pdf_with_tables(pdf_path, output_path, pdf_info):
-    """
-    Convert PDF with tables to Excel with intelligent handling:
-    - Group tables from pages with repeating headers
-    - Create separate sheets for distinct tables
-    - Handle complex table structures
-    """
-
-    wb = excel_workbook = Workbook()
-
-    # Strategy 1: Try camelot first (best for tabular data)
-    try:
-        tables = camelot.read_pdf(
-            pdf_path,
-            pages='all',
-            flavor='lattice',  # For tables with lines
-            suppress_warnings=True
+        # Perform advanced table conversion
+        workbook_stream = convert_pdf_to_excel_advanced(pdf_stream)
+        safe_stem = get_valid_filename(Path(pdf_file.name).stem) or "converted"
+        return FileResponse(
+            workbook_stream,
+            as_attachment=True,
+            filename=f"{safe_stem}.xlsx",
+            content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+    except PdfConversionError as exc:
+        logger.info("PDF-to-Excel conversion rejected: %s", exc)
+        return _conversion_error(request, str(exc))
+    except Exception:
+        logger.exception("Unexpected PDF-to-Excel conversion error")
+        return _conversion_error(
+            request,
+            "We could not convert this PDF. It may be encrypted, damaged, or image-only.",
         )
 
-        if tables.n > 0:
-            logger.info(f"Camelot found {tables.n} tables using lattice flavor")
-            return convert_tables_to_excel(camelot_tables=tables, wb=excel_workbook, output_path=output_path)
 
-    except Exception as e:
-        logger.warning(f"Camelot lattice failed: {str(e)}")
-        try:
-            # Try stream flavor for tables without clear lines
-            tables = camelot.read_pdf(
-                pdf_path,
-                pages='all',
-                flavor='stream',
-                suppress_warnings=True
-            )
+def _conversion_error(request, message):
+    messages.error(request, message)
+    return redirect(request.path)
 
-            if tables.n > 0:
-                logger.info(f"Camelot found {tables.n} tables using stream flavor")
-                return convert_tables_to_excel(camelot_tables=tables, wb=excel_workbook, output_path=output_path)
 
-        except Exception as e:
-            logger.warning(f"Camelot stream also failed: {str(e)}")
+def convert_pdf_to_excel_advanced(pdf_source: Union[str, Path, io.BytesIO, bytes]) -> io.BytesIO:
+    """Convert PDF tables to Excel workbook (.xlsx).
 
-    # Strategy 2: Use pdfplumber for table extraction
+    Behavior:
+    1. If the table structure is identical across pages (same columns/geometry or matching headers,
+       or continuous data like sample-heavy-1.pdf), all rows are merged into ONE single worksheet.
+    2. If the PDF contains multiple different table structures (different column counts or different
+       headers), each distinct table is saved to its own dedicated worksheet ('Table 1', 'Table 2', etc.).
+    3. Repeated headers across continuation pages are automatically deduplicated.
+    4. Data types (integers, floats, currency, dates, percentages) are automatically coerced into native
+       Excel values, while preserving leading zeros for IDs and postal codes.
+    5. Clean professional styling is applied (header fill, freeze pane, auto-filter, auto column widths,
+       and grid lines enabled).
+    6. Operates entirely in memory or via clean streams with no temporary files left on disk.
+    """
+    if isinstance(pdf_source, bytes):
+        pdf_source = io.BytesIO(pdf_source)
+
+    workbook = Workbook()
+    workbook.remove(workbook.active)  # Remove default blank sheet
+
+    # Buckets track distinct table structures across the entire document
+    buckets: List[Dict[str, Any]] = []
+
     try:
-        return convert_with_pdfplumber(pdf_path, output_path, pdf_info)
-    except Exception as e:
-        logger.error(f"All conversion strategies failed: {str(e)}")
+        with pdfplumber.open(pdf_source) as pdf:
+            if not pdf.pages:
+                raise PdfConversionError("The uploaded PDF contains no pages.")
+
+            for page_num, page in enumerate(pdf.pages, start=1):
+                extracted_tables = []
+
+                # Strategy 1: Ruled / bordered tables (fast vector line & border analysis)
+                tables = page.find_tables()
+                if tables:
+                    for t in tables:
+                        raw_rows = t.extract()
+                        if raw_rows:
+                            cleaned = [_normalize_row(r) for r in raw_rows if any(c.strip() for c in r)]
+                            if cleaned and len(cleaned[0]) >= 2:
+                                col_pos = tuple(round(c.bbox[0], 1) for c in t.columns) + (round(t.columns[-1].bbox[2], 1),)
+                                extracted_tables.append((cleaned, col_pos))
+
+                # Strategy 2: Borderless / whitespace-aligned tables fallback
+                if not extracted_tables:
+                    text_tables = page.extract_tables({"vertical_strategy": "text", "horizontal_strategy": "text"})
+                    for raw_rows in text_tables:
+                        cleaned = [_normalize_row(r) for r in raw_rows if any(c.strip() for c in r)]
+                        if cleaned and len(cleaned) >= 2 and len(cleaned[0]) >= 2:
+                            extracted_tables.append((cleaned, None))
+
+                # Process all tables detected on this page
+                for rows, col_positions in extracted_tables:
+                    col_count = len(rows[0])
+                    # Pad rows to consistent column count
+                    rows = [r + [""] * (col_count - len(r)) for r in rows]
+                    has_h, header = _detect_header(rows)
+
+                    # Match with existing table bucket
+                    matched = None
+                    for b in buckets:
+                        if b["col_count"] != col_count:
+                            continue
+
+                        # Header match takes highest precedence
+                        if has_h and b["has_header"]:
+                            if header == b["header"]:
+                                matched = b
+                                break
+                        # Continuation table where continuation page omitted repeated header
+                        elif not has_h and b["has_header"]:
+                            if (col_positions and _col_positions_match(col_positions, b["col_positions"])) or page_num == b["last_page"] + 1:
+                                matched = b
+                                break
+                        # Both data-only tables without headers (e.g. continuous data tables)
+                        elif not has_h and not b["has_header"]:
+                            if (col_positions and _col_positions_match(col_positions, b["col_positions"])) or page_num == b["last_page"] + 1:
+                                matched = b
+                                break
+
+                    # If no matching table structure exists, create a new worksheet bucket
+                    if matched is None:
+                        table_number = len(buckets) + 1
+                        sheet_name = _unique_sheet_name(workbook, f"Table {table_number}")
+                        ws = workbook.create_sheet(title=sheet_name)
+                        matched = {
+                            "ws": ws,
+                            "col_count": col_count,
+                            "has_header": has_h,
+                            "header": header,
+                            "col_positions": col_positions,
+                            "last_page": page_num,
+                            "total_rows": 0,
+                        }
+                        buckets.append(matched)
+
+                    # Deduplicate repeated header row on continuation pages
+                    rows_to_write = rows[1:] if (
+                        has_h and matched["has_header"] and matched["total_rows"] > 0 and header == matched["header"]
+                    ) else rows
+
+                    # Append coerced cell data to the worksheet
+                    for row in rows_to_write:
+                        matched["ws"].append([_coerce_cell_value(c) for c in row])
+
+                    matched["total_rows"] += len(rows_to_write)
+                    matched["last_page"] = page_num
+
+                # Flush page layout cache to keep memory low during long document processing
+                page.flush_cache()
+
+    except PdfConversionError:
         raise
+    except Exception as exc:
+        logger.exception("Failed to parse PDF document")
+        raise PdfConversionError("Could not read or parse this PDF document.") from exc
+
+    # If no tables were detected in the entire document, fall back to extracting selectable text
+    if not buckets:
+        ws = workbook.create_sheet(title="Extracted Text")
+        ws.append(["Page", "Text"])
+        with pdfplumber.open(pdf_source) as pdf:
+            has_text = False
+            for p_num, p in enumerate(pdf.pages, start=1):
+                txt = (p.extract_text() or "").strip()
+                if txt:
+                    ws.append([p_num, txt])
+                    has_text = True
+        if not has_text:
+            raise PdfConversionError(
+                "No selectable text or tables were found. This document may be scanned or image-only. Please run OCR first."
+            )
+        _format_worksheet(ws, has_header=True)
+    else:
+        for b in buckets:
+            _format_worksheet(b["ws"], has_header=b["has_header"])
+
+    stream = io.BytesIO()
+    workbook.save(stream)
+    stream.seek(0)
+    return stream
 
 
-def convert_tables_to_excel(camelot_tables, wb, output_path):
-    """
-    Convert camelot tables to Excel workbook with intelligent sheet naming
-    """
-    sheets_created = 0
-
-    for i, table in enumerate(camelot_tables):
-        # Convert camelot table to DataFrame
-        df = table.df
-        df = pd.DataFrame(df)
-
-        # Clean the DataFrame
-        df = clean_dataframe(df)
-
-        # Create sheet name
-        sheet_name = f"Table {i + 1}"
-
-        # Write to Excel
-        df.to_excel(output_path, sheet_name=sheet_name, index=False)
-        sheets_created += 1
-
-    return output_path if sheets_created > 0 else None
+def _is_numeric_string(val: Any) -> bool:
+    """Check whether a string represents a number (currency, commas, percent stripped)."""
+    if not val:
+        return False
+    s = str(val).strip().replace(",", "").replace("$", "").replace("€", "").replace("£", "").replace("¥", "").replace("₹", "").replace("%", "")
+    if s.startswith("(") and s.endswith(")"):
+        s = "-" + s[1:-1].strip()
+    try:
+        float(s)
+        return True
+    except ValueError:
+        return False
 
 
-def convert_with_pdfplumber(pdf_path, output_path, pdf_info):
-    """
-    Convert PDF using pdfplumber for better table detection
-    """
-    wb = Workbook()
+def _coerce_cell_value(val: Any) -> Any:
+    """Coerce string values into native Python/Excel types (int, float, date, bool)."""
+    if val is None:
+        return ""
+    s = str(val).strip()
+    if not s:
+        return ""
 
-    with pdfplumber.open(pdf_path) as pdf:
-        tables_created = 0
+    s_lower = s.lower()
+    if s_lower == "true":
+        return True
+    if s_lower == "false":
+        return False
 
-        for page_num, page in enumerate(pdf.pages):
-            tables = page.extract_tables()
+    # Keep leading-zero numeric strings as text (preserves zip codes, account IDs, serials)
+    if re.fullmatch(r"0\d+", s):
+        return s
 
-            if not tables:
-                continue
+    # Integer
+    if re.fullmatch(r"[-+]?\d+", s):
+        try:
+            val_int = int(s)
+            if len(s) < 16:  # Avoid scientific notation overflow for large numeric identifiers
+                return val_int
+        except ValueError:
+            pass
 
-            for table_idx, table in enumerate(tables):
-                if not table or not any(cell for cell in table):
-                    continue
+    # Clean currency/commas for numeric float parsing
+    clean_num = s.replace(",", "").replace("$", "").replace("€", "").replace("£", "").replace("¥", "").replace("₹", "").strip()
+    if clean_num.startswith("(") and clean_num.endswith(")"):
+        clean_num = "-" + clean_num[1:-1].strip()
 
-                # Create DataFrame
-                df = pd.DataFrame(table[1:], columns=table[0]) if len(table) > 1 else pd.DataFrame(table)
-                df = clean_dataframe(df)
+    # Float / Decimal
+    if re.fullmatch(r"[-+]?\d+\.\d+", clean_num):
+        try:
+            return float(clean_num)
+        except ValueError:
+            pass
 
-                if df.empty:
-                    continue
-
-                # Determine sheet naming strategy
-                if tables_created == 0:
-                    sheet_name = "Sheet1"
-                else:
-                    sheet_name = f"Table {page_num + 1}-{table_idx + 1}"
-
-                # Write to Excel
-                if tables_created == 0:
-                    df.to_excel(output_path, sheet_name=sheet_name, index=False)
-                else:
-                    with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
-                        df.to_excel(writer, sheet_name=sheet_name, index=False)
-
-                tables_created += 1
-
-    return output_path if tables_created > 0 else None
-
-
-def convert_pdf_text_only(pdf_path, output_path):
-    """
-    Fallback: Convert PDF text content to Excel (non-tabular data)
-    """
-    wb = Workbook()
-
-    with pdfplumber.open(pdf_path) as pdf:
-        for i, page in enumerate(pdf.pages):
-            text = page.extract_text() or ""
-
-            # Clean text
-            text = re.sub(r'\s+', ' ', text).strip()
-
-            if not text:
-                continue
-
-            # Convert each page to a row
-            df = pd.DataFrame({'Page Text': [text]})
-
-            sheet_name = f"Page {i + 1}"
-
-            if i == 0:
-                df.to_excel(output_path, sheet_name=sheet_name, index=False)
-            else:
-                with pd.ExcelWriter(output_path, engine='openpyxl', mode='a', if_sheet_exists='replace') as writer:
-                    df.to_excel(writer, sheet_name=sheet_name, index=False)
-
-    return output_path
-
-
-def clean_dataframe(df):
-    """
-    Clean DataFrame by:
-    - Removing empty rows/columns
-    - Converting numeric values
-    - Handling missing values
-    """
-    # Remove completely empty rows and columns
-    df = df.dropna(how='all')
-    df = df.dropna(axis=1, how='all')
-
-    # Strip whitespace from string values
-    for col in df.select_dtypes(include=['object']).columns:
-        df[col] = df[col].astype(str).str.strip()
-
-    # Try to convert to numeric where possible
-    for col in df.columns:
-        df[col] = pd.to_numeric(df[col], errors='coerce')
-
-    return df
-
-
-def render_pdf_to_pdf(request):
-    """
-    Render PDF to PDF (placeholder for future functionality)
-    """
-    if request.method == 'POST':
-        return handle_pdf_to_pdf_upload(request)
-
-    meta = {
-        'og_title': 'iLovePdfConverterOnline - PDF to PDF converter',
-        'og_description': 'Convert PDF to PDF online in free.',
-    }
-    context = {'meta': meta}
-    return render(request, 'tools/pdf_to_pdf_include.html', context)
- 
-# -----------------------------------------================================
-
-
-def pdf_to_csv_logic(func):
-    def wrapper(request, *args, **kwargs):
-        if request.method == 'POST' and request.FILES.get('pdf_file'):
-            pdf_file = request.FILES['pdf_file']
-
-            # Save the uploaded PDF file to uploads directory
-            upload_folder = os.path.join(settings.MEDIA_ROOT, 'uploads')
-            os.makedirs(upload_folder, exist_ok=True)
-            pdf_file_path = os.path.join(upload_folder, pdf_file.name)
-            
-            with open(pdf_file_path, 'wb') as destination:
-                for chunk in pdf_file.chunks():
-                    destination.write(chunk)
-
+    # Percentage: e.g. 15.5% -> 0.155
+    if s.endswith("%"):
+        pct_clean = s[:-1].strip().replace(",", "")
+        if re.fullmatch(r"[-+]?\d+(?:\.\d+)?", pct_clean):
             try:
-                # Convert PDF to CSV using tabula
-                csv_file_path = os.path.join(upload_folder, 'PDF2CSV_ilovepdfconverteronline.com.csv')
-                tabula.convert_into(input_path=pdf_file_path, output_path=csv_file_path, output_format='csv', pages='all', stream=True)
+                return float(pct_clean) / 100.0
+            except ValueError:
+                pass
 
-                # Provide the CSV file for download
-                with open(csv_file_path, 'rb') as csv_file:
-                    response = HttpResponse(csv_file.read(), content_type='text/csv')
-                    response['Content-Disposition'] = 'attachment; filename=PDF2CSV_ilovepdfconverteronline.com.csv'
-                    response.cleanup_files = [pdf_file_path, csv_file_path]  # Add files for cleanup
-                    return response
+    # Date
+    if len(s) in (8, 9, 10):
+        for fmt in DATE_FORMATS:
+            try:
+                return datetime.strptime(s, fmt).date()
+            except ValueError:
+                continue
 
-            except Exception as e:
-                return HttpResponse(f"Conversion failed. Error: {str(e)}")
-
-        # If GET request or no pdf_file in POST
-        return func(request, *args, **kwargs)
-
-    return wrapper
+    return s
 
 
-@pdf_to_csv_logic
-def pdf_to_csv_view(request):
-    meta = Meta(
-        title='iLovePdfConverterOnline - PDF to CSV file converter online',
-        description='Convert PDF (Portable Document Format) to CSV (comma-separated values) file online in free.',
-        keywords= ['pdf', 'file', 'excel', 'csv', 'comma-separated values', 'Portable Document Format'],
-        og_title='iLovePdfConverterOnline - PDF to CSV file converter online',
-        og_description='Convert PDF (Portable Document Format) to CSV (comma-separated values)  file online in free.',
-    )
-    tool_attachment = ToolAttachment.objects.get(function_name='pdf_to_csv_view')
-    context = {'meta': meta, 'tool_attachment': tool_attachment}
-    return render(request, 'tools/pdf_to_csv.html',context)
+def _normalize_cell(cell: Any) -> str:
+    s = str(cell or "").strip()
+    lines = [re.sub(r"[ \t]+", " ", line).strip() for line in s.splitlines()]
+    return "\n".join(line for line in lines if line)
 
-@pdf_to_csv_logic
-def pdf_to_csv_include(request):
-    meta = Meta(
-        title='iLovePdfConverterOnline - PDF to CSV file converter online',
-        description='Convert PDF (Portable Document Format) to CSV (comma-separated values) file online in free.',
-        keywords= ['pdf', 'file', 'excel', 'csv', 'comma-separated values', 'Portable Document Format'],
-        og_title='iLovePdfConverterOnline - PDF to CSV file converter online',
-        og_description='Convert PDF (Portable Document Format) to CSV (comma-separated values)  file online in free.',
-    )
-    context = {'meta': meta}
-    return render(request, 'tools/pdf_to_csv_include.html', context)
+
+def _normalize_row(row: List[Any]) -> List[str]:
+    return [_normalize_cell(c) for c in row]
+
+
+def _detect_header(rows: List[List[str]]) -> Tuple[bool, Tuple[str, ...]]:
+    """Determine accurately whether rows[0] is a table header or just data.
+
+    Prevents the critical flaw where data rows with text columns (like names or codes)
+    are mistakenly treated as headers.
+    """
+    if not rows or len(rows) < 2:
+        return False, ()
+
+    first = rows[0]
+    subsequent = rows[1:min(len(rows), 15)]
+    first_clean = [re.sub(r"\W+", "", str(c or "")).lower() for c in first]
+    kw_matches = sum(1 for c in first_clean if any(k in c for k in HEADER_KEYWORDS))
+
+    type_discrepancy = 0
+    identical_type_count = 0
+
+    for col_idx in range(len(first)):
+        col_0_num = _is_numeric_string(first[col_idx])
+        sub_num = sum(1 for r in subsequent if len(r) > col_idx and _is_numeric_string(r[col_idx]))
+        sub_total = len(subsequent)
+
+        # If row 0 is text but subsequent data rows are numeric/dates, strong header indicator
+        if not col_0_num and sub_num >= max(1, int(sub_total * 0.7)):
+            type_discrepancy += 1
+        elif col_0_num and sub_num >= max(1, int(sub_total * 0.7)):
+            identical_type_count += 1
+
+    # If row 0 shares the exact same numeric pattern as data rows and no keywords match, it's data
+    if identical_type_count > 0 and type_discrepancy == 0 and kw_matches == 0:
+        return False, ()
+
+    if type_discrepancy >= 1 or kw_matches >= max(1, len(first) // 2):
+        return True, tuple(first_clean)
+
+    return False, ()
+
+
+def _col_positions_match(pos1: Optional[Tuple[float, ...]], pos2: Optional[Tuple[float, ...]], tol: float = 18.0) -> bool:
+    """Compare horizontal column boundaries to verify identical layout structure."""
+    if not pos1 or not pos2 or len(pos1) != len(pos2):
+        return False
+    diffs = [abs(p1 - p2) for p1, p2 in zip(pos1, pos2)]
+    return (sum(diffs) / len(diffs)) <= tol
+
+
+def _unique_sheet_name(workbook: Workbook, preferred: str) -> str:
+    """Generate a clean, Excel-compatible unique sheet title (max 31 chars)."""
+    cleaned = re.sub(r"[\[\]\*\/\\:]", "", preferred).strip() or "Table"
+    base = cleaned[:28]
+    candidate = base
+    number = 2
+    while candidate in workbook.sheetnames:
+        suffix = f" ({number})"
+        candidate = f"{base[:31 - len(suffix)]}{suffix}"
+        number += 1
+    return candidate
+
+
+def _format_worksheet(ws, has_header: bool = False):
+    """Apply clean professional Excel styling and auto column widths."""
+    ws.views.sheetView[0].showGridLines = True
+    if has_header and ws.max_row >= 1:
+        ws.freeze_panes = "A2"
+        if ws.max_column:
+            ws.auto_filter.ref = ws.dimensions
+
+        # Professional navy header
+        header_fill = PatternFill("solid", fgColor="1F4E78")
+        header_font = Font(name="Calibri", size=11, bold=True, color="FFFFFF")
+        header_align = Alignment(horizontal="center", vertical="center", wrap_text=True)
+        thin_border = Border(
+            left=Side(style="thin", color="D9D9D9"),
+            right=Side(style="thin", color="D9D9D9"),
+            top=Side(style="thin", color="1F4E78"),
+            bottom=Side(style="medium", color="1F4E78"),
+        )
+        for cell in ws[1]:
+            cell.fill = header_fill
+            cell.font = header_font
+            cell.alignment = header_align
+            cell.border = thin_border
+        ws.row_dimensions[1].height = 26
+
+    # Efficient column width auto-fitting using sample rows
+    sample_limit = min(ws.max_row, 60)
+    for col_idx in range(1, ws.max_column + 1):
+        col_letter = get_column_letter(col_idx)
+        max_len = 10
+        for row_idx in range(1, sample_limit + 1):
+            val_str = str(ws.cell(row_idx, col_idx).value or "")
+            line_max = max((len(line) for line in val_str.splitlines()), default=0)
+            if line_max > max_len:
+                max_len = line_max
+        ws.column_dimensions[col_letter].width = min(max_len + 3, 50)
+
+
+
 
 # -----------------------------------------================================
 
@@ -1998,8 +2259,6 @@ def json_to_pdf_include(request):
 
 # -----------------------------------------================================
 
-import logging
-logger = logging.getLogger(__name__)
 
 def pdf_to_json_logic(view_func):
     @wraps(view_func)
@@ -2105,58 +2364,60 @@ def string_to_base64_include(request, context):
 # -----------------------------------------================================
 
 def base64_to_pdf_logic(view_func):
+    """Put decoded text (or a validation error) in the template context."""
+    @wraps(view_func)
     def wrapper(request, *args, **kwargs):
-        if request.method == 'POST':
-            # Getting base64 string from the textarea input
-            base64_string = request.POST.get('base64_string', '')
+        context = {}
+
+        if request.method == "POST":
+            base64_string = request.POST.get("base64_string", "").strip()
+            context["base64_string"] = base64_string
+
             try:
-                # Decoding base64 string to bytes
-                pdf_data = base64.b64decode(base64_string)
-                print(f'pdf data {pdf_data}')
+                # Accept Base64 pasted over several lines and optional data-URL prefixes.
+                if base64_string.startswith("data:") and "," in base64_string:
+                    base64_string = base64_string.split(",", 1)[1]
+                normalized_base64 = "".join(base64_string.split())
+                padding = "=" * (-len(normalized_base64) % 4)
+                decoded_bytes = base64.b64decode(normalized_base64 + padding, validate=True)
+                context["decoded_string"] = decoded_bytes.decode("utf-8")
+            except (binascii.Error, UnicodeDecodeError, ValueError):
+                context["error"] = (
+                    "Please enter a valid Base64 value that contains UTF-8 text."
+                )
 
-                # Creating a PDF file using reportlab
-                buffer = BytesIO()
-                c = canvas.Canvas(buffer)
+        return view_func(request, context, *args, **kwargs)
 
-                # Write the decoded data to the PDF
-                c.drawString(100, 750, pdf_data.decode('utf-8'))
-                c.save()
-
-                buffer.seek(0)
-                response = HttpResponse(buffer, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename="Base642PDF_ilovepdfconverteronline.com.pdf"'
-
-                return response
-            except:
-                return HttpResponseBadRequest("Invalid base64 string")
-        return view_func(request, *args, **kwargs)
     return wrapper
 
 
 @base64_to_pdf_logic
-def base64_to_pdf_view(request):
+def base64_to_pdf_view(request, context):
     meta = Meta(
-        title='iLovePdfConverterOnline - Base64 to PDF file converter online',
-        description='Convert Base64 into PDF (Portable Document Format) file format online in free.',
-        keywords=['string', 'pdf', 'base64', 'Portable Document Format'],
-        og_title='iLovePdfConverterOnline - Base64 to PDF file converter online',
-        og_description='Convert Base64 into PDF (Portable Document Format) file format online in free.',
+        title="iLovePdfConverterOnline - Base64 to text and PDF converter online",
+        description="Decode Base64 text and export the decoded text as a PDF.",
+        keywords=["string", "pdf", "base64", "text"],
+        og_title="iLovePdfConverterOnline - Base64 to text and PDF converter online",
+        og_description="Decode Base64 text and export the decoded text as a PDF.",
     )
-    tool_attachment = ToolAttachment.objects.get(function_name='base64_to_pdf_view')
-    context = {'meta': meta, 'tool_attachment': tool_attachment}
-    return render(request, 'tools/base64_to_pdf.html', context)
+    context["meta"] = meta
+    context["tool_attachment"] = ToolAttachment.objects.get(
+        function_name="base64_to_pdf_view"
+    )
+    return render(request, "tools/base64_to_pdf.html", context)
+
 
 @base64_to_pdf_logic
-def base64_to_pdf_include(request):
+def base64_to_pdf_include(request, context):
     meta = Meta(
-        title='iLovePdfConverterOnline - Base64 to PDF file converter online',
-        description='Convert Base64 into PDF (Portable Document Format) file format online in free.',
-        keywords=['string', 'pdf', 'base64', 'Portable Document Format'],
-        og_title='iLovePdfConverterOnline - Base64 to PDF file converter online',
-        og_description='Convert Base64 into PDF (Portable Document Format) file format online in free.',
+        title="iLovePdfConverterOnline - Base64 to text and PDF converter online",
+        description="Decode Base64 text and export the decoded text as a PDF.",
+        keywords=["string", "pdf", "base64", "text"],
+        og_title="iLovePdfConverterOnline - Base64 to text and PDF converter online",
+        og_description="Decode Base64 text and export the decoded text as a PDF.",
     )
-    context = {'meta': meta}
-    return render(request, 'tools/base64_to_pdf_include.html', context)
+    context["meta"] = meta
+    return render(request, "tools/base64_to_pdf_include.html", context)
 
 # ---------------------------------------------====================================================
 
@@ -2475,80 +2736,63 @@ def pdf_to_xml_include(request, form):
 
 # -----------------------------------------================================
 
-# working 100%
+# HTML to PDF conversion views
+
+def _download_response(pdf: bytes) -> FileResponse:
+    from io import BytesIO
+
+    response = FileResponse(
+        BytesIO(pdf),
+        as_attachment=True,
+        filename=settings.HTML_TO_PDF_OUTPUT_FILENAME,
+        content_type="application/pdf",
+    )
+    response["Content-Length"] = len(pdf)
+    response["X-Content-Type-Options"] = "nosniff"
+    return response
+
+
+def _render_html_to_pdf(request, template_name: str, include_attachment: bool = False):
+    meta = Meta(
+        title="iLovePdfConverterOnline - HTML to PDF",
+        description="Convert an HTML file or public URL to PDF.",
+        keywords=["html", "url", "file", "download", "pdf"],
+        og_title="iLovePdfConverterOnline - HTML to PDF",
+        og_description="Convert an HTML file or public URL to PDF.",
+    )
+    context = {"meta": meta, "form": HtmlToPdfForm()}
+    if include_attachment:
+        context["tool_attachment"] = ToolAttachment.objects.filter(function_name="html_to_pdf_view").first()
+
+    if request.method == "POST":
+        form = HtmlToPdfForm(request.POST, request.FILES)
+        context["form"] = form
+        if form.is_valid():
+            try:
+                if form.cleaned_data["url"]:
+                    pdf = convert_url_to_pdf(form.cleaned_data["url"])
+                else:
+                    raw_html = form.cleaned_data["html_file"].read()
+                    html = raw_html.decode("utf-8-sig")
+                    pdf = convert_html_to_pdf(html)
+                return _download_response(pdf)
+            except UnicodeDecodeError:
+                form.add_error("html_file", _("The file must be UTF-8 encoded HTML."))
+            except PdfConversionError as exc:
+                form.add_error(None, str(exc))
+
+    return render(request, template_name, context)
+
+
+@require_http_methods(["GET", "POST"])
 def html_to_pdf_view(request):
-    meta = Meta(
-        title='iLovePdfConverterOnline - HTML to PDF',
-        description='Convert HTML file or URL in to PDF. HyperText Markup Language to Portable Document Format',
-        keywords=['html', 'url', 'urls', 'links', 'file', 'download', 'pdf', 'Portable Document Format'],
-        og_title='iLovePdfConverterOnline - HTML to PDF',
-        og_description='Convert HTML file or URL to PDF. HyperText Markup Language to Portable Document Format',
-    )
-    tool_attachment = ToolAttachment.objects.get(function_name='html_to_pdf_view')
-    context = {'meta': meta, 'tool_attachment': tool_attachment}
+    return _render_html_to_pdf(request, "tools/html_to_pdf.html", include_attachment=True)
 
-    if request.method == 'POST':
-        if 'url' in request.POST:
-            url = request.POST['url']
-            # Check if the URL is not empty
-            if url:
-                pdf = pdfkit.from_url(url, False)
-                response = HttpResponse(pdf, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename="HTML2PDF_ilovepdfconverteronline.com.pdf"'
-                return response
-            else:
-                # return HttpResponse("URL is empty")
-                if 'html_file' in request.FILES:
-                    html_file = request.FILES['html_file']
-                    # Read content of HTML file
-                    html_content = html_file.read().decode('utf-8')
-                    # print(html_content)
-                    # Convert HTML content to PDF
-                    pdf = pdfkit.from_string(html_content, options={"enable-local-file-access": ""})
-                    response = HttpResponse(pdf, content_type='application/pdf')
-                    response['Content-Disposition'] = 'attachment; filename="HTML2PDF_ilovepdfconverteronline.com.pdf"'
-                    return response
-                else:
-                    return HttpResponse("Invalid Request")
-    else:
-        return render(request, 'tools/html_to_pdf.html', context)
 
+@require_http_methods(["GET", "POST"])
 def html_to_pdf_include(request):
-    meta = Meta(
-        title='iLovePdfConverterOnline - HTML to PDF',
-        description='Convert HTML file or URL to PDF.',
-        keywords=['html', 'url', 'urls', 'links', 'file', 'download', 'pdf', 'Portable Document Format'],
-        og_title='iLovePdfConverterOnline - HTML to PDF',
-        og_description='Convert HTML file or URL to PDF.',
-    )
+    return _render_html_to_pdf(request, "tools/html_to_pdf_include.html")
 
-    context = {'meta': meta}
-
-    if request.method == 'POST':
-        if 'url' in request.POST:
-            url = request.POST['url']
-            # Check if the URL is not empty
-            if url:
-                pdf = pdfkit.from_url(url, False)
-                response = HttpResponse(pdf, content_type='application/pdf')
-                response['Content-Disposition'] = 'attachment; filename="HTML2PDF_ilovepdfconverteronline.com.pdf"'
-                return response
-            else:
-                # return HttpResponse("URL is empty")
-                if 'html_file' in request.FILES:
-                    html_file = request.FILES['html_file']
-                    # Read content of HTML file
-                    html_content = html_file.read().decode('utf-8')
-                    # print(html_content)
-                    # Convert HTML content to PDF
-                    pdf = pdfkit.from_string(html_content, options={"enable-local-file-access": ""})
-                    response = HttpResponse(pdf, content_type='application/pdf')
-                    response['Content-Disposition'] = 'attachment; filename="HTML2PDF_ilovepdfconverteronline.com.pdf"'
-                    return response
-                else:
-                    return HttpResponse("Invalid Request")
-    else:
-        return render(request, 'tools/html_to_pdf_include.html', context)
 
 # -----------------------------------------================================
 
@@ -2636,7 +2880,6 @@ def lorem_ipsum_generator_include(request):
 # views.py
 import io
 import fitz  # PyMuPDF
-from django.views.decorators.http import require_http_methods
 from django.core.files.uploadedfile import UploadedFile
 
 def pdf_to_raw_logic(func):
@@ -2669,7 +2912,6 @@ def pdf_to_raw_view(request):
 
 
 
-from django.views.decorators.http import require_http_methods
 import io
 import rawpy
 import numpy as np
@@ -2720,7 +2962,6 @@ def raw_to_pdf_view(request):
 ###########################################################################################
 
 ####################################################################################################
-import shutil
 
 def odp_to_pptx_logic(view_func):
     def wrapper_function(request, *args, **kwargs):
@@ -2782,7 +3023,7 @@ def odp_to_pptx_view(request):
         og_title='OpenDocument Presentation (.odp) file to Microsoft PowerPoint (.pptx) file converter',
         og_description='iLovePdfConverterOnline Converts OpenDocument Presentation (.odp) file in to Microsoft PowerPoint (.pptx) file format',
     )
-    tool_attachment = ToolAttachment.objects.get(function_name='pptx_to_odp_view')
+    tool_attachment = ToolAttachment.objects.get(function_name='odp_to_pptx_view')
     context = {'meta': meta, 'tool_attachment': tool_attachment}
     return render(request, 'tools/odp_to_pptx.html', context)
 
@@ -2879,13 +3120,7 @@ def ods_to_xlsx_include(request):
 
 ########################################################
 
-# import os
-# import shutil
-# import subprocess
-# from django.conf import settings
 # from django.core.files.storage import FileSystemStorage
-# from django.http import FileResponse, HttpResponse
-# from django.shortcuts import render
 
 def odt_to_docx_logic(view_func):
     def wrapper_function(request, *args, **kwargs):

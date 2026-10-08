@@ -1,6 +1,15 @@
+from __future__ import annotations
 from django import forms
 from django.forms.widgets import ClearableFileInput
 from ckeditor.widgets import CKEditorWidget
+# for HTML to PDF conversion, you can create a form like this:
+
+
+from django import forms
+from django.conf import settings
+from django.core.exceptions import ValidationError
+from django.utils.translation import gettext_lazy as _
+
 # from tools.models import ToolAttachment
 
 # class ToolAttachmentForm(forms.ModelForm):
@@ -73,3 +82,56 @@ class RotatePDFForm(forms.Form):
 #         help_text='Leave blank to rotate all pages'
 #     )
 
+# for HTML to PDF conversion, you can create a form like this:
+
+
+
+class HtmlToPdfForm(forms.Form):
+    url = forms.URLField(
+        required=False,
+        label=_("Web page URL"),
+        widget=forms.URLInput(
+            attrs={
+                "class": "form-control form-control-lg",
+                "placeholder": "https://example.com/page",
+                "autocomplete": "url",
+                "inputmode": "url",
+            }
+        ),
+    )
+    html_file = forms.FileField(
+        required=False,
+        label=_("HTML file"),
+        widget=forms.ClearableFileInput(
+            attrs={
+                "class": "form-control form-control-lg",
+                "accept": ".html,.htm,text/html",
+            }
+        ),
+    )
+
+    def clean(self):
+        cleaned = super().clean()
+        url = (cleaned.get("url") or "").strip()
+        html_file = cleaned.get("html_file")
+
+        if bool(url) == bool(html_file):
+            raise ValidationError(_("Provide either a web page URL or one HTML file, not both."))
+
+        if url:
+            scheme = url.split(":", 1)[0].lower()
+            if scheme not in settings.HTML_TO_PDF_ALLOWED_SCHEMES:
+                self.add_error("url", _("Only HTTP and HTTPS URLs are supported."))
+
+        if html_file:
+            name = html_file.name.lower()
+            if not name.endswith((".html", ".htm")):
+                self.add_error("html_file", _("Upload an HTML file ending in .html or .htm."))
+            if html_file.size > settings.HTML_TO_PDF_MAX_UPLOAD_BYTES:
+                self.add_error(
+                    "html_file",
+                    _("The HTML file is too large. Maximum size is %(size)s MB.")
+                    % {"size": settings.HTML_TO_PDF_MAX_UPLOAD_BYTES // (1024 * 1024)},
+                )
+
+        return cleaned

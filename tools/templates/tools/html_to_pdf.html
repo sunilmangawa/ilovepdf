@@ -1,64 +1,84 @@
 {% extends 'base.html' %}
 {% load i18n %}
-{% load static %}
 {% load blog_tags %}
 
 {% block title %}{% trans 'HTML' %} {% trans 'To' %} {% trans 'PDF' %}{% endblock %}
 
 {% block content %}
 <div class="container py-5 mt-5">
-    <div class="text-center mb-5">
-        <h1 class="display-4 fw-bold text-gradient">{% trans 'HTML' %} {% trans 'To' %} {% trans 'PDF' %}</h1>
-        <p class="lead text-secondary">{% trans 'h2p_subtitle' %}</p>
+  <div class="text-center mb-5">
+    <h1 class="display-5 fw-bold text-gradient">{% trans 'HTML' %} {% trans 'To' %} {% trans 'PDF' %}</h1>
+    <p class="lead text-secondary mb-0">{% trans 'h2p_subtitle' %}</p>
+  </div>
+
+  <div class="row justify-content-center">
+    <div class="col-lg-8 col-xl-7">
+      <div class="modern-card shadow-sm">
+        <form method="post" enctype="multipart/form-data" novalidate data-pdf-form>
+          {% csrf_token %}
+
+          {% if form.non_field_errors %}
+            <div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>
+          {% endif %}
+
+          <fieldset class="mb-4">
+            <legend class="fs-5 fw-bold mb-2">{% trans 'Convert a public web page' %}</legend>
+            <label for="{{ form.url.id_for_label }}" class="form-label">{% trans 'Web page URL' %}</label>
+            {{ form.url }}
+            {% for error in form.url.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+            <div class="form-text">{% trans 'Use a public HTTP or HTTPS address, for example https://example.com.' %}</div>
+          </fieldset>
+
+          <div class="d-flex align-items-center gap-3 my-4" aria-hidden="true">
+            <hr class="flex-grow-1"><span class="text-muted fw-semibold">{% trans 'OR' %}</span><hr class="flex-grow-1">
+          </div>
+
+          <fieldset class="mb-4">
+            <legend class="fs-5 fw-bold mb-2">{% trans 'Upload an HTML file' %}</legend>
+            <label class="upload-box d-block text-center p-4 rounded border border-2" for="{{ form.html_file.id_for_label }}" data-drop-zone tabindex="0">
+              <span class="d-block fs-2 mb-2" aria-hidden="true">&#128196;</span>
+              <span class="d-block fw-semibold">{% trans 'Drop your HTML file here or click to browse' %}</span>
+              <span class="small text-secondary">.html, .htm · {% trans 'maximum 5 MB' %}</span>
+              <span class="d-block small mt-2 fw-semibold" data-file-name></span>
+            </label>
+            <div class="visually-hidden">{{ form.html_file }}</div>
+            {% for error in form.html_file.errors %}<div class="invalid-feedback d-block">{{ error }}</div>{% endfor %}
+          </fieldset>
+
+          <button type="submit" class="btn btn-primary btn-lg w-100" data-submit-button>
+            <span data-submit-label>{% trans 'Convert to PDF' %}</span>
+            <span class="spinner-border spinner-border-sm ms-2 d-none" aria-hidden="true" data-spinner></span>
+          </button>
+          <p class="small text-secondary text-center mt-3 mb-0">{% trans 'Private network addresses and local files are not supported.' %}</p>
+        </form>
+      </div>
+
+      {% if tool_attachment %}
+        <article class="modern-card mt-4"><h2 class="h4">{% trans 'About HTML to PDF conversion' %}</h2>{{ tool_attachment.body|markdown }}</article>
+      {% endif %}
     </div>
-
-    <div class="row justify-content-center">
-        <div class="col-lg-8">
-            <div class="modern-card">
-                <form method="post" enctype="multipart/form-data">
-                    {% csrf_token %}
-
-                    <!-- URL Input -->
-                    <div class="mb-4">
-                        <label for="url" class="form-label fw-bold">{% trans 'h2p_url' %}</label>
-                        <input type="text" class="form-control" name="url" id="url" placeholder="https://example.com">
-                        <small class="text-secondary">Enter a URL to convert to PDF</small>
-                    </div>
-
-                    <div class="text-center my-3">
-                        <span class="badge bg-secondary px-4 py-2 fs-6">OR</span>
-                    </div>
-
-                    <!-- File Upload -->
-                    <div class="upload-box mb-4">
-                        <div class="upload-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
-                                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
-                            </svg>
-                        </div>
-                        <h3 class="mt-3">{% trans 'Upload' %} {% trans 'HTML' %} {% trans 'File' %}</h3>
-                        <p class="text-secondary mb-0">Drag & drop your HTML file here or click to browse</p>
-                        <input type="file" class="form-control mt-3" name="html_file" accept=".html,.htm">
-                    </div>
-
-                    <button type="submit" class="btn btn-primary btn-lg w-100">
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" class="me-2" viewBox="0 0 24 24">
-                            <polyline points="20 6 9 17 4 12"></polyline>
-                        </svg>
-                        {% trans 'Convert' %} → {% trans 'PDF' %}
-                    </button>
-                </form>
-            </div>
-
-            {% if tool_attachment %}
-            <div class="modern-card mt-4">
-                <h3 class="card-title">About HTML to PDF Conversion</h3>
-                <div class="card-text">
-                    {{ tool_attachment.body|markdown }}
-                </div>
-            </div>
-            {% endif %}
-        </div>
-    </div>
+  </div>
 </div>
+
+<script>
+(() => {
+  const form = document.querySelector('[data-pdf-form]');
+  if (!form) return;
+  const url = form.querySelector('[name="url"]');
+  const file = form.querySelector('[name="html_file"]');
+  const zone = form.querySelector('[data-drop-zone]');
+  const fileName = form.querySelector('[data-file-name]');
+  const submit = form.querySelector('[data-submit-button]');
+  const spinner = form.querySelector('[data-spinner]');
+
+  const showFileName = () => { fileName.textContent = file.files[0] ? file.files[0].name : ''; };
+  file.addEventListener('change', () => { if (file.files.length) url.value = ''; showFileName(); });
+  url.addEventListener('input', () => { if (url.value.trim()) { file.value = ''; showFileName(); } });
+  ['dragenter', 'dragover'].forEach(event => zone.addEventListener(event, e => { e.preventDefault(); zone.classList.add('border-primary'); }));
+  ['dragleave', 'drop'].forEach(event => zone.addEventListener(event, e => { e.preventDefault(); zone.classList.remove('border-primary'); }));
+  zone.addEventListener('drop', e => { if (e.dataTransfer.files.length) { file.files = e.dataTransfer.files; url.value = ''; showFileName(); } });
+  zone.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); file.click(); } });
+  form.addEventListener('submit', () => { if (form.checkValidity()) { submit.disabled = true; spinner.classList.remove('d-none'); } });
+})();
+</script>
 {% endblock %}

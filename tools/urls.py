@@ -62,8 +62,11 @@ urlpatterns = [
     path('pdf-to-excel/', views.pdf_to_excel_view, name='pdf_to_excel'),
     path('pdf-to-excel-file/', views.pdf_to_excel_include, name='pdf_to_excel_include'),
 
-    path('pdf-to-csv/', views.pdf_to_csv_view, name='pdf_to_csv'),
-    path('pdf-to-csv-file/', views.pdf_to_csv_include, name='pdf_to_csv_include'),
+    path('pdf-to-csv/', views.pdf_to_excel_view, name='pdf_to_csv'),
+    path('pdf-to-csv-file/', views.pdf_to_excel_include, name='pdf_to_csv_include'),
+
+    # path('pdf-to-csv/', views.pdf_to_csv_view, name='pdf_to_csv'),
+    # path('pdf-to-csv-file/', views.pdf_to_csv_include, name='pdf_to_csv_include'),
 
     path('pdf-to-html/', views.pdf_to_html_view, name='pdf_to_html'),
     path('pdf-to-html-file/', views.pdf_to_html_include, name='pdf_to_html_include'),

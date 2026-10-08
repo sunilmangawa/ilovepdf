@@ -924,3 +924,16 @@ footer::before {
     height: 90px;
   }
 }
+
+/* CSS */
+/* Light theme (default): change text-dark color or apply text-dark */
+.custom-theme-truncate {
+  /* text-dark style applied in light theme */
+  color: var(--bs-dark, #212529); 
+}
+
+/* Dark theme: keep text-truncate, revert or set text color for dark mode */
+[data-bs-theme="dark"] .custom-theme-truncate,
+.dark .custom-theme-truncate {
+  color: inherit; /* or your dark mode text color */
+}

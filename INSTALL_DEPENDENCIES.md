@@ -63,6 +63,8 @@ brew install ghostscript
 **Linux:**
 ```bash
 sudo apt install poppler-utils
+sudo apt update
+sudo apt --fix-broken install
 ```
 
 **macOS:**
@@ -104,3 +106,5 @@ catch { Write-Host "[MISSING] Ghostscript not found" -ForegroundColor Red }
 try { pdftoppm -h 2>$null; Write-Host "[OK] Poppler found" -ForegroundColor Green }
 catch { Write-Host "[MISSING] Poppler not found" -ForegroundColor Red }
 ```
+### 5. HTML to PDF
+python -m playwright install --with-deps chromium

@@ -1,40 +1,46 @@
 {% extends 'base2.html' %}
 {% load i18n %}
-{% load static %}
 
-{% block title%}{% trans 'HTML' %} {% trans 'To' %} {% trans 'PDF' %} {% endblock %}
-
-{% block extraheads %}
-    <link rel="canonical" href="https://ilovepdfconverteronlne.com/tools/html-to-pdf" />
-{% endblock %}
-
+{% block title %}{% trans 'HTML' %} {% trans 'To' %} {% trans 'PDF' %}{% endblock %}
+{% block extraheads %}<link rel="canonical" href="https://ilovepdfconverteronlne.com/tools/html-to-pdf">{% endblock %}
 
 {% block content %}
-    <div class="container text-center bg-body-secondary" >
-      <h1>{% trans 'HTML' %} {% trans 'To' %} {% trans 'PDF' %} </h1>
+<div class="container py-5">
+  <div class="mx-auto" style="max-width: 760px;">
+    <header class="text-center mb-4"><h1>{% trans 'HTML' %} {% trans 'To' %} {% trans 'PDF' %}</h1><p class="lead">{% trans 'h2p_subtitle' %}</p></header>
+    <form method="post" enctype="multipart/form-data" action="{% url 'tools:html_to_pdf_include' %}" class="card shadow-sm p-4 p-md-5" novalidate data-pdf-form>
+      {% csrf_token %}
+      {% if form.non_field_errors %}<div class="alert alert-danger" role="alert">{{ form.non_field_errors }}</div>{% endif %}
 
-      <hr><br>
-    <div class="container poppins-regular text-center">
-      <h2>{%trans 'h2p_subtitle' %}</h2>
-      {% comment %} <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> {% endcomment %}
+      <div class="mb-4">
+        <label for="{{ form.url.id_for_label }}" class="form-label fw-bold">{% trans 'Web page URL' %}</label>
+        {{ form.url }}
+        {% for error in form.url.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+        <div class="form-text">{% trans 'Enter a public web page address.' %}</div>
+      </div>
 
-      <form class="form-control  align-items-center p-5 mt-5" method="post" enctype="multipart/form-data" action="{% url 'tools:html_to_pdf_include' %}">
-        {% csrf_token %}
-        <label for="url"  class="btn btn-success btn-md">
-          <span id=""><h3>{% trans 'h2p_url' %}:</h3></span>
-        </label>
-        <input type="text" name="url" id="url" style="border-color: crimson; border-radius: 3%;"><br><br>
-        <hr><h3 class="text-center">OR</h3><hr>
-        <label for="html_file">
-          <span id="file-label">
-            <h3>{%trans 'Upload' %} {%trans 'HTML' %} {%trans 'File' %}:</h3>
-          </span>
-          <input class="form-control btn btn-primary btn-md" id="html_file" type="file" accept=".html" name="html_file">
-        </label>
-        <br><p>{%trans 'h2p_rest' %}<br><hr>
-        <input class="btn btn-danger btn-lg"type="submit" value="Convert">
-      </form>
+      <div class="position-relative text-center my-4"><hr><span class="position-absolute top-50 start-50 translate-middle bg-white px-3 text-muted">{% trans 'OR' %}</span></div>
 
-    </div>
+      <div class="mb-4">
+        <label for="{{ form.html_file.id_for_label }}" class="form-label fw-bold">{% trans 'HTML file' %}</label>
+        {{ form.html_file }}
+        {% for error in form.html_file.errors %}<div class="text-danger small mt-1">{{ error }}</div>{% endfor %}
+        <div class="form-text">{% trans 'Choose a UTF-8 .html or .htm file (maximum 5 MB).' %}</div>
+      </div>
+
+      <button class="btn btn-danger btn-lg w-100" type="submit" data-submit-button><span>{% trans 'Convert to PDF' %}</span><span class="spinner-border spinner-border-sm ms-2 d-none" aria-hidden="true" data-spinner></span></button>
+    </form>
   </div>
-{% endblock %}  
+</div>
+<script>
+(() => {
+  const form = document.querySelector('[data-pdf-form]');
+  if (!form) return;
+  const url = form.querySelector('[name="url"]');
+  const file = form.querySelector('[name="html_file"]');
+  form.addEventListener('change', event => { if (event.target === file && file.files.length) url.value = ''; });
+  url.addEventListener('input', () => { if (url.value.trim()) file.value = ''; });
+  form.addEventListener('submit', () => { if (form.checkValidity()) { form.querySelector('[data-submit-button]').disabled = true; form.querySelector('[data-spinner]').classList.remove('d-none'); } });
+})();
+</script>
+{% endblock %}
