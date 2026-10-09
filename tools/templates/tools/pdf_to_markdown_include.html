@@ -1,0 +1,204 @@
+{% extends 'base2.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title %}PDF to Markdown — iLovePDF Style{% endblock %}
+
+{% block extraheads %}
+    <link rel="canonical" href="https://ilovepdfconverteronline.com/tools/pdf-to-markdown" />
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <style>
+        .md-card-wrapper {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .upload-drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .upload-drop-zone:hover {
+            border-color: #e5322d;
+            background: #fff8f8;
+        }
+        .btn-ilove {
+            background: #e5322d;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            border: none;
+            width: 100%;
+        }
+        .btn-ilove:hover {
+            background: #c9231f;
+            color: #fff;
+        }
+        .preview-pane-compact {
+            max-height: 380px;
+            overflow-y: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 1rem;
+            background: #f8fafc;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <h1 class="fw-bold text-uppercase mb-2">PDF to Markdown</h1>
+    <p class="text-secondary mb-4">Fast, 100% In-Memory conversion from PDF to Markdown powered by Microsoft MarkItDown.</p>
+
+    <div class="md-card-wrapper text-start">
+        <div id="incUploadSection">
+            <div class="upload-drop-zone" onclick="document.getElementById('incFileInput').click();">
+                <input type="file" id="incFileInput" accept=".pdf" class="d-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="#e5322d" stroke-width="2" viewBox="0 0 24 24" class="mb-2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                    <polyline points="9 15 12 12 15 15"></polyline>
+                </svg>
+                <h5 class="fw-bold mb-1">Click to select PDF or drag & drop</h5>
+                <span class="text-muted small">100% In-Memory • Zero disk leaks • Secure</span>
+            </div>
+        </div>
+
+        <div id="incControlsSection" style="display: none;" class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
+                <div>
+                    <strong id="incFileName">document.pdf</strong>
+                    <span class="badge bg-secondary ms-2" id="incFileSize">—</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetIncTool();">Change</button>
+            </div>
+
+            <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" id="incEnableOCR" checked>
+                <label class="form-check-label fw-bold" for="incEnableOCR">Enable OCR for scanned documents</label>
+            </div>
+
+            <button type="button" class="btn btn-ilove" id="incBtnConvert" onclick="incExecuteConvert();">
+                Convert to Markdown Now
+            </button>
+        </div>
+
+        <div id="incProcessing" style="display: none;" class="text-center py-4">
+            <div class="spinner-border text-danger mb-2" role="status"></div>
+            <div>Converting PDF to Markdown in memory...</div>
+        </div>
+
+        <div id="incResult" style="display: none;" class="mt-4">
+            <div class="alert alert-success d-flex justify-content-between align-items-center">
+                <span><strong>Success!</strong> Converted to Markdown.</span>
+                <span id="incStatsLabel" class="small text-muted"></span>
+            </div>
+
+            <div class="preview-pane-compact mb-3" id="incPreviewHtml"></div>
+
+            <div class="d-flex gap-2">
+                <button type="button" class="btn btn-danger flex-fill" onclick="incDownloadFile();">Download .md</button>
+                <button type="button" class="btn btn-outline-secondary" onclick="incCopyText();">Copy Text</button>
+                <button type="button" class="btn btn-link text-secondary" onclick="resetIncTool();">Convert another</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let incFileObj = null;
+    let incConvertedText = "";
+    let incOutputFilename = "document.md";
+
+    document.getElementById('incFileInput').addEventListener('change', function() {
+        if (!this.files.length) return;
+        incFileObj = this.files[0];
+        document.getElementById('incFileName').textContent = incFileObj.name;
+        document.getElementById('incFileSize').textContent = `${(incFileObj.size / 1024).toFixed(1)} KB`;
+
+        document.getElementById('incUploadSection').style.display = 'none';
+        document.getElementById('incControlsSection').style.display = 'block';
+    });
+
+    async function incExecuteConvert() {
+        if (!incFileObj) return;
+
+        document.getElementById('incControlsSection').style.display = 'none';
+        document.getElementById('incProcessing').style.display = 'block';
+
+        const fd = new FormData();
+        fd.append('file', incFileObj);
+        fd.append('is_ajax', '1');
+        fd.append('enable_ocr', document.getElementById('incEnableOCR').checked ? '1' : '0');
+
+        const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+        if (csrf) fd.append('csrfmiddlewaretoken', csrf);
+
+        try {
+            const res = await fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: fd
+            });
+            const data = await res.json();
+            if (!res.ok || data.status === 'error') throw new Error(data.message || 'Conversion failed');
+
+            incConvertedText = data.markdown || '';
+            incOutputFilename = data.filename || 'document.md';
+
+            document.getElementById('incProcessing').style.display = 'none';
+            document.getElementById('incResult').style.display = 'block';
+
+            if (data.stats) {
+                document.getElementById('incStatsLabel').textContent = `${data.stats.words} words • ${data.stats.reading_time}`;
+            }
+
+            if (typeof marked !== 'undefined') {
+                document.getElementById('incPreviewHtml').innerHTML = marked.parse(incConvertedText);
+            } else {
+                document.getElementById('incPreviewHtml').textContent = incConvertedText;
+            }
+
+            incDownloadFile();
+        } catch (e) {
+            alert(e.message);
+            document.getElementById('incProcessing').style.display = 'none';
+            document.getElementById('incControlsSection').style.display = 'block';
+        }
+    }
+
+    function incDownloadFile() {
+        if (!incConvertedText) return;
+        const blob = new Blob([incConvertedText], { type: 'text/markdown;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = incOutputFilename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 150);
+    }
+
+    function incCopyText() {
+        navigator.clipboard.writeText(incConvertedText).then(() => alert('Markdown copied to clipboard!'));
+    }
+
+    function resetIncTool() {
+        incFileObj = null;
+        incConvertedText = "";
+        document.getElementById('incFileInput').value = '';
+        document.getElementById('incControlsSection').style.display = 'none';
+        document.getElementById('incResult').style.display = 'none';
+        document.getElementById('incUploadSection').style.display = 'block';
+    }
+</script>
+{% endblock %}

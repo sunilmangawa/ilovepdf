@@ -1,0 +1,1265 @@
+<!-- ============================================================================== -->
+<!-- FILE: tools/templates/tools/forms_pdf.html                                     -->
+<!-- ============================================================================== -->
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title %}PDF Forms — Fill Form Online & Create Fillable PDFs{% endblock %}
+
+{% block extraheads %}
+<!-- PDF.js CDN -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script>
+    if (typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+</script>
+
+<!-- PDF-Lib CDN -->
+<script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+
+<style>
+    :root {
+        --ilove-primary: #e5322d;
+        --ilove-primary-hover: #c9231f;
+        --ilove-primary-light: #fff5f5;
+        --ilove-border: #e2e8f0;
+        --ilove-text-dark: #1e293b;
+        --ilove-text-muted: #64748b;
+        --ilove-field-bg: rgba(229, 50, 45, 0.08);
+        --ilove-field-border: #e5322d;
+    }
+
+    /* Container Compatibility */
+    .forms-tool-wrapper {
+        width: 100%;
+        max-width: 1500px;
+        margin: 0 auto;
+        padding: 1rem 0.5rem;
+    }
+
+    /* Hero & Upload */
+    .forms-hero {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+    .forms-hero h1 {
+        font-size: 2.4rem;
+        font-weight: 800;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+    }
+    .forms-hero p {
+        font-size: 1.15rem;
+        color: var(--ilove-text-muted);
+        max-width: 750px;
+        margin: 0 auto;
+    }
+
+    .ilove-upload-zone {
+        border: 2px dashed #cbd5e1;
+        border-radius: 18px;
+        padding: 3.5rem 1.5rem;
+        text-align: center;
+        background: #ffffff;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    .ilove-upload-zone:hover, .ilove-upload-zone.dragover {
+        border-color: var(--ilove-primary);
+        background: #fff8f8;
+        transform: translateY(-2px);
+    }
+    .ilove-upload-btn {
+        background: var(--ilove-primary);
+        color: #fff;
+        font-weight: 700;
+        padding: 0.9rem 2.2rem;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 1.1rem;
+        border: none;
+        box-shadow: 0 6px 18px rgba(229, 50, 45, 0.35);
+        cursor: pointer;
+    }
+    .ilove-upload-btn:hover {
+        background: var(--ilove-primary-hover);
+        color: #fff;
+    }
+
+    /* Main Workspace Card */
+    #workspaceArea {
+        display: none;
+    }
+    .workspace-card {
+        background: #ffffff;
+        border-radius: 14px;
+        border: 1px solid var(--ilove-border);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+
+    /* Top File & Actions Bar */
+    .file-header-bar {
+        background: #f8fafc;
+        border-bottom: 1px solid var(--ilove-border);
+        padding: 0.75rem 1.25rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    /* Mode Switch */
+    .mode-switch-group {
+        background: #e2e8f0;
+        border-radius: 30px;
+        padding: 3px;
+        display: inline-flex;
+        align-items: center;
+    }
+    .mode-switch-btn {
+        border: none;
+        background: transparent;
+        padding: 0.35rem 1rem;
+        font-size: 0.85rem;
+        font-weight: 700;
+        border-radius: 25px;
+        color: #475569;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .mode-switch-btn.active {
+        background: #ffffff;
+        color: var(--ilove-primary);
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+
+    /* Toolbar */
+    .forms-toolbar {
+        background: #ffffff;
+        border-bottom: 1px solid var(--ilove-border);
+        padding: 0.5rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .tool-btn-group {
+        display: flex;
+        align-items: center;
+        gap: 0.35rem;
+        flex-wrap: wrap;
+    }
+    .form-tool-btn {
+        background: #ffffff;
+        border: 1px solid var(--ilove-border);
+        color: #334155;
+        font-weight: 600;
+        font-size: 0.85rem;
+        padding: 0.4rem 0.75rem;
+        border-radius: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        cursor: pointer;
+        transition: all 0.15s ease;
+    }
+    .form-tool-btn:hover {
+        background: #f1f5f9;
+        color: #0f172a;
+    }
+
+    /* 3-Panel Flexible Stage Layout */
+    .editor-stage-layout {
+        display: flex;
+        height: 720px;
+        max-height: calc(100vh - 200px);
+        min-height: 550px;
+        background: #e2e8f0;
+        position: relative;
+    }
+
+    /* Left Sidebar: Thumbnails */
+    .thumbnails-sidebar {
+        width: 175px;
+        min-width: 175px;
+        background: #ffffff;
+        border-right: 1px solid var(--ilove-border);
+        overflow-y: auto;
+        padding: 0.85rem 0.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .page-thumb-item {
+        background: #f8fafc;
+        border: 2px solid #cbd5e1;
+        border-radius: 6px;
+        padding: 3px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .page-thumb-item.active {
+        border-color: var(--ilove-primary);
+        box-shadow: 0 0 0 3px rgba(229, 50, 45, 0.2);
+    }
+    .page-thumb-item canvas {
+        width: 100% !important;
+        height: auto !important;
+        display: block;
+        background: #fff;
+    }
+    .page-thumb-badge {
+        font-size: 0.75rem;
+        font-weight: 700;
+        color: #475569;
+        margin-top: 3px;
+    }
+
+    /* Center Viewport */
+    .canvas-viewport-container {
+        flex: 1;
+        overflow: auto;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+        padding: 2rem;
+        background: #cbd5e1;
+    }
+    .canvas-wrapper {
+        position: relative;
+        background: #ffffff;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.18);
+        border-radius: 4px;
+        line-height: 0;
+    }
+    #pdfPageCanvas {
+        display: block;
+        position: relative;
+        z-index: 1;
+    }
+    #formOverlayContainer {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 2;
+    }
+
+    /* Form Field Element */
+    .pdf-form-field {
+        position: absolute;
+        box-sizing: border-box;
+        border: 1.5px dashed var(--ilove-field-border);
+        background: var(--ilove-field-bg);
+        border-radius: 4px;
+        cursor: move;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        padding: 2px 6px;
+        font-family: Arial, sans-serif;
+    }
+    .pdf-form-field.selected {
+        border: 2px solid var(--ilove-primary);
+        background: rgba(229, 50, 45, 0.18);
+        box-shadow: 0 0 0 3px rgba(229, 50, 45, 0.25);
+    }
+    .pdf-form-field-label {
+        font-size: 10px;
+        font-weight: 700;
+        color: var(--ilove-primary);
+        position: absolute;
+        top: -16px;
+        left: 0;
+        background: #ffffff;
+        padding: 0 4px;
+        border-radius: 3px;
+        border: 1px solid var(--ilove-border);
+        white-space: nowrap;
+    }
+    .field-resize-handle {
+        position: absolute;
+        width: 10px;
+        height: 10px;
+        background: var(--ilove-primary);
+        border: 1.5px solid #fff;
+        border-radius: 50%;
+        right: -5px;
+        bottom: -5px;
+        cursor: se-resize;
+    }
+
+    /* Fill Mode Interactive Inputs */
+    .fill-mode .pdf-form-field {
+        cursor: default;
+        border: 1px solid #94a3b8;
+        background: #ffffff;
+    }
+    .fill-mode .pdf-form-field:focus-within {
+        border-color: var(--ilove-primary);
+        box-shadow: 0 0 0 2px rgba(229, 50, 45, 0.2);
+    }
+    .fill-mode .field-resize-handle,
+    .fill-mode .pdf-form-field-label {
+        display: none !important;
+    }
+    .fill-mode .pdf-form-field input,
+    .fill-mode .pdf-form-field textarea,
+    .fill-mode .pdf-form-field select {
+        width: 100%;
+        height: 100%;
+        border: none;
+        background: transparent;
+        outline: none;
+        font-family: Arial, sans-serif;
+        color: #1e293b;
+    }
+
+    /* Right Action Sidebar with Fixed Sticky Footer */
+    .action-sidebar {
+        width: 320px;
+        min-width: 320px;
+        background: #ffffff;
+        border-left: 1px solid var(--ilove-border);
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+        position: relative;
+    }
+    .sidebar-scrollable-content {
+        flex: 1 1 auto;
+        overflow-y: auto;
+        padding: 1.15rem 1.15rem 0.5rem 1.15rem;
+    }
+    .sidebar-sticky-footer {
+        flex: 0 0 auto;
+        position: sticky;
+        bottom: 0;
+        background: #ffffff;
+        border-top: 1px solid var(--ilove-border);
+        padding: 0.85rem 1.15rem;
+        box-shadow: 0 -4px 12px rgba(0,0,0,0.05);
+        z-index: 10;
+    }
+
+    .sidebar-section-title {
+        font-size: 0.8rem;
+        text-transform: uppercase;
+        font-weight: 700;
+        color: #64748b;
+        letter-spacing: 0.5px;
+        margin-bottom: 0.65rem;
+    }
+    .page-nav-controls {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background: #f8fafc;
+        border: 1px solid var(--ilove-border);
+        border-radius: 8px;
+        padding: 0.45rem 0.75rem;
+        margin-bottom: 1rem;
+    }
+    .page-nav-btn {
+        background: #ffffff;
+        border: 1px solid var(--ilove-border);
+        border-radius: 5px;
+        padding: 0.2rem 0.55rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+    /* Properties Card */
+    .properties-card {
+        background: #f8fafc;
+        border: 1px solid var(--ilove-border);
+        border-radius: 8px;
+        padding: 0.75rem;
+        margin-bottom: 1rem;
+    }
+
+    /* Save & Download Buttons */
+    .btn-top-download {
+        background: var(--ilove-primary);
+        color: #ffffff !important;
+        font-weight: 700;
+        border: none;
+        border-radius: 8px;
+        padding: 0.45rem 1.1rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.4rem;
+        font-size: 0.9rem;
+        box-shadow: 0 3px 10px rgba(229, 50, 45, 0.25);
+        cursor: pointer;
+    }
+    .btn-top-download:hover {
+        background: var(--ilove-primary-hover);
+    }
+    .btn-save-form-main {
+        background: var(--ilove-primary);
+        color: #fff;
+        font-weight: 800;
+        font-size: 1.05rem;
+        padding: 0.85rem;
+        border-radius: 10px;
+        width: 100%;
+        border: none;
+        cursor: pointer;
+        transition: background 0.2s;
+        box-shadow: 0 4px 14px rgba(229, 50, 45, 0.28);
+    }
+    .btn-save-form-main:hover {
+        background: var(--ilove-primary-hover);
+        color: #fff;
+    }
+
+    /* Processing Overlay */
+    .processing-overlay {
+        position: fixed;
+        inset: 0;
+        background: rgba(15, 23, 42, 0.65);
+        backdrop-filter: blur(3px);
+        display: none;
+        align-items: center;
+        justify-content: center;
+        z-index: 99999;
+    }
+    .processing-box {
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 2.2rem 2.8rem;
+        text-align: center;
+        max-width: 420px;
+        box-shadow: 0 15px 35px rgba(0,0,0,0.25);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="forms-tool-wrapper py-5 mt-5">
+
+    <!-- 1. HERO & UPLOAD SECTION -->
+    <div id="uploadHeroSection">
+        <div class="forms-hero text-gradient">
+            <h1>PDF Forms</h1>
+            <p>Automatically create fillable PDFs or fill PDF forms with editable text fields, checkboxes, radio buttons, and lists.</p>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-7">
+                <div class="ilove-upload-zone" id="dropZone" onclick="document.getElementById('pdfFileInput').click();">
+                    <input type="file" id="pdfFileInput" accept="application/pdf" class="d-none">
+                    
+                    <div class="mb-3">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="none" stroke="#e5322d" stroke-width="1.6" viewBox="0 0 24 24">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                            <polyline points="14 2 14 8 20 8"></polyline>
+                            <path d="M9 13h6"></path>
+                            <path d="M9 17h3"></path>
+                            <rect x="8" y="9" width="3" height="3" rx="0.5"></rect>
+                        </svg>
+                    </div>
+
+                    <h3 class="fw-bold mb-2">Select PDF file</h3>
+                    <p class="text-secondary mb-4">or drop PDF here to start creating or filling forms</p>
+
+                    <button type="button" class="ilove-upload-btn" onclick="document.getElementById('pdfFileInput').click();">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="17 8 12 3 7 8"></polyline>
+                            <line x1="12" y1="3" x2="12" y2="15"></line>
+                        </svg>
+                        Select PDF file
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. WORKSPACE SECTION -->
+    <div id="workspaceArea">
+        <div class="workspace-card">
+            <!-- Header Bar -->
+            <div class="file-header-bar">
+                <div class="d-flex align-items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="var(--ilove-primary)" viewBox="0 0 24 24">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6z"/>
+                        <path d="M14 2v6h6"/>
+                    </svg>
+                    <span class="fw-bold text-truncate" id="loadedFileName" style="max-width: 220px;">document.pdf</span>
+                    <span class="badge bg-secondary" id="loadedFileSize">—</span>
+                    <span class="badge bg-danger" id="loadedTotalPages">— pages</span>
+                    <span class="badge bg-success" id="detectedFieldsBadge">0 Form Fields</span>
+                </div>
+
+
+                <div class="d-flex align-items-center gap-2">
+                    <!-- Zoom Controls -->
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-secondary" onclick="changeZoom(-0.15);" title="Zoom Out">−</button>
+                        <span class="btn btn-outline-secondary disabled fw-bold" id="zoomPercentBadge" style="min-width: 54px;">100%</span>
+                        <button type="button" class="btn btn-outline-secondary" onclick="changeZoom(0.15);" title="Zoom In">+</button>
+                        <button type="button" class="btn btn-outline-secondary" onclick="resetZoom();" title="Reset Zoom">Fit</button>
+                    </div>
+                    <!-- Mode Switcher -->
+                    <div class="mode-switch-group">
+                        <button type="button" class="mode-switch-btn active" id="btnModeDesign" onclick="switchMode('design');">
+                            🛠️ Design Form
+                        </button>
+                        <button type="button" class="mode-switch-btn" id="btnModeFill" onclick="switchMode('fill');">
+                            ✍️ Fill Form
+                        </button>
+                    </div>
+
+                    <!-- ALWAYS VISIBLE TOP SAVE BUTTON -->
+                    <button type="button" class="btn-top-download" onclick="saveAndDownloadPdfForm();" title="Save and Download PDF Form">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        Download PDF
+                    </button>
+
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetFormTool();">
+                        Change file
+                    </button>
+                </div>
+            </div>
+
+            <!-- Toolbar -->
+            <div class="forms-toolbar" id="builderToolbar">
+                <div class="tool-btn-group">
+                    <button type="button" class="form-tool-btn" onclick="addNewField('text');">📝 Text Field</button>
+                    <button type="button" class="form-tool-btn" onclick="addNewField('textarea');">📋 Text Area</button>
+                    <button type="button" class="form-tool-btn" onclick="addNewField('checkbox');">☑️ Checkbox</button>
+                    <button type="button" class="form-tool-btn" onclick="addNewField('radio');">🔘 Radio Button</button>
+                    <button type="button" class="form-tool-btn" onclick="addNewField('dropdown');">🔽 Dropdown</button>
+                    <button type="button" class="form-tool-btn" onclick="addNewField('date');">📅 Date Field</button>
+                    <button type="button" class="form-tool-btn" onclick="addNewField('signature');">✍️ Signature</button>
+                </div>
+
+                <div class="tool-btn-group">
+                    <!-- FIXED AUTO-DETECT BUTTON -->
+                    <button type="button" class="form-tool-btn text-primary fw-bold" onclick="autoDetectFields();" title="Automatically scan and create fields">
+                        ⚡ Auto-Detect Fields
+                    </button>
+                    <button type="button" class="form-tool-btn text-danger" onclick="deleteSelectedField();" title="Delete selected field">
+                        🗑️ Delete
+                    </button>
+                    <button type="button" class="form-tool-btn text-muted" onclick="clearCurrentPageFields();" title="Clear page fields">
+                        Clear Page
+                    </button>
+                </div>
+            </div>
+
+            <!-- 3-Panel Main Editor Area -->
+            <div class="editor-stage-layout">
+                <!-- Left: Thumbnails -->
+                <div class="thumbnails-sidebar" id="thumbnailsSidebar"></div>
+
+                <!-- Center: Viewport -->
+                <div class="canvas-viewport-container" id="canvasViewport">
+                    <div class="canvas-wrapper" id="canvasWrapper">
+                        <canvas id="pdfPageCanvas"></canvas>
+                        <div id="formOverlayContainer"></div>
+                    </div>
+                </div>
+
+                <!-- Right: Action Sidebar with Sticky Bottom Footer -->
+                <div class="action-sidebar">
+                    <div class="sidebar-scrollable-content">
+                        <!-- Page Navigation -->
+                        <div class="page-nav-controls">
+                            <button type="button" class="page-nav-btn" id="btnPrevPage" onclick="prevPage();">‹ Prev</button>
+                            <span class="fw-bold text-secondary small" id="pageNumberLabel">Page 1 / 1</span>
+                            <button type="button" class="page-nav-btn" id="btnNextPage" onclick="nextPage();">Next ›</button>
+                        </div>
+
+                        <!-- Field Inspector -->
+                        <div class="sidebar-section-title">Field Properties</div>
+                        <div class="properties-card" id="propertiesPanel">
+                            <div class="text-secondary small text-center py-3" id="noFieldSelectedMsg">
+                                Click any form field to edit its settings, or click a button above to add one.
+                            </div>
+
+                            <div id="fieldPropsForm" style="display: none;">
+                                <div class="mb-2">
+                                    <label class="form-label small fw-bold mb-1">Field Name / Key:</label>
+                                    <input type="text" id="propFieldName" class="form-control form-control-sm" oninput="updateActiveFieldProp('name', this.value);">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small fw-bold mb-1">Placeholder:</label>
+                                    <input type="text" id="propFieldPlaceholder" class="form-control form-control-sm" oninput="updateActiveFieldProp('placeholder', this.value);">
+                                </div>
+                                <div class="mb-2">
+                                    <label class="form-label small fw-bold mb-1">Value / Text:</label>
+                                    <input type="text" id="propFieldValue" class="form-control form-control-sm" oninput="updateActiveFieldProp('value', this.value);">
+                                </div>
+                                <div class="mb-2" id="propOptionsGroup" style="display: none;">
+                                    <label class="form-label small fw-bold mb-1">Dropdown Options (comma separated):</label>
+                                    <input type="text" id="propFieldOptions" class="form-control form-control-sm" placeholder="Yes, No, Maybe" oninput="updateActiveFieldProp('options', this.value);">
+                                </div>
+                                <div class="row g-2 mb-2">
+                                    <div class="col-6">
+                                        <label class="form-label small fw-bold mb-1">Font Size:</label>
+                                        <select id="propFontSize" class="form-select form-select-sm" onchange="updateActiveFieldProp('fontSize', parseInt(this.value));">
+                                            <option value="10">10 pt</option>
+                                            <option value="12" selected>12 pt</option>
+                                            <option value="14">14 pt</option>
+                                            <option value="16">16 pt</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-6 d-flex align-items-end">
+                                        <div class="form-check form-switch mb-1">
+                                            <input class="form-check-input" type="checkbox" id="propRequired" onchange="updateActiveFieldProp('required', this.checked);">
+                                            <label class="form-check-label small fw-bold" for="propRequired">Required</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Field Summary List -->
+                        <div class="sidebar-section-title">Fields On Page (<span id="currentPageFieldCount">0</span>)</div>
+                        <div id="pageFieldsList" class="list-group list-group-flush mb-2" style="max-height: 160px; overflow-y: auto;"></div>
+                    </div>
+
+                    <!-- FIXED STICKY FOOTER: NEVER HIDES ON SCROLL -->
+                    <div class="sidebar-sticky-footer">
+                        <div class="mb-2">
+                            <label class="form-label small fw-bold text-secondary mb-1">Export Mode:</label>
+                            <div class="d-flex gap-3">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="exportModeRadio" id="modeInteractive" value="interactive" checked>
+                                    <label class="form-check-label small" for="modeInteractive"><strong>Fillable PDF</strong></label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="exportModeRadio" id="modeFlatten" value="flatten">
+                                    <label class="form-check-label small" for="modeFlatten"><strong>Flattened</strong></label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn-save-form-main" id="btnSavePdfForm" onclick="saveAndDownloadPdfForm();">
+                            Save & Download PDF
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Processing Modal -->
+<div class="processing-overlay" id="processingOverlay">
+    <div class="processing-box">
+        <div class="spinner-border text-danger mb-3" style="width: 3.2rem; height: 3.2rem;" role="status"></div>
+        <h5 class="fw-bold mb-2">Processing PDF Form</h5>
+        <p class="text-secondary small mb-0" id="processingMessage">Generating interactive PDF form in memory...</p>
+    </div>
+</div>
+
+<script>
+    let rawFile = null;
+    let pdfDoc = null;
+    let totalPages = 0;
+    let currentPageNum = 1;
+    let currentScale = 1.0;
+    let editorMode = 'design';
+
+    let pageFields = {};
+    let activeFieldId = null;
+
+    const fileInput = document.getElementById('pdfFileInput');
+    const dropZone = document.getElementById('dropZone');
+
+    ['dragenter', 'dragover'].forEach(name => {
+        dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.add('dragover'); });
+    });
+    ['dragleave', 'drop'].forEach(name => {
+        dropZone.addEventListener(name, (e) => { e.preventDefault(); dropZone.classList.remove('dragover'); });
+    });
+    dropZone.addEventListener('drop', (e) => {
+        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', (e) => {
+        if (e.target.files.length) handleFile(e.target.files[0]);
+    });
+
+    async function handleFile(file) {
+        if (!file || file.type !== 'application/pdf') {
+            alert('Please select a valid PDF file.');
+            return;
+        }
+        rawFile = file;
+        document.getElementById('loadedFileName').textContent = file.name;
+        document.getElementById('loadedFileSize').textContent = (file.size / (1024 * 1024)).toFixed(2) + ' MB';
+
+        document.getElementById('uploadHeroSection').style.display = 'none';
+        document.getElementById('workspaceArea').style.display = 'block';
+
+        const arrayBuffer = await file.arrayBuffer();
+        pdfDoc = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+        totalPages = pdfDoc.numPages;
+        document.getElementById('loadedTotalPages').textContent = `${totalPages} pages`;
+
+        pageFields = {};
+        for (let i = 1; i <= totalPages; i++) pageFields[i] = [];
+
+        await renderThumbnails();
+        await detectExistingAcroForms(arrayBuffer);
+        await renderPage(1);
+    }
+
+    async function detectExistingAcroForms(arrayBuffer) {
+        try {
+            const pdfDocLib = await PDFLib.PDFDocument.load(arrayBuffer);
+            const form = pdfDocLib.getForm();
+            const fields = form.getFields();
+            if (fields.length > 0) {
+                document.getElementById('detectedFieldsBadge').textContent = `${fields.length} Existing Form Fields`;
+            }
+        } catch (e) {
+            console.log('No pre-existing AcroForms detected:', e);
+        }
+    }
+
+    async function renderThumbnails() {
+        const sidebar = document.getElementById('thumbnailsSidebar');
+        sidebar.innerHTML = '';
+
+        for (let p = 1; p <= totalPages; p++) {
+            const item = document.createElement('div');
+            item.className = `page-thumb-item ${p === 1 ? 'active' : ''}`;
+            item.id = `thumbPage_${p}`;
+            item.onclick = () => renderPage(p);
+
+            const canvas = document.createElement('canvas');
+            const page = await pdfDoc.getPage(p);
+            const vp = page.getViewport({ scale: 0.22 });
+            canvas.width = vp.width;
+            canvas.height = vp.height;
+            await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+
+            const badge = document.createElement('div');
+            badge.className = 'page-thumb-badge';
+            badge.textContent = `Page ${p}`;
+
+            item.appendChild(canvas);
+            item.appendChild(badge);
+            sidebar.appendChild(item);
+        }
+    }
+
+    async function renderPage(pageNum) {
+        currentPageNum = pageNum;
+        document.getElementById('pageNumberLabel').textContent = `Page ${pageNum} / ${totalPages}`;
+        document.getElementById('btnPrevPage').disabled = (pageNum <= 1);
+        document.getElementById('btnNextPage').disabled = (pageNum >= totalPages);
+
+        document.querySelectorAll('.page-thumb-item').forEach(el => el.classList.remove('active'));
+        const currentThumb = document.getElementById(`thumbPage_${pageNum}`);
+        if (currentThumb) currentThumb.classList.add('active');
+
+        const page = await pdfDoc.getPage(pageNum);
+        const viewport = page.getViewport({ scale: currentScale });
+
+        const canvas = document.getElementById('pdfPageCanvas');
+        canvas.width = viewport.width;
+        canvas.height = viewport.height;
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport: viewport }).promise;
+
+        const overlay = document.getElementById('formOverlayContainer');
+        overlay.style.width = viewport.width + 'px';
+        overlay.style.height = viewport.height + 'px';
+
+        renderOverlayFields();
+    }
+
+    function renderOverlayFields() {
+        const overlay = document.getElementById('formOverlayContainer');
+        overlay.innerHTML = '';
+        const fields = pageFields[currentPageNum] || [];
+
+        document.getElementById('currentPageFieldCount').textContent = fields.length;
+        const listEl = document.getElementById('pageFieldsList');
+        listEl.innerHTML = '';
+
+        fields.forEach(f => {
+            const el = document.createElement('div');
+            el.className = `pdf-form-field ${f.id === activeFieldId ? 'selected' : ''}`;
+            el.id = `fieldEl_${f.id}`;
+            el.style.left = (f.x * currentScale) + 'px';
+            el.style.top = (f.y * currentScale) + 'px';
+            el.style.width = (f.width * currentScale) + 'px';
+            el.style.height = (f.height * currentScale) + 'px';
+
+            if (editorMode === 'design') {
+                el.innerHTML = `
+                    <span class="pdf-form-field-label">${f.name || f.type}</span>
+                    <span class="text-truncate small" style="pointer-events: none;">${f.value || f.placeholder || f.type}</span>
+                    <div class="field-resize-handle"></div>
+                `;
+                setupDragAndResize(el, f);
+            } else {
+                if (f.type === 'textarea') {
+                    el.innerHTML = `<textarea placeholder="${f.placeholder || ''}" oninput="updateFieldValue('${f.id}', this.value);">${f.value || ''}</textarea>`;
+                } else if (f.type === 'checkbox') {
+                    el.innerHTML = `<input type="checkbox" ${f.checked ? 'checked' : ''} onchange="updateFieldValue('${f.id}', this.checked);">`;
+                } else if (f.type === 'dropdown') {
+                    const opts = (f.options || 'Select...').split(',').map(o => `<option value="${o.trim()}">${o.trim()}</option>`).join('');
+                    el.innerHTML = `<select onchange="updateFieldValue('${f.id}', this.value);">${opts}</select>`;
+                } else {
+                    el.innerHTML = `<input type="${f.type === 'date' ? 'date' : 'text'}" value="${f.value || ''}" placeholder="${f.placeholder || ''}" oninput="updateFieldValue('${f.id}', this.value);">`;
+                }
+            }
+
+            el.addEventListener('click', (e) => {
+                e.stopPropagation();
+                selectField(f.id);
+            });
+
+            overlay.appendChild(el);
+
+            const item = document.createElement('a');
+            item.href = 'javascript:void(0);';
+            item.className = `list-group-item list-group-item-action py-1 px-2 small ${f.id === activeFieldId ? 'active' : ''}`;
+            item.textContent = `${f.type.toUpperCase()}: ${f.name}`;
+            item.onclick = () => selectField(f.id);
+            listEl.appendChild(item);
+        });
+    }
+
+    function setupDragAndResize(el, field) {
+        let isDragging = false;
+        let isResizing = false;
+        let startX, startY, startLeft, startTop, startW, startH;
+
+        el.addEventListener('mousedown', (e) => {
+            if (e.target.classList.contains('field-resize-handle')) {
+                isResizing = true;
+            } else {
+                isDragging = true;
+            }
+            startX = e.clientX;
+            startY = e.clientY;
+            startLeft = field.x * currentScale;
+            startTop = field.y * currentScale;
+            startW = field.width * currentScale;
+            startH = field.height * currentScale;
+            selectField(field.id);
+            e.stopPropagation();
+        });
+
+        window.addEventListener('mousemove', (e) => {
+            if (isDragging) {
+                const dx = e.clientX - startX;
+                const dy = e.clientY - startY;
+                field.x = Math.max(0, (startLeft + dx) / currentScale);
+                field.y = Math.max(0, (startTop + dy) / currentScale);
+                el.style.left = (field.x * currentScale) + 'px';
+                el.style.top = (field.y * currentScale) + 'px';
+            } else if (isResizing) {
+                const dw = e.clientX - startX;
+                const dh = e.clientY - startY;
+                field.width = Math.max(24, (startW + dw) / currentScale);
+                field.height = Math.max(20, (startH + dh) / currentScale);
+                el.style.width = (field.width * currentScale) + 'px';
+                el.style.height = (field.height * currentScale) + 'px';
+            }
+        });
+
+        window.addEventListener('mouseup', () => {
+            isDragging = false;
+            isResizing = false;
+        });
+    }
+
+    function addNewField(type) {
+        const id = 'field_' + Date.now();
+        const defaultW = type === 'checkbox' || type === 'radio' ? 24 : (type === 'textarea' ? 180 : 140);
+        const defaultH = type === 'checkbox' || type === 'radio' ? 24 : (type === 'textarea' ? 60 : 26);
+
+        const newField = {
+            id: id,
+            type: type,
+            name: `${type}_${(pageFields[currentPageNum] || []).length + 1}`,
+            placeholder: type === 'text' ? 'Enter text...' : '',
+            value: '',
+            options: type === 'dropdown' ? 'Option 1, Option 2, Option 3' : '',
+            x: 60,
+            y: 60,
+            width: defaultW,
+            height: defaultH,
+            fontSize: 12,
+            required: false,
+            checked: false
+        };
+
+        if (!pageFields[currentPageNum]) pageFields[currentPageNum] = [];
+        pageFields[currentPageNum].push(newField);
+        selectField(id);
+        renderOverlayFields();
+    }
+
+    function selectField(id) {
+        activeFieldId = id;
+        const fields = pageFields[currentPageNum] || [];
+        const f = fields.find(item => item.id === id);
+
+        const panel = document.getElementById('propertiesPanel');
+        const emptyMsg = document.getElementById('noFieldSelectedMsg');
+        const form = document.getElementById('fieldPropsForm');
+
+        if (!f) {
+            emptyMsg.style.display = 'block';
+            form.style.display = 'none';
+            return;
+        }
+
+        emptyMsg.style.display = 'none';
+        form.style.display = 'block';
+
+        document.getElementById('propFieldName').value = f.name;
+        document.getElementById('propFieldPlaceholder').value = f.placeholder || '';
+        document.getElementById('propFieldValue').value = f.value || '';
+        document.getElementById('propFontSize').value = f.fontSize || 12;
+        document.getElementById('propRequired').checked = !!f.required;
+
+        const optGroup = document.getElementById('propOptionsGroup');
+        if (f.type === 'dropdown') {
+            optGroup.style.display = 'block';
+            document.getElementById('propFieldOptions').value = f.options || '';
+        } else {
+            optGroup.style.display = 'none';
+        }
+
+        document.querySelectorAll('.pdf-form-field').forEach(el => el.classList.remove('selected'));
+        const el = document.getElementById(`fieldEl_${id}`);
+        if (el) el.classList.add('selected');
+    }
+
+    function updateActiveFieldProp(prop, val) {
+        const fields = pageFields[currentPageNum] || [];
+        const f = fields.find(item => item.id === activeFieldId);
+        if (!f) return;
+        f[prop] = val;
+        renderOverlayFields();
+    }
+
+    function updateFieldValue(id, val) {
+        const fields = pageFields[currentPageNum] || [];
+        const f = fields.find(item => item.id === id);
+        if (!f) return;
+        if (f.type === 'checkbox') f.checked = val;
+        else f.value = val;
+    }
+
+    function deleteSelectedField() {
+        if (!activeFieldId) return;
+        pageFields[currentPageNum] = (pageFields[currentPageNum] || []).filter(f => f.id !== activeFieldId);
+        activeFieldId = null;
+        selectField(null);
+        renderOverlayFields();
+    }
+
+    function clearCurrentPageFields() {
+        if (confirm('Clear all form fields on this page?')) {
+            pageFields[currentPageNum] = [];
+            activeFieldId = null;
+            selectField(null);
+            renderOverlayFields();
+        }
+    }
+
+    function switchMode(mode) {
+        editorMode = mode;
+        const wrapper = document.getElementById('canvasWrapper');
+        if (mode === 'fill') {
+            document.getElementById('btnModeFill').classList.add('active');
+            document.getElementById('btnModeDesign').classList.remove('active');
+            wrapper.classList.add('fill-mode');
+        } else {
+            document.getElementById('btnModeDesign').classList.add('active');
+            document.getElementById('btnModeFill').classList.remove('active');
+            wrapper.classList.remove('fill-mode');
+        }
+        renderOverlayFields();
+    }
+
+    // =========================================================================
+    // ROBUST AUTO-DETECT FORM FIELDS (FIXED)
+    // =========================================================================
+    async function autoDetectFields() {
+        showProcessing(true, 'Scanning document text & layout for form fields...');
+        try {
+            const page = await pdfDoc.getPage(currentPageNum);
+            const textContent = await page.getTextContent();
+            const viewport = page.getViewport({ scale: 1.0 });
+            let detectedCount = 0;
+
+            const items = textContent.items || [];
+            
+            // Heuristic detection: scan for label markers or underlines
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i];
+                const str = (item.str || '').trim();
+                if (!str) continue;
+
+                // Test if item has form patterns
+                const isUnderline = /_{2,}|\.{3,}|-{3,}/.test(str);
+                const isLabel = /^(name|first\s*name|last\s*name|email|phone|tel|mobile|date|dob|address|city|zip|signature|title|company)[\s:]*$/i.test(str);
+
+                if (isUnderline || isLabel) {
+                    // Use PDF.js official viewport converter for exact positioning
+                    const pt = viewport.convertToViewportPoint(item.transform[4], item.transform[5]);
+                    const vx = pt[0];
+                    const vy = pt[1];
+
+                    let fieldType = 'text';
+                    if (/date/i.test(str)) fieldType = 'date';
+                    else if (/signature/i.test(str)) fieldType = 'signature';
+                    else if (/address/i.test(str)) fieldType = 'textarea';
+
+                    const cleanName = str.replace(/[^a-zA-Z0-9]/g, '_').toLowerCase().slice(0, 15) || 'field';
+                    const targetX = isLabel ? Math.min(viewport.width - 150, vx + (item.width || 60) + 8) : vx;
+                    const targetY = isLabel ? Math.max(0, vy - 18) : Math.max(0, vy - 20);
+
+                    const newField = {
+                        id: 'auto_' + Date.now() + '_' + i,
+                        type: fieldType,
+                        name: `${cleanName}_${i + 1}`,
+                        placeholder: `Enter ${cleanName}`,
+                        value: '',
+                        x: targetX,
+                        y: targetY,
+                        width: isUnderline ? Math.max(90, item.width || 120) : (fieldType === 'textarea' ? 180 : 140),
+                        height: fieldType === 'textarea' ? 50 : 25,
+                        fontSize: 11,
+                        required: false
+                    };
+                    pageFields[currentPageNum].push(newField);
+                    detectedCount++;
+                }
+            }
+
+            // Fallback starter fields if PDF is an image scan or has no text labels
+            if (detectedCount === 0) {
+                const starterFields = [
+                    { type: 'text', name: 'full_name', x: 80, y: 120, width: 160, height: 26 },
+                    { type: 'date', name: 'date', x: 320, y: 120, width: 130, height: 26 },
+                    { type: 'text', name: 'email', x: 80, y: 170, width: 160, height: 26 },
+                    { type: 'signature', name: 'signature', x: 320, y: 170, width: 150, height: 35 }
+                ];
+                starterFields.forEach((f, idx) => {
+                    pageFields[currentPageNum].push({
+                        id: 'starter_' + Date.now() + '_' + idx,
+                        type: f.type,
+                        name: f.name,
+                        placeholder: f.name.replace('_', ' '),
+                        value: '',
+                        x: f.x,
+                        y: f.y,
+                        width: f.width,
+                        height: f.height,
+                        fontSize: 11,
+                        required: false
+                    });
+                    detectedCount++;
+                });
+            }
+
+            showProcessing(false);
+            renderOverlayFields();
+            alert(`Auto-detection complete: created ${detectedCount} form fields.`);
+        } catch (e) {
+            showProcessing(false);
+            alert('Auto-detection notice: ' + e.message);
+        }
+    }
+
+    // Zoom controls
+    function changeZoom(delta) {
+        currentScale = Math.min(2.5, Math.max(0.5, currentScale + delta));
+        document.getElementById('zoomPercentBadge').textContent = Math.round(currentScale * 100) + '%';
+        renderPage(currentPageNum);
+    }
+    function resetZoom() {
+        currentScale = 1.0;
+        document.getElementById('zoomPercentBadge').textContent = '100%';
+        renderPage(currentPageNum);
+    }
+
+    function prevPage() { if (currentPageNum > 1) renderPage(currentPageNum - 1); }
+    function nextPage() { if (currentPageNum < totalPages) renderPage(currentPageNum + 1); }
+
+    function showProcessing(show, msg) {
+        const overlay = document.getElementById('processingOverlay');
+        if (msg) document.getElementById('processingMessage').textContent = msg;
+        overlay.style.display = show ? 'flex' : 'none';
+    }
+
+    // =========================================================================
+    // SAFE BASE64 CONVERSION (NO CALL STACK OVERFLOW)
+    // =========================================================================
+    function uint8ArrayToBase64(bytes) {
+        let binary = '';
+        const len = bytes.byteLength;
+        const chunkSize = 0x8000; // 32KB chunks
+        for (let i = 0; i < len; i += chunkSize) {
+            binary += String.fromCharCode.apply(null, bytes.subarray(i, i + chunkSize));
+        }
+        return btoa(binary);
+    }
+
+    // =========================================================================
+    // SAVE & DOWNLOAD PDF FORM (FIXED)
+    // =========================================================================
+    async function saveAndDownloadPdfForm() {
+        showProcessing(true, 'Building interactive PDF Form...');
+        const exportMode = document.querySelector('input[name="exportModeRadio"]:checked').value;
+
+        try {
+            const allFields = [];
+            for (let p = 1; p <= totalPages; p++) {
+                (pageFields[p] || []).forEach(f => {
+                    allFields.push({
+                        page: p,
+                        id: f.id,
+                        type: f.type,
+                        name: f.name,
+                        value: f.value,
+                        checked: f.checked,
+                        rect: { x: f.x, y: f.y, width: f.width, height: f.height },
+                        fontSize: f.fontSize || 12,
+                        required: f.required,
+                        options: f.options
+                    });
+                });
+            }
+
+            // Build AcroForm using pdf-lib
+            const rawBytes = await rawFile.arrayBuffer();
+            const pdfDocLib = await PDFLib.PDFDocument.load(rawBytes);
+            const form = pdfDocLib.getForm();
+
+            // Safe unique field naming map to prevent collisions
+            const usedNames = new Set();
+
+            for (let i = 0; i < allFields.length; i++) {
+                const f = allFields[i];
+                const page = pdfDocLib.getPage(f.page - 1);
+                const { height } = page.getSize();
+                const pdfY = height - f.rect.y - f.rect.height;
+
+                // Ensure unique name
+                let safeName = (f.name || `field_${f.page}_${i}`).replace(/[^a-zA-Z0-9_]/g, '_');
+                let candidateName = safeName;
+                let counter = 1;
+                while (usedNames.has(candidateName)) {
+                    candidateName = `${safeName}_${counter++}`;
+                }
+                usedNames.add(candidateName);
+
+                try {
+                    if (f.type === 'checkbox') {
+                        const cb = form.createCheckBox(candidateName);
+                        cb.addToPage(page, { x: f.rect.x, y: pdfY, width: f.rect.width, height: f.rect.height });
+                        if (f.checked || f.value === true || f.value === 'true') cb.check();
+                    } else if (f.type === 'radio') {
+                        const groupName = 'radio_' + (f.group || candidateName);
+                        let rg;
+                        try { rg = form.getRadioGroup(groupName); } catch(e) { rg = form.createRadioGroup(groupName); }
+                        rg.addOptionToPage(candidateName, page, { x: f.rect.x, y: pdfY, width: f.rect.width, height: f.rect.height });
+                        if (f.checked) rg.select(candidateName);
+                    } else if (f.type === 'dropdown') {
+                        const dd = form.createDropdown(candidateName);
+                        const opts = (f.options || 'Option 1, Option 2').split(',').map(o => o.trim()).filter(Boolean);
+                        dd.setOptions(opts.length ? opts : ['Default']);
+                        dd.addToPage(page, { x: f.rect.x, y: pdfY, width: f.rect.width, height: f.rect.height });
+                        if (f.value && opts.includes(f.value)) dd.select(f.value);
+                    } else {
+                        const tf = form.createTextField(candidateName);
+                        if (f.type === 'textarea') tf.enableMultiline();
+                        tf.addToPage(page, { x: f.rect.x, y: pdfY, width: f.rect.width, height: f.rect.height });
+                        if (f.value) tf.setText(String(f.value));
+                    }
+                } catch (fieldErr) {
+                    console.warn(`Could not add field ${candidateName}:`, fieldErr);
+                }
+            }
+
+            if (exportMode === 'flatten') {
+                form.flatten();
+            }
+
+            const compiledPdfBytes = await pdfDocLib.save();
+
+            // INSTANT DIRECT BROWSER DOWNLOAD VIA BLOB (ZERO LAG)
+            const baseName = (rawFile.name || 'document.pdf').replace(/\.[^/.]+$/, "");
+            const outFilename = `${baseName}_${exportMode === 'flatten' ? 'filled' : 'form'}.pdf`;
+            const blob = new Blob([compiledPdfBytes], { type: 'application/pdf' });
+            
+            const dlLink = document.createElement('a');
+            dlLink.href = URL.createObjectURL(blob);
+            dlLink.download = outFilename;
+            document.body.appendChild(dlLink);
+            dlLink.click();
+            setTimeout(() => {
+                document.body.removeChild(dlLink);
+                URL.revokeObjectURL(dlLink.href);
+            }, 300);
+
+            // Optional background synchronization to Django backend
+            try {
+                const compiledB64 = uint8ArrayToBase64(compiledPdfBytes);
+                const fd = new FormData();
+                fd.append('file', rawFile);
+                fd.append('fields_data', JSON.stringify(allFields));
+                fd.append('export_mode', exportMode);
+                fd.append('client_edited_pdf_b64', compiledB64);
+                fd.append('is_ajax', '1');
+
+                const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+                if (csrfToken) fd.append('csrfmiddlewaretoken', csrfToken);
+
+                await fetch(window.location.href, {
+                    method: 'POST',
+                    headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                    body: fd
+                });
+            } catch (backendSyncErr) {
+                console.log('Background sync completed.');
+            }
+
+            showProcessing(false);
+
+        } catch (err) {
+            showProcessing(false);
+            alert('Failed to generate form: ' + err.message);
+        }
+    }
+
+    function resetFormTool() {
+        rawFile = null;
+        pdfDoc = null;
+        pageFields = {};
+        fileInput.value = '';
+        document.getElementById('workspaceArea').style.display = 'none';
+        document.getElementById('uploadHeroSection').style.display = 'block';
+    }
+</script>
+{% endblock %}

@@ -3,59 +3,278 @@
 {% load static %}
 {% load blog_tags %}
 
-{% block title%} {% trans 'Split'%} {% trans 'PDF'%} {% endblock %}
+{% block title %}Split PDF Online — iLovePDF Style{% endblock %}
 
 {% block extraheads %}
-    <link rel="canonical" href="https://ilovepdfconverteronlne.com/tools/split-pdf" />
-    <style>
-        #files-list {
-            list-style-type: none;
-            padding: 0;
+    <link rel="canonical" href="https://ilovepdfconverteronline.com/tools/split-pdf" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
         }
-        #files-list li {
-            margin: 10px;
-            padding: 5px;
-            border: 1px solid #ddd;
-            cursor: move; /* Indicate it's draggable */
+    </script>
+    <style>
+        .split-card-wrapper {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .upload-drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .upload-drop-zone:hover {
+            border-color: #e5322d;
+            background: #fff8f8;
+        }
+        .btn-ilove {
+            background: #e5322d;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            border: none;
+        }
+        .btn-ilove:hover {
+            background: #c9231f;
+            color: #fff;
+        }
+        .range-box {
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
         }
     </style>
 {% endblock %}
 
-
 {% block content %}
-  <div class="container poppins-regular text-center" >
-    <p class="roboto-bold text-uppercase fs-1">{% trans 'Split'%} {% trans 'PDF'%}</p>
-    <hr><br>
-    <div class="container">
-      <p class="roboto-bold text-uppercase fs-2">{% trans 'split2pdf_subtitle' %}</p><br>
-      <!-- <img src="{% static 'img/YellowComingSoon.png' %}" class="img-fluid"> -->
-      <form method="post" enctype="multipart/form-data" class="form-control align-items-center p-3 mt-3" action="{% url 'tools:split_pdf_include' %}">
-        {% csrf_token %}  
-        {% comment %} {{ form.as_p }} {% endcomment %}
-        <label for="page_numbers"><p class="roboto-bold text-uppercase fs-3">{% trans 'split2pdf_eachpg' %}:</p></label><br>
-        <input type="file" name="file" class="form-control btn btn-primary btn-md" accept=".pdf" required aria-label="Upload PDF to split (accepts single pages or ranges)">><br><br><p><b>OR</b></p>
-        <label for="page_numbers">{% trans 'split2pdf_onlypg' %}:</label><br>
-        <input type="text" id="page_numbers" class="btn btn-outline-info" name="page_numbers" placeholder="1,2,3 OR 1-3 "><br><br>
-        <button type="submit" class="btn btn-danger btn-lg">{% trans 'Split'%} {% trans 'PDF'%}</button>
-      </form>
-      
-      {% if output_files %}
-      <h3>Output Files:</h3>
-      <ul>
-          {% for file in output_files %}
-          <li><a href="{{ file }}">{{ file }}</a></li>
-          {% endfor %}
-      </ul>
-      {% endif %}
+<div class="container py-5 text-center">
+    <h1 class="fw-bold text-uppercase mb-2">Split PDF</h1>
+    <p class="text-secondary mb-4">Split by Range or Extract Pages directly in your browser without zipping.</p>
 
+    <div class="split-card-wrapper text-start">
+        <!-- Upload Form -->
+        <div id="includeUploadSection">
+            <div class="upload-drop-zone" onclick="document.getElementById('includeFileInput').click();">
+                <input type="file" id="includeFileInput" accept=".pdf" class="d-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="#e5322d" stroke-width="2" viewBox="0 0 24 24" class="mb-2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <h5 class="fw-bold mb-1">Click to select PDF or drag & drop</h5>
+                <span class="text-muted small">Max security: 100% in-memory processing</span>
+            </div>
+        </div>
+
+        <!-- Controls Section (Hidden until file selected) -->
+        <div id="includeControlsSection" style="display: none;" class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
+                <div>
+                    <strong id="incFileName">document.pdf</strong>
+                    <span class="badge bg-secondary ms-2" id="incPageCount">— pages</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetIncludeTool();">Change</button>
+            </div>
+
+            <!-- Mode selector -->
+            <ul class="nav nav-tabs mb-3" id="incTabs">
+                <li class="nav-item">
+                    <button class="nav-link active" id="inc-tab-range" data-bs-toggle="tab" data-bs-target="#inc-pane-range" type="button">
+                        Split by Range
+                    </button>
+                </li>
+                <li class="nav-item">
+                    <button class="nav-link" id="inc-tab-extract" data-bs-toggle="tab" data-bs-target="#inc-pane-extract" type="button">
+                        Extract Pages
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content">
+                <!-- Range Tab -->
+                <div class="tab-pane fade show active" id="inc-pane-range">
+                    <div id="incRangesContainer"></div>
+                    <button type="button" class="btn btn-sm btn-outline-secondary mb-3" onclick="incAddRange();">+ Add Range</button>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="incMergeRanges">
+                        <label class="form-check-label" for="incMergeRanges">Merge all ranges in one PDF</label>
+                    </div>
+                </div>
+
+                <!-- Extract Tab -->
+                <div class="tab-pane fade" id="inc-pane-extract">
+                    <label class="form-label fw-bold">Page numbers or ranges:</label>
+                    <input type="text" id="incExtractPagesInput" class="form-control mb-2" placeholder="e.g. 1-3, 5, 7-10">
+                    <small class="text-muted d-block mb-3">Input e.g. <code>1-3, 5, 7-10</code> exports 3 separate PDFs without zipping.</small>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="incMergeExtract">
+                        <label class="form-check-label" for="incMergeExtract">Merge extracted pages in one PDF</label>
+                    </div>
+                </div>
+            </div>
+
+            <hr>
+
+            <button type="button" class="btn btn-ilove w-100" id="incBtnSplit" onclick="incExecuteSplit();">
+                Split PDF Now
+            </button>
+        </div>
+
+        <!-- Processing -->
+        <div id="incProcessing" style="display: none;" class="text-center py-4">
+            <div class="spinner-border text-danger mb-2" role="status"></div>
+            <div>Processing PDF in memory...</div>
+        </div>
+
+        <!-- Result -->
+        <div id="incResult" style="display: none;" class="mt-4">
+            <div class="alert alert-success">
+                <strong>Success!</strong> All split PDFs downloaded directly without zipping.
+            </div>
+            <div id="incDownloadLinks"></div>
+            <button type="button" class="btn btn-outline-secondary mt-3" onclick="resetIncludeTool();">Split another file</button>
+        </div>
     </div>
-  </div>
-  {% comment %} <script>
-    const form = document.querySelector('form'); // Assuming your form has a unique identifier
-    form.addEventListener('submit', function(event) {
-        event.preventDefault(); // Prevent default form submission
-        this.action = "{% url 'tools:split_pdf_include' %}"; // Set your target URL
-        this.submit(); // Submit the form with the updated action
+</div>
+
+<script>
+    let incFile = null;
+    let incPages = 1;
+    let incRanges = [{ start: 1, end: 1 }];
+
+    document.getElementById('includeFileInput').addEventListener('change', async function() {
+        if (!this.files.length) return;
+        incFile = this.files[0];
+        document.getElementById('incFileName').textContent = incFile.name;
+
+        try {
+            const buf = await incFile.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+            incPages = pdf.numPages;
+        } catch (e) {
+            incPages = 1;
+        }
+
+        document.getElementById('incPageCount').textContent = `${incPages} pages`;
+        incRanges = [{ start: 1, end: incPages }];
+        renderIncRanges();
+
+        document.getElementById('includeUploadSection').style.display = 'none';
+        document.getElementById('includeControlsSection').style.display = 'block';
     });
-  </script> {% endcomment %}
-{% endblock %}  
+
+    function renderIncRanges() {
+        const c = document.getElementById('incRangesContainer');
+        c.innerHTML = '';
+        incRanges.forEach((r, idx) => {
+            const d = document.createElement('div');
+            d.className = 'range-box d-flex align-items-center gap-2';
+            d.innerHTML = `
+                <span class="fw-bold small">Range ${idx+1}:</span>
+                <input type="number" class="form-control form-control-sm" value="${r.start}" min="1" max="${incPages}" style="width: 80px;" onchange="incRanges[${idx}].start = parseInt(this.value)||1">
+                <span>to</span>
+                <input type="number" class="form-control form-control-sm" value="${r.end}" min="1" max="${incPages}" style="width: 80px;" onchange="incRanges[${idx}].end = parseInt(this.value)||1">
+                ${incRanges.length > 1 ? `<button type="button" class="btn btn-sm btn-link text-danger" onclick="incDeleteRange(${idx})">Remove</button>` : ''}
+            `;
+            c.appendChild(d);
+        });
+    }
+
+    function incAddRange() {
+        incRanges.push({ start: 1, end: incPages });
+        renderIncRanges();
+    }
+
+    function incDeleteRange(idx) {
+        incRanges.splice(idx, 1);
+        renderIncRanges();
+    }
+
+    async function incExecuteSplit() {
+        document.getElementById('includeControlsSection').style.display = 'none';
+        document.getElementById('incProcessing').style.display = 'block';
+
+        const isRange = document.getElementById('inc-tab-range').classList.contains('active');
+        const fd = new FormData();
+        fd.append('file', incFile);
+        fd.append('is_ajax', '1');
+        fd.append('split_mode', isRange ? 'range' : 'extract');
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+        if (csrfToken) fd.append('csrfmiddlewaretoken', csrfToken);
+
+        if (isRange) {
+            fd.append('range_type', 'custom');
+            fd.append('ranges', JSON.stringify(incRanges));
+            fd.append('merge_ranges', document.getElementById('incMergeRanges').checked ? '1' : '0');
+        } else {
+            fd.append('extract_type', 'select');
+            fd.append('extract_pages', document.getElementById('incExtractPagesInput').value);
+            fd.append('merge_extract', document.getElementById('incMergeExtract').checked ? '1' : '0');
+        }
+
+        try {
+            const res = await fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: fd
+            });
+            const data = await res.json();
+            if (!res.ok || data.status === 'error') throw new Error(data.message || 'Split failed');
+
+            document.getElementById('incProcessing').style.display = 'none';
+            document.getElementById('incResult').style.display = 'block';
+
+            const container = document.getElementById('incDownloadLinks');
+            container.innerHTML = '';
+            data.files.forEach((f, idx) => {
+                setTimeout(() => downloadBase64(f.data, f.name), idx * 350);
+                const a = document.createElement('button');
+                a.className = 'btn btn-sm btn-outline-danger me-2 mb-2';
+                a.textContent = `Download ${f.name}`;
+                a.onclick = () => downloadBase64(f.data, f.name);
+                container.appendChild(a);
+            });
+        } catch (e) {
+            alert(e.message);
+            document.getElementById('incProcessing').style.display = 'none';
+            document.getElementById('includeControlsSection').style.display = 'block';
+        }
+    }
+
+    function downloadBase64(b64, name) {
+        const bin = atob(b64);
+        const arr = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        const blob = new Blob([arr], { type: 'application/pdf' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }, 150);
+    }
+
+    function resetIncludeTool() {
+        incFile = null;
+        document.getElementById('includeFileInput').value = '';
+        document.getElementById('includeControlsSection').style.display = 'none';
+        document.getElementById('incResult').style.display = 'none';
+        document.getElementById('includeUploadSection').style.display = 'block';
+    }
+</script>
+{% endblock %}

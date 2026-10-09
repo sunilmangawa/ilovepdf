@@ -1,0 +1,211 @@
+{% extends 'base2.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title %}Protect PDF Online — iLovePDF Style{% endblock %}
+
+{% block extraheads %}
+    <link rel="canonical" href="https://ilovepdfconverteronline.com/tools/protect-pdf" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    </script>
+    <style>
+        .protect-card-wrapper {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .upload-drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .upload-drop-zone:hover {
+            border-color: #e5322d;
+            background: #fff8f8;
+        }
+        .btn-ilove {
+            background: #e5322d;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            border: none;
+            transition: background 0.2s;
+        }
+        .btn-ilove:hover {
+            background: #c9231f;
+            color: #fff;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="protect-card-wrapper">
+        <h2 class="text-center fw-bold mb-2">Protect PDF file</h2>
+        <p class="text-center text-muted mb-4">Set a password to protect your PDF file</p>
+
+        <!-- Upload Step -->
+        <div id="incUploadSection">
+            <div class="upload-drop-zone" onclick="document.getElementById('incFileInput').click();">
+                <input type="file" id="incFileInput" accept=".pdf" class="d-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="#e5322d" stroke-width="2" viewBox="0 0 24 24" class="mb-2">
+                    <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                    <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                </svg>
+                <h5>Click or drop PDF file here</h5>
+                <button type="button" class="btn btn-ilove btn-sm mt-2">Select PDF file</button>
+            </div>
+        </div>
+
+        <!-- Controls Step -->
+        <div id="incControlsSection" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
+                <strong id="incFileName" class="text-truncate" style="max-width: 60%;">doc.pdf</strong>
+                <span class="badge bg-secondary" id="incPageCount">1 page</span>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold small">Choose a password:</label>
+                <input type="password" id="incPassword" class="form-control" placeholder="Enter password">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold small">Repeat password:</label>
+                <input type="password" id="incConfirmPassword" class="form-control" placeholder="Repeat password">
+            </div>
+
+            <button type="button" class="btn btn-ilove w-100" id="incBtnProtect" onclick="incExecuteProtect();">
+                Protect PDF Now
+            </button>
+        </div>
+
+        <!-- Processing Step -->
+        <div id="incProcessing" style="display: none;" class="text-center py-4">
+            <div class="spinner-border text-danger mb-2" role="status"></div>
+            <div>Encrypting PDF in memory...</div>
+        </div>
+
+        <!-- Result Step -->
+        <div id="incResult" style="display: none;" class="mt-4 text-center">
+            <div class="alert alert-success">
+                <strong>Success!</strong> Your PDF file has been encrypted and downloaded.
+            </div>
+            <div id="incDownloadBtnWrap"></div>
+            <button type="button" class="btn btn-outline-secondary mt-3" onclick="resetIncTool();">Protect another file</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let incFile = null;
+
+    document.getElementById('incFileInput').addEventListener('change', async function() {
+        if (!this.files.length) return;
+        incFile = this.files[0];
+        document.getElementById('incFileName').textContent = incFile.name;
+
+        try {
+            const buf = await incFile.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+            document.getElementById('incPageCount').textContent = `${pdf.numPages} pages`;
+        } catch (e) {
+            document.getElementById('incPageCount').textContent = `PDF`;
+        }
+
+        document.getElementById('incUploadSection').style.display = 'none';
+        document.getElementById('incControlsSection').style.display = 'block';
+    });
+
+    async function incExecuteProtect() {
+        const pwd = document.getElementById('incPassword').value.trim();
+        const cpwd = document.getElementById('incConfirmPassword').value.trim();
+
+        if (!pwd) {
+            alert('Please enter a password.');
+            return;
+        }
+        if (pwd !== cpwd) {
+            alert('Passwords do not match.');
+            return;
+        }
+
+        document.getElementById('incControlsSection').style.display = 'none';
+        document.getElementById('incProcessing').style.display = 'block';
+
+        const fd = new FormData();
+        fd.append('file', incFile);
+        fd.append('password', pwd);
+        fd.append('confirm_password', cpwd);
+        fd.append('is_ajax', '1');
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+        if (csrfToken) fd.append('csrfmiddlewaretoken', csrfToken);
+
+        try {
+            const res = await fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: fd
+            });
+            const data = await res.json();
+            if (!res.ok || data.status === 'error') throw new Error(data.message || 'Encryption failed');
+
+            document.getElementById('incProcessing').style.display = 'none';
+            document.getElementById('incResult').style.display = 'block';
+
+            const wrap = document.getElementById('incDownloadBtnWrap');
+            wrap.innerHTML = '';
+            const btn = document.createElement('button');
+            btn.className = 'btn btn-danger';
+            btn.textContent = `Download ${data.file.name}`;
+            btn.onclick = () => incDownloadBase64(data.file.data, data.file.name);
+            wrap.appendChild(btn);
+
+            incDownloadBase64(data.file.data, data.file.name);
+        } catch (e) {
+            alert(e.message);
+            document.getElementById('incProcessing').style.display = 'none';
+            document.getElementById('incControlsSection').style.display = 'block';
+        }
+    }
+
+    function incDownloadBase64(b64, name) {
+        const bin = atob(b64);
+        const arr = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        const blob = new Blob([arr], { type: 'application/pdf' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }, 150);
+    }
+
+    function resetIncTool() {
+        incFile = null;
+        document.getElementById('incFileInput').value = '';
+        document.getElementById('incPassword').value = '';
+        document.getElementById('incConfirmPassword').value = '';
+        document.getElementById('incControlsSection').style.display = 'none';
+        document.getElementById('incResult').style.display = 'none';
+        document.getElementById('incUploadSection').style.display = 'block';
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,639 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title %}PDF to Markdown — Convert PDF to Markdown Online Free{% endblock %}
+
+{% block extraheads %}
+<link rel="canonical" href="https://ilovepdfconverteronline.com/tools/pdf-to-markdown" />
+<!-- PDF.js CDN for client-side visual page thumbnail rendering -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<!-- Marked.js for in-browser Markdown HTML preview rendering -->
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<!-- Highlight.js for syntax highlighting inside preview -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<script>
+    if (typeof pdfjsLib !== 'undefined') {
+        pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+</script>
+
+<style>
+    :root {
+        --ilove-primary: #e5322d;
+        --ilove-primary-hover: #c9231f;
+        --ilove-bg-soft: #f8f9fa;
+        --ilove-border: #e2e8f0;
+        --ilove-text-dark: #1e293b;
+    }
+
+    .tool-hero {
+        text-align: center;
+        margin-bottom: 2.5rem;
+    }
+    .tool-hero h1 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        color: #1a1a1a;
+        margin-bottom: 0.5rem;
+    }
+    .tool-hero p {
+        font-size: 1.15rem;
+        color: #64748b;
+        max-width: 700px;
+        margin: 0 auto;
+    }
+
+    .ilove-upload-zone {
+        border: 2px dashed #cbd5e1;
+        border-radius: 16px;
+        padding: 3.5rem 2rem;
+        text-align: center;
+        background: #ffffff;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    .ilove-upload-zone:hover, .ilove-upload-zone.dragover {
+        border-color: var(--ilove-primary);
+        background: #fff8f8;
+        transform: translateY(-2px);
+    }
+    .ilove-upload-btn {
+        background: var(--ilove-primary);
+        color: #fff;
+        font-weight: 700;
+        padding: 0.9rem 2.2rem;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 1.1rem;
+        border: none;
+        transition: background 0.2s;
+        box-shadow: 0 6px 18px rgba(229, 50, 45, 0.35);
+        cursor: pointer;
+    }
+    .ilove-upload-btn:hover {
+        background: var(--ilove-primary-hover);
+        color: #fff;
+    }
+
+    #workspaceArea {
+        display: none;
+    }
+    .workspace-card {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid var(--ilove-border);
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+    .file-header-bar {
+        background: #f8fafc;
+        border-bottom: 1px solid var(--ilove-border);
+        padding: 1rem 1.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+    }
+
+    .pdf-preview-box {
+        background: #f1f5f9;
+        border-radius: 12px;
+        padding: 1.5rem;
+        text-align: center;
+        min-height: 380px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+    }
+    .pdf-preview-canvas {
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        background: #fff;
+    }
+
+    .options-panel {
+        background: #ffffff;
+        padding: 2rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+    .option-card {
+        background: #f8fafc;
+        border: 1px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 1rem;
+        margin-bottom: 1rem;
+    }
+
+    .btn-convert-action {
+        background: var(--ilove-primary);
+        color: #fff;
+        font-weight: 700;
+        font-size: 1.25rem;
+        padding: 1rem 2rem;
+        border-radius: 12px;
+        border: none;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.6rem;
+        transition: all 0.2s ease;
+        box-shadow: 0 6px 20px rgba(229, 50, 45, 0.3);
+        cursor: pointer;
+    }
+    .btn-convert-action:hover {
+        background: var(--ilove-primary-hover);
+        color: #fff;
+        transform: translateY(-2px);
+    }
+
+    #processingState {
+        display: none;
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+    .spinner-ilove {
+        width: 60px;
+        height: 60px;
+        border: 5px solid #fecaca;
+        border-top-color: var(--ilove-primary);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 1.5rem;
+    }
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    #successArea {
+        display: none;
+    }
+    .success-icon-badge {
+        width: 68px;
+        height: 68px;
+        background: #dcfce7;
+        color: #16a34a;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 1.2rem;
+    }
+    .stats-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 1.5rem;
+    }
+    .stat-pill {
+        background: #f1f5f9;
+        border: 1px solid #e2e8f0;
+        padding: 0.45rem 1rem;
+        border-radius: 20px;
+        font-size: 0.9rem;
+        color: #475569;
+        font-weight: 600;
+    }
+    .stat-pill strong {
+        color: var(--ilove-primary);
+        font-size: 1rem;
+    }
+
+    .markdown-viewer-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fff;
+        margin-bottom: 1.5rem;
+        text-align: left;
+    }
+    .viewer-header {
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0.6rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .viewer-pane {
+        max-height: 520px;
+        overflow-y: auto;
+        padding: 1.5rem;
+    }
+    .markdown-raw {
+        font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+        font-size: 0.9rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+        background: #ffffff;
+        color: #1e293b;
+        margin: 0;
+    }
+    .markdown-preview {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        color: #24292f;
+        line-height: 1.6;
+    }
+    .markdown-preview table {
+        border-collapse: collapse;
+        width: 100%;
+        margin: 1rem 0;
+    }
+    .markdown-preview th, .markdown-preview td {
+        border: 1px solid #d0d7de;
+        padding: 8px 12px;
+    }
+    .markdown-preview th {
+        background-color: #f6f8fa;
+        font-weight: 600;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <!-- Hero Header -->
+    <div class="tool-hero">
+        <h1 class="display-5 fw-bold text-gradient">PDF to Markdown</h1>
+        <p class="lead text-gradient">Convert PDF documents to clean, editable Markdown format with high accuracy. Powered by Microsoft MarkItDown.</p>
+    </div>
+
+    <!-- Alert Box -->
+    <div id="alertBox" class="alert alert-danger d-none" role="alert"></div>
+
+    <!-- 1. UPLOAD VIEW -->
+    <div id="uploadView" class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="ilove-upload-zone" id="dropZone" onclick="document.getElementById('pdfFileInput').click();">
+                <input type="file" id="pdfFileInput" accept=".pdf" class="d-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="70" height="70" fill="none" stroke="var(--ilove-primary)" stroke-width="1.8" viewBox="0 0 24 24" class="mb-3">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <line x1="12" y1="18" x2="12" y2="12"></line>
+                    <polyline points="9 15 12 12 15 15"></polyline>
+                </svg>
+                <h3 class="fw-bold mb-2">Select PDF file</h3>
+                <p class="text-secondary mb-3">or drag and drop PDF here</p>
+                <button type="button" class="ilove-upload-btn" onclick="event.stopPropagation(); document.getElementById('pdfFileInput').click();">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                        <polyline points="17 8 12 3 7 8"></polyline>
+                        <line x1="12" y1="3" x2="12" y2="15"></line>
+                    </svg>
+                    Select PDF file
+                </button>
+                <div class="mt-3 text-muted small">Max security: Processed 100% in-memory with zero disk footprint.</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 2. WORKSPACE VIEW -->
+    <div id="workspaceArea">
+        <div class="workspace-card">
+            <div class="file-header-bar">
+                <div class="d-flex align-items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" fill="var(--ilove-primary)" viewBox="0 0 24 24">
+                        <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-9.5 8.5h-2v2h2v-2zm0-4h-2v2h2v-2zm0 8h-2v2h2v-2zm4-8h-2v2h2v-2zm0 4h-2v2h2v-2zm0 4h-2v2h2v-2z"/>
+                    </svg>
+                    <span class="fw-bold text-truncate" id="loadedFileName" style="max-width: 320px;">document.pdf</span>
+                    <span class="badge bg-secondary" id="loadedFileSize">—</span>
+                    <span class="badge bg-danger" id="loadedPageCount">— pages</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetTool();">Change file</button>
+            </div>
+
+            <div class="row g-0">
+                <!-- PDF Preview -->
+                <div class="col-lg-7 border-end p-4">
+                    <h6 class="fw-bold text-secondary mb-3">Document Preview</h6>
+                    <div class="pdf-preview-box" id="pdfPreviewBox">
+                        <canvas id="pdfPreviewCanvas" class="pdf-preview-canvas"></canvas>
+                        <div id="pdfLoadingSpinner" class="text-center">
+                            <div class="spinner-border text-danger spinner-border-sm me-2"></div>
+                            Loading document preview...
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Options -->
+                <div class="col-lg-5 options-panel">
+                    <div>
+                        <h5 class="fw-bold mb-3 text-dark">Markdown Options</h5>
+                        
+                        <div class="option-card">
+                            <div class="form-check form-switch mb-2">
+                                <input class="form-check-input" type="checkbox" id="optEnableOCR" checked>
+                                <label class="form-check-label fw-bold" for="optEnableOCR">
+                                    Extract Text with OCR
+                                </label>
+                            </div>
+                            <small class="text-muted d-block">
+                                Automatically detects text from scanned pages and diagrams.
+                            </small>
+                        </div>
+                    </div>
+
+                    <div class="mt-4">
+                        <button type="button" class="btn-convert-action" id="btnExecuteConvert" onclick="executeConversion();">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                                <polyline points="16 16 12 12 8 16"></polyline>
+                                <line x1="12" y1="12" x2="12" y2="21"></line>
+                                <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
+                            </svg>
+                            Convert to MarkDown
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 3. PROCESSING SPINNER -->
+    <div id="processingState" class="workspace-card mt-3">
+        <div class="spinner-ilove"></div>
+        <h4 class="fw-bold">Converting PDF to Markdown...</h4>
+        <p class="text-secondary">Parsing structure, extracting tables and images via Microsoft MarkItDown...</p>
+    </div>
+
+    <!-- 4. SUCCESS & MARKDOWN VIEWER -->
+    <div id="successArea" class="workspace-card mt-3 p-4">
+        <div class="success-icon-badge">
+            <svg xmlns="http://www.w3.org/2000/svg" width="38" height="38" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24">
+                <polyline points="20 6 9 17 4 12"></polyline>
+            </svg>
+        </div>
+        <h2 class="fw-bold text-center mb-1">PDF Converted to Markdown!</h2>
+        <p class="text-secondary text-center mb-4">Your Markdown file is ready. Preview, copy, or download it below.</p>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar" id="statsBar">
+            <div class="stat-pill"><strong id="statWords">0</strong> Words</div>
+            <div class="stat-pill"><strong id="statChars">0</strong> Characters</div>
+            <div class="stat-pill"><strong id="statLines">0</strong> Lines</div>
+            <div class="stat-pill">Est. Reading: <strong id="statReading">0 min</strong></div>
+        </div>
+
+        <!-- Dual Mode Viewer -->
+        <div class="markdown-viewer-card">
+            <div class="viewer-header">
+                <ul class="nav nav-pills" id="viewerTabs" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active py-1 px-3" id="tab-preview" data-bs-toggle="pill" data-bs-target="#pane-preview" type="button">
+                            👁️ Formatted Preview
+                        </button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link py-1 px-3" id="tab-raw" data-bs-toggle="pill" data-bs-target="#pane-raw" type="button">
+                            📄 Raw Markdown
+                        </button>
+                    </li>
+                </ul>
+
+                <button type="button" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" onclick="copyMarkdownToClipboard();">
+                    <span id="copyButtonText">Copy Markdown</span>
+                </button>
+            </div>
+
+            <div class="tab-content">
+                <div class="tab-pane fade show active viewer-pane" id="pane-preview">
+                    <div id="markdownPreviewContent" class="markdown-preview"></div>
+                </div>
+                <div class="tab-pane fade viewer-pane" id="pane-raw">
+                    <pre class="markdown-raw" id="markdownRawContent"></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-center gap-3 mt-4">
+            <button type="button" class="btn btn-danger btn-lg px-4 fw-bold" onclick="triggerMarkdownDownload();">
+                Download Markdown (.md)
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-lg px-4" onclick="resetTool();">
+                Convert another file
+            </button>
+        </div>
+    </div>
+
+    <!-- SEO / About Section -->
+    {% if tool_attachment %}
+    <div class="card mt-5 p-4 border rounded-3 bg-white shadow-sm">
+        <h3 class="card-title fw-bold mb-3">About PDF to Markdown Conversion</h3>
+        <div class="card-text text-secondary">
+            {{ tool_attachment.body|markdown }}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    let currentFile = null;
+    let convertedMarkdown = "";
+    let convertedFilename = "document.md";
+
+    function formatBytes(bytes) {
+        if (!bytes || bytes === 0) return '0 B';
+        const k = 1024;
+        const sizes = ['B', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
+    }
+
+    function showAlert(msg) {
+        const box = document.getElementById('alertBox');
+        box.textContent = msg;
+        box.classList.remove('d-none');
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+    function hideAlert() {
+        document.getElementById('alertBox').classList.add('d-none');
+    }
+
+    const dropZone = document.getElementById('dropZone');
+    const fileInput = document.getElementById('pdfFileInput');
+
+    ['dragenter', 'dragover'].forEach(name => {
+        dropZone.addEventListener(name, (e) => {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+    });
+    ['dragleave', 'drop'].forEach(name => {
+        dropZone.addEventListener(name, (e) => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+        });
+    });
+    dropZone.addEventListener('drop', (e) => {
+        if (e.dataTransfer.files.length > 0) handleFileSelection(e.dataTransfer.files[0]);
+    });
+    fileInput.addEventListener('change', function() {
+        if (this.files.length > 0) handleFileSelection(this.files[0]);
+    });
+
+    async function handleFileSelection(file) {
+        hideAlert();
+        if (!file.name.toLowerCase().endsWith('.pdf')) {
+            showAlert('Please select a valid PDF file.');
+            return;
+        }
+        currentFile = file;
+        document.getElementById('loadedFileName').textContent = file.name;
+        document.getElementById('loadedFileSize').textContent = formatBytes(file.size);
+
+        document.getElementById('uploadView').style.display = 'none';
+        document.getElementById('successArea').style.display = 'none';
+        document.getElementById('workspaceArea').style.display = 'block';
+
+        renderPdfThumbnail(file);
+    }
+
+    async function renderPdfThumbnail(file) {
+        const spinner = document.getElementById('pdfLoadingSpinner');
+        const canvas = document.getElementById('pdfPreviewCanvas');
+        spinner.style.display = 'block';
+        canvas.style.display = 'none';
+
+        try {
+            const buf = await file.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+            document.getElementById('loadedPageCount').textContent = `${pdf.numPages} pages`;
+
+            const page = await pdf.getPage(1);
+            const viewport = page.getViewport({ scale: 0.8 });
+            canvas.height = viewport.height;
+            canvas.width = viewport.width;
+
+            const ctx = canvas.getContext('2d');
+            await page.render({ canvasContext: ctx, viewport: viewport }).promise;
+
+            spinner.style.display = 'none';
+            canvas.style.display = 'block';
+        } catch (err) {
+            spinner.innerHTML = '<span class="text-muted small">PDF loaded. Ready for conversion.</span>';
+        }
+    }
+
+    async function executeConversion() {
+        if (!currentFile) return;
+
+        hideAlert();
+        document.getElementById('workspaceArea').style.display = 'none';
+        document.getElementById('processingState').style.display = 'block';
+
+        const fd = new FormData();
+        fd.append('file', currentFile);
+        fd.append('is_ajax', '1');
+        fd.append('enable_ocr', document.getElementById('optEnableOCR').checked ? '1' : '0');
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || getCookie('csrftoken');
+        if (csrfToken) fd.append('csrfmiddlewaretoken', csrfToken);
+
+        try {
+            const res = await fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: fd
+            });
+            const data = await res.json();
+
+            if (!res.ok || data.status === 'error') {
+                throw new Error(data.message || 'Error occurred while converting PDF to Markdown.');
+            }
+
+            convertedMarkdown = data.markdown || '';
+            convertedFilename = data.filename || 'document.md';
+
+            if (data.stats) {
+                document.getElementById('statWords').textContent = data.stats.words;
+                document.getElementById('statChars').textContent = data.stats.characters;
+                document.getElementById('statLines').textContent = data.stats.lines;
+                document.getElementById('statReading').textContent = data.stats.reading_time;
+            }
+
+            document.getElementById('markdownRawContent').textContent = convertedMarkdown;
+            if (typeof marked !== 'undefined') {
+                document.getElementById('markdownPreviewContent').innerHTML = marked.parse(convertedMarkdown);
+                if (typeof hljs !== 'undefined') {
+                    document.querySelectorAll('#markdownPreviewContent pre code').forEach(el => hljs.highlightElement(el));
+                }
+            } else {
+                document.getElementById('markdownPreviewContent').textContent = convertedMarkdown;
+            }
+
+            document.getElementById('processingState').style.display = 'none';
+            document.getElementById('successArea').style.display = 'block';
+
+            triggerMarkdownDownload();
+
+        } catch (err) {
+            document.getElementById('processingState').style.display = 'none';
+            document.getElementById('workspaceArea').style.display = 'block';
+            showAlert(err.message || 'Conversion failed. Please try again.');
+        }
+    }
+
+    function triggerMarkdownDownload() {
+        if (!convertedMarkdown) return;
+        const blob = new Blob([convertedMarkdown], { type: 'text/markdown;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = convertedFilename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }, 150);
+    }
+
+    function copyMarkdownToClipboard() {
+        if (!convertedMarkdown) return;
+        navigator.clipboard.writeText(convertedMarkdown).then(() => {
+            const btnText = document.getElementById('copyButtonText');
+            const originalText = btnText.textContent;
+            btnText.textContent = 'Copied to Clipboard! ✓';
+            setTimeout(() => { btnText.textContent = originalText; }, 2500);
+        });
+    }
+
+    function resetTool() {
+        currentFile = null;
+        convertedMarkdown = "";
+        document.getElementById('pdfFileInput').value = '';
+        document.getElementById('workspaceArea').style.display = 'none';
+        document.getElementById('processingState').style.display = 'none';
+        document.getElementById('successArea').style.display = 'none';
+        document.getElementById('uploadView').style.display = 'flex';
+        hideAlert();
+    }
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
+{% endblock %}

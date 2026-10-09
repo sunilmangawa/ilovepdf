@@ -1,0 +1,338 @@
+{% extends 'base2.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title %}PDF Forms — Fill & Create Fillable PDFs{% endblock %}
+
+{% block extraheads %}
+    <link rel="canonical" href="https://ilovepdfconverteronline.com/tools/pdf-forms" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    </script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <style>
+        .forms-include-card {
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            padding: 1.25rem;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        .inc-drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 2.8rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .inc-drop-zone:hover {
+            border-color: #e5322d;
+            background: #fff8f8;
+        }
+        .btn-ilove-inc {
+            background: #e5322d;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 8px;
+            padding: 0.65rem 1.5rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-ilove-inc:hover {
+            background: #c9231f;
+            color: #fff;
+        }
+        .inc-viewport-box {
+            position: relative;
+            background: #cbd5e1;
+            padding: 0.75rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            overflow: auto;
+            max-height: 500px;
+        }
+        .inc-field-item {
+            position: absolute;
+            background: rgba(229, 50, 45, 0.12);
+            border: 1.5px dashed #e5322d;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            padding: 2px 5px;
+            font-size: 11px;
+            font-weight: 600;
+            color: #e5322d;
+            cursor: move;
+            user-select: none;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-3">
+    <div class="forms-include-card">
+        <h4 class="fw-bold text-center mb-1">PDF Forms</h4>
+        <p class="text-secondary small text-center mb-3">Create fillable PDF forms or fill interactive documents.</p>
+
+        <!-- Upload View -->
+        <div id="incUploadSection">
+            <div class="inc-drop-zone" onclick="document.getElementById('includeFormsFileInput').click();">
+                <input type="file" id="includeFormsFileInput" accept=".pdf" class="d-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="46" height="46" fill="none" stroke="#e5322d" stroke-width="1.8" viewBox="0 0 24 24" class="mb-2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                    <polyline points="14 2 14 8 20 8"></polyline>
+                    <path d="M9 13h6"></path>
+                    <path d="M9 17h3"></path>
+                </svg>
+                <h5 class="fw-bold mb-1">Choose PDF document</h5>
+                <p class="text-secondary small mb-3">or drop PDF file here</p>
+                <button type="button" class="btn-ilove-inc">Select PDF file</button>
+            </div>
+        </div>
+
+        <!-- Controls & Stage -->
+        <div id="incControlsSection" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-2 flex-wrap gap-2">
+                <div>
+                    <strong id="incFileName" class="text-truncate">document.pdf</strong>
+                    <span class="badge bg-danger ms-2" id="incPageCount">1 page</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <div class="btn-group btn-group-sm">
+                        <button type="button" class="btn btn-outline-secondary" onclick="incPrevPage();">‹</button>
+                        <span class="btn btn-outline-secondary disabled" id="incPageNumDisplay">1/1</span>
+                        <button type="button" class="btn btn-outline-secondary" onclick="incNextPage();">›</button>
+                    </div>
+                    <button type="button" class="btn-ilove-inc py-1 px-3" onclick="incSaveAndDownload();">Download PDF</button>
+                </div>
+            </div>
+
+            <div class="mb-2 d-flex gap-2 flex-wrap">
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="incAddField('text');">+ Text Field</button>
+                <button type="button" class="btn btn-sm btn-outline-danger" onclick="incAddField('checkbox');">+ Checkbox</button>
+                <button type="button" class="btn btn-sm btn-outline-primary" onclick="incAutoDetect();">⚡ Auto-Detect</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="incClearFields();">Clear</button>
+            </div>
+
+            <!-- Viewport -->
+            <div class="inc-viewport-box mb-3">
+                <div style="position: relative; line-height: 0;">
+                    <canvas id="incPdfCanvas"></canvas>
+                    <div id="incOverlay" style="position: absolute; top:0; left:0; width:100%; height:100%;"></div>
+                </div>
+            </div>
+
+            <div class="d-flex justify-content-between align-items-center">
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetIncTool();">Cancel</button>
+                <button type="button" class="btn-ilove-inc" onclick="incSaveAndDownload();">Save & Download PDF Form</button>
+            </div>
+        </div>
+
+        <!-- Processing Indicator -->
+        <div id="incProcessing" style="display: none;" class="text-center py-4">
+            <div class="spinner-border text-danger mb-2" role="status"></div>
+            <div class="small text-secondary">Processing PDF form in memory...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let incFile = null;
+    let incPdf = null;
+    let incTotalPages = 1;
+    let incCurrentPage = 1;
+    let incFields = {};
+
+    document.getElementById('includeFormsFileInput').addEventListener('change', async function() {
+        if (!this.files.length) return;
+        incFile = this.files[0];
+        document.getElementById('incFileName').textContent = incFile.name;
+
+        const buf = await incFile.arrayBuffer();
+        incPdf = await pdfjsLib.getDocument({ data: buf }).promise;
+        incTotalPages = incPdf.numPages;
+
+        document.getElementById('incPageCount').textContent = `${incTotalPages} pages`;
+        document.getElementById('incUploadSection').style.display = 'none';
+        document.getElementById('incControlsSection').style.display = 'block';
+
+        incFields = {};
+        for (let i = 1; i <= incTotalPages; i++) incFields[i] = [];
+        await incRenderPage(1);
+    });
+
+    async function incRenderPage(p) {
+        incCurrentPage = p;
+        document.getElementById('incPageNumDisplay').textContent = `${p}/${incTotalPages}`;
+
+        const page = await incPdf.getPage(p);
+        const vp = page.getViewport({ scale: 1.0 });
+
+        const canvas = document.getElementById('incPdfCanvas');
+        canvas.width = vp.width;
+        canvas.height = vp.height;
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+
+        const overlay = document.getElementById('incOverlay');
+        overlay.style.width = vp.width + 'px';
+        overlay.style.height = vp.height + 'px';
+        incRenderFields();
+    }
+
+    function incRenderFields() {
+        const overlay = document.getElementById('incOverlay');
+        overlay.innerHTML = '';
+        const fields = incFields[incCurrentPage] || [];
+
+        fields.forEach(f => {
+            const el = document.createElement('div');
+            el.className = 'inc-field-item';
+            el.style.left = f.x + 'px';
+            el.style.top = f.y + 'px';
+            el.style.width = f.width + 'px';
+            el.style.height = f.height + 'px';
+            el.textContent = f.name;
+
+            let isDragging = false, startX, startY, sLeft, sTop;
+            el.onmousedown = (e) => {
+                isDragging = true;
+                startX = e.clientX; startY = e.clientY;
+                sLeft = f.x; sTop = f.y;
+            };
+            window.onmousemove = (e) => {
+                if (!isDragging) return;
+                f.x = Math.max(0, sLeft + (e.clientX - startX));
+                f.y = Math.max(0, sTop + (e.clientY - startY));
+                el.style.left = f.x + 'px';
+                el.style.top = f.y + 'px';
+            };
+            window.onmouseup = () => { isDragging = false; };
+
+            overlay.appendChild(el);
+        });
+    }
+
+    function incAddField(type) {
+        const id = 'f_' + Date.now();
+        const f = {
+            id: id,
+            type: type,
+            name: `${type}_${(incFields[incCurrentPage] || []).length + 1}`,
+            x: 50,
+            y: 50,
+            width: type === 'checkbox' ? 24 : 140,
+            height: type === 'checkbox' ? 24 : 26
+        };
+        if (!incFields[incCurrentPage]) incFields[incCurrentPage] = [];
+        incFields[incCurrentPage].push(f);
+        incRenderFields();
+    }
+
+    async function incAutoDetect() {
+        try {
+            const page = await incPdf.getPage(incCurrentPage);
+            const textContent = await page.getTextContent();
+            const viewport = page.getViewport({ scale: 1.0 });
+            let count = 0;
+
+            (textContent.items || []).forEach((item, idx) => {
+                const str = (item.str || '').trim();
+                if (/^(Name|Email|Date|Signature)[\s:]*$/i.test(str) || /_{3,}/.test(str)) {
+                    const pt = viewport.convertToViewportPoint(item.transform[4], item.transform[5]);
+                    incFields[incCurrentPage].push({
+                        id: 'inc_' + Date.now() + '_' + idx,
+                        type: 'text',
+                        name: `field_${idx + 1}`,
+                        x: pt[0] + 60,
+                        y: Math.max(0, pt[1] - 18),
+                        width: 140,
+                        height: 25
+                    });
+                    count++;
+                }
+            });
+
+            if (count === 0) {
+                incAddField('text');
+                incAddField('date');
+            }
+            incRenderFields();
+        } catch(e) {
+            incAddField('text');
+        }
+    }
+
+    function incClearFields() {
+        incFields[incCurrentPage] = [];
+        incRenderFields();
+    }
+
+    function incPrevPage() { if (incCurrentPage > 1) incRenderPage(incCurrentPage - 1); }
+    function incNextPage() { if (incCurrentPage < incTotalPages) incRenderPage(incCurrentPage + 1); }
+
+    async function incSaveAndDownload() {
+        document.getElementById('incControlsSection').style.display = 'none';
+        document.getElementById('incProcessing').style.display = 'block';
+
+        try {
+            const rawBytes = await incFile.arrayBuffer();
+            const pdfDocLib = await PDFLib.PDFDocument.load(rawBytes);
+            const form = pdfDocLib.getForm();
+
+            for (let p = 1; p <= incTotalPages; p++) {
+                const list = incFields[p] || [];
+                const page = pdfDocLib.getPage(p - 1);
+                const { height } = page.getSize();
+
+                list.forEach((f, idx) => {
+                    const pdfY = height - f.y - f.height;
+                    const safeName = `${f.name}_${p}_${idx}`;
+                    if (f.type === 'checkbox') {
+                        const cb = form.createCheckBox(safeName);
+                        cb.addToPage(page, { x: f.x, y: pdfY, width: f.width, height: f.height });
+                    } else {
+                        const tf = form.createTextField(safeName);
+                        tf.addToPage(page, { x: f.x, y: pdfY, width: f.width, height: f.height });
+                    }
+                });
+            }
+
+            const outBytes = await pdfDocLib.save();
+
+            // Direct download
+            const blob = new Blob([outBytes], { type: 'application/pdf' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = (incFile.name || 'document').replace(/\.[^/.]+$/, "") + '_form.pdf';
+            document.body.appendChild(a);
+            a.click();
+            setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 200);
+
+            resetIncTool();
+
+        } catch (e) {
+            alert('Error: ' + e.message);
+            document.getElementById('incProcessing').style.display = 'none';
+            document.getElementById('incControlsSection').style.display = 'block';
+        }
+    }
+
+    function resetIncTool() {
+        incFile = null;
+        incFields = {};
+        document.getElementById('includeFormsFileInput').value = '';
+        document.getElementById('incControlsSection').style.display = 'none';
+        document.getElementById('incProcessing').style.display = 'none';
+        document.getElementById('incUploadSection').style.display = 'block';
+    }
+</script>
+{% endblock %}

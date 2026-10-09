@@ -87,3 +87,18 @@ Wand==0.6.13
 wcwidth==0.9.2
 xlrd==2.0.2
 xlsxwriter==3.2.9
+
+# Core Microsoft MarkItDown
+markitdown[all]>=0.1.8
+
+# Optional extras for specific formats
+pillow
+pytesseract
+pypdf
+python-docx
+python-pptx
+openpyxl
+markdownify
+beautifulsoup4
+youtube-transcript-api
+ebooklib

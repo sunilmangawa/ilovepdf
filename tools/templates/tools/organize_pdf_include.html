@@ -1,0 +1,542 @@
+{% extends 'base2.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+{% block title %}Organize PDF Pages Online — iLovePDF Style{% endblock %}
+{% block extraheads %}
+    <link rel="canonical" href="https://ilovepdfconverteronline.com/tools/organize-pdf" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    </script>
+    <style>
+        .organize-card-wrapper {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            padding: 2rem;
+            max-width: 960px;
+            margin: 0 auto;
+        }
+        .upload-drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .upload-drop-zone:hover {
+            border-color: #e5322d;
+            background: #fff8f8;
+        }
+        .btn-ilove {
+            background: #e5322d;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            border: none;
+            transition: background 0.2s;
+        }
+        .btn-ilove:hover:not(:disabled) {
+            background: #c9231f;
+            color: #fff;
+        }
+        .btn-ilove:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+        .inc-thumbnails-container {
+            max-height: 480px;
+            overflow-y: auto;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+        .inc-thumbnails-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: 0.85rem;
+        }
+        .inc-page-card {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 6px;
+            text-align: center;
+            cursor: grab;
+            position: relative;
+            user-select: none;
+            transition: transform 0.15s ease, border-color 0.15s ease;
+        }
+        .inc-page-card:hover {
+            border-color: #cbd5e1;
+            transform: translateY(-2px);
+        }
+        .inc-page-card.is-dragging {
+            opacity: 0.35;
+            border: 2px dashed #e5322d !important;
+        }
+        .inc-page-card.drag-over-before {
+            border-left: 3px solid #e5322d !important;
+        }
+        .inc-page-card.drag-over-after {
+            border-right: 3px solid #e5322d !important;
+        }
+        .inc-page-card canvas {
+            width: 100% !important;
+            height: auto !important;
+            border-radius: 4px;
+            display: block;
+            transition: transform 0.2s ease;
+        }
+        .inc-card-top-bar {
+            position: absolute;
+            top: 4px;
+            left: 4px;
+            right: 4px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 10;
+            pointer-events: none;
+        }
+        .inc-card-select-wrapper {
+            pointer-events: auto;
+            display: flex;
+            align-items: center;
+        }
+        .inc-card-check {
+            width: 15px;
+            height: 15px;
+            cursor: pointer;
+            accent-color: #e5322d;
+            border-radius: 3px;
+            opacity: 0.6;
+            transition: opacity 0.15s ease;
+        }
+        .inc-page-card:hover .inc-card-check,
+        .inc-page-card.selected .inc-card-check {
+            opacity: 1;
+        }
+        .inc-card-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.15s ease;
+            pointer-events: none;
+        }
+        .inc-page-card:hover .inc-card-actions {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .inc-page-card.selected {
+            border-color: #e5322d !important;
+            box-shadow: 0 0 0 2px rgba(229, 50, 45, 0.35) !important;
+            background-color: #fff9f9;
+        }
+        .inc-page-card.selected .inc-badge-pos {
+            background: #e5322d;
+            color: #fff;
+        }
+        .inc-btn-action {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.2);
+        }
+        .inc-btn-rot { background: #fff; color: #1e293b; }
+        .inc-btn-del { background: #e5322d; color: #fff; }
+        .inc-page-footer {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            font-weight: 700;
+            color: #475569;
+            margin-top: 4px;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+<div class="container py-5 text-center">
+    <h1 class="fw-bold text-uppercase mb-2">Organize PDF Pages</h1>
+    <p class="text-secondary mb-4">Drag and drop page thumbnails to switch page order, rotate, or delete pages. 100% in-memory processing.</p>
+    <div class="organize-card-wrapper text-start">
+        <!-- Upload Form -->
+        <div id="includeUploadSection">
+            <div class="upload-drop-zone" onclick="document.getElementById('includeFileInput').click();">
+                <input type="file" id="includeFileInput" accept=".pdf" class="d-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="#e5322d" stroke-width="2" viewBox="0 0 24 24" class="mb-2">
+                    <rect x="3" y="3" width="7" height="7" rx="1"></rect>
+                    <rect x="14" y="3" width="7" height="7" rx="1"></rect>
+                    <rect x="14" y="14" width="7" height="7" rx="1"></rect>
+                    <rect x="3" y="14" width="7" height="7" rx="1"></rect>
+                </svg>
+                <h5 class="fw-bold mb-1">Click to select PDF or drag & drop</h5>
+                <span class="text-muted small">Instant in-memory processing &bull; Zero server disk storage</span>
+            </div>
+        </div>
+        <!-- Controls Section (Hidden until file selected) -->
+        <div id="includeControlsSection" style="display: none;" class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded flex-wrap gap-2">
+                <div>
+                    <strong id="incFileName">document.pdf</strong>
+                    <span class="badge bg-secondary ms-2" id="incPageCount">— pages</span>
+                    <span class="badge bg-danger ms-1" id="incActiveBadge">0 pages</span>
+                </div>
+                <div class="d-flex gap-2 flex-wrap">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="incSortAsc();" title="Sort pages 1 to N">Asc</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="incSortDesc();" title="Sort pages N to 1">Desc</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="incSelectAll();" title="Select all pages">Select All</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="incDeselectAll();" title="Deselect all pages">None</button>
+                    <button type="button" class="btn btn-sm btn-outline-primary" id="incBtnRotateSelected" onclick="incRotateSelected();" title="Rotate selected pages 90° clockwise">
+                        ⟳ Rotate Selected <span class="badge bg-primary ms-1 d-none" id="incSelectedCount">0</span>
+                    </button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="incRotateAll();" title="Rotate all pages 90° clockwise">⟳ Rotate All</button>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetIncludeTool();">Change</button>
+                </div>
+            </div>
+            <!-- Thumbnail Grid -->
+            <div class="inc-thumbnails-container mb-3">
+                <div class="inc-thumbnails-grid" id="incThumbnailsGrid">
+                    <!-- Injected thumbnails -->
+                </div>
+            </div>
+            <div id="incWarningAlert" class="alert alert-warning py-2 small d-none"></div>
+            <button type="button" class="btn btn-ilove w-100" id="incBtnOrganize" onclick="incExecuteOrganize();">
+                Organize PDF Now
+            </button>
+        </div>
+        <!-- Processing -->
+        <div id="incProcessing" style="display: none;" class="text-center py-4">
+            <div class="spinner-border text-danger mb-2" role="status"></div>
+            <div>Organizing PDF pages in memory...</div>
+        </div>
+        <!-- Result -->
+        <div id="incResult" style="display: none;" class="mt-4 text-center">
+            <div class="alert alert-success">
+                <strong>Success!</strong> PDF organized successfully. Your file is ready.
+            </div>
+            <div class="my-3">
+                <button type="button" class="btn btn-ilove px-4 py-2" id="incDownloadBtn">
+                    Download Organized PDF
+                </button>
+            </div>
+            <button type="button" class="btn btn-outline-secondary mt-2" onclick="resetIncludeTool();">
+                Process another file
+            </button>
+        </div>
+    </div>
+</div>
+<script>
+    let incFile = null;
+    let incTotalPages = 1;
+    let incPdfDoc = null;
+    let incDraggedCard = null;
+    let incCardIdCounter = 0;
+    document.getElementById('includeFileInput').addEventListener('change', async function() {
+        if (!this.files.length) return;
+        incFile = this.files[0];
+        document.getElementById('incFileName').textContent = incFile.name;
+        document.getElementById('includeUploadSection').style.display = 'none';
+        document.getElementById('includeControlsSection').style.display = 'block';
+        const grid = document.getElementById('incThumbnailsGrid');
+        grid.innerHTML = '<div class="p-3 text-center w-100"><div class="spinner-border spinner-border-sm text-danger me-2"></div>Rendering thumbnails...</div>';
+        try {
+            const buf = await incFile.arrayBuffer();
+            incPdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
+            incTotalPages = incPdfDoc.numPages;
+            document.getElementById('incPageCount').textContent = `${incTotalPages} pages`;
+            grid.innerHTML = '';
+            for (let p = 1; p <= incTotalPages; p++) {
+                const card = createIncCard(p);
+                grid.appendChild(card);
+                incPdfDoc.getPage(p).then(page => {
+                    const canvas = card.querySelector('canvas');
+                    if (!canvas) return;
+                    const ctx = canvas.getContext('2d');
+                    const vp = page.getViewport({ scale: 0.28 });
+                    canvas.height = vp.height;
+                    canvas.width = vp.width;
+                    page.render({ canvasContext: ctx, viewport: vp });
+                });
+            }
+            updateIncUI();
+        } catch (e) {
+            console.error(e);
+            incTotalPages = 1;
+            grid.innerHTML = '<div class="p-3 text-muted text-center w-100">Could not render thumbnails.</div>';
+            updateIncUI();
+        }
+    });
+    function createIncCard(p) {
+        incCardIdCounter++;
+        const id = `inc-card-${incCardIdCounter}`;
+        const card = document.createElement('div');
+        card.className = 'inc-page-card';
+        card.id = id;
+        card.draggable = true;
+        card.dataset.origPage = p;
+        card.dataset.rotation = '0';
+        card.innerHTML = `
+            <div class="inc-card-top-bar">
+                <div class="inc-card-select-wrapper" title="Select page" onclick="event.stopPropagation();">
+                    <input type="checkbox" class="inc-card-check" onchange="incToggleCardSelection('${id}', this.checked)">
+                </div>
+                <div class="inc-card-actions">
+                    <button type="button" class="inc-btn-action inc-btn-rot" title="Rotate" onclick="event.stopPropagation(); incRotateCard('${id}')">⟳</button>
+                    <button type="button" class="inc-btn-action inc-btn-del" title="Delete" onclick="event.stopPropagation(); incDeleteCard('${id}')">✕</button>
+                </div>
+            </div>
+            <canvas id="inc-canvas-${id}"></canvas>
+            <div class="inc-page-footer">
+                <span class="inc-badge-pos" id="inc-pos-${id}">#1</span>
+                <span>Orig. ${p}</span>
+            </div>
+        `;
+        let incIsDragging = false;
+        let incDragTime = 0;
+        card.addEventListener('dragstart', (e) => {
+            incIsDragging = true;
+            incDragTime = Date.now();
+            incDraggedCard = card;
+            e.dataTransfer.effectAllowed = 'move';
+            card.classList.add('is-dragging');
+        });
+        card.addEventListener('dragend', () => {
+            if (incDraggedCard) incDraggedCard.classList.remove('is-dragging');
+            incDraggedCard = null;
+            document.querySelectorAll('.inc-page-card').forEach(c => c.classList.remove('drag-over-before', 'drag-over-after'));
+            setTimeout(() => { incIsDragging = false; }, 150);
+            updateIncUI();
+        });
+        card.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            if (!incDraggedCard || incDraggedCard === card) return;
+            const rect = card.getBoundingClientRect();
+            document.querySelectorAll('.inc-page-card').forEach(c => c.classList.remove('drag-over-before', 'drag-over-after'));
+            if (e.clientX < rect.left + rect.width / 2) {
+                card.classList.add('drag-over-before');
+            } else {
+                card.classList.add('drag-over-after');
+            }
+        });
+        card.addEventListener('drop', (e) => {
+            e.preventDefault();
+            if (!incDraggedCard || incDraggedCard === card) return;
+            const rect = card.getBoundingClientRect();
+            const grid = document.getElementById('incThumbnailsGrid');
+            if (e.clientX < rect.left + rect.width / 2) {
+                grid.insertBefore(incDraggedCard, card);
+            } else {
+                grid.insertBefore(incDraggedCard, card.nextSibling);
+            }
+            document.querySelectorAll('.inc-page-card').forEach(c => c.classList.remove('drag-over-before', 'drag-over-after'));
+            updateIncUI();
+        });
+        card.addEventListener('click', (e) => {
+            if (incIsDragging || (Date.now() - incDragTime < 250)) return;
+            if (e.target.closest('.inc-btn-action, .inc-card-check, input')) return;
+            incToggleCardSelection(id);
+        });
+        return card;
+    }
+    function incToggleCardSelection(id, forceState) {
+        const card = document.getElementById(id);
+        if (!card) return;
+        const cb = card.querySelector('.inc-card-check');
+        const isSelected = forceState !== undefined ? forceState : !card.classList.contains('selected');
+        if (isSelected) {
+            card.classList.add('selected');
+            if (cb) cb.checked = true;
+        } else {
+            card.classList.remove('selected');
+            if (cb) cb.checked = false;
+        }
+        updateIncUI();
+    }
+    function incSelectAll() {
+        document.querySelectorAll('#incThumbnailsGrid .inc-page-card').forEach(card => {
+            card.classList.add('selected');
+            const cb = card.querySelector('.inc-card-check');
+            if (cb) cb.checked = true;
+        });
+        updateIncUI();
+    }
+    function incDeselectAll() {
+        document.querySelectorAll('#incThumbnailsGrid .inc-page-card').forEach(card => {
+            card.classList.remove('selected');
+            const cb = card.querySelector('.inc-card-check');
+            if (cb) cb.checked = false;
+        });
+        updateIncUI();
+    }
+    function incRotateCard(id) {
+        const card = document.getElementById(id);
+        if (!card) return;
+        let rot = (parseInt(card.dataset.rotation) || 0) + 90;
+        rot = rot % 360;
+        card.dataset.rotation = rot;
+        const canvas = card.querySelector('canvas');
+        if (canvas) canvas.style.transform = `rotate(${rot}deg)`;
+    }
+    function incDeleteCard(id) {
+        const card = document.getElementById(id);
+        if (card && card.parentNode) {
+            card.parentNode.removeChild(card);
+            updateIncUI();
+        }
+    }
+    function incSortAsc() {
+        const grid = document.getElementById('incThumbnailsGrid');
+        const cards = Array.from(grid.querySelectorAll('.inc-page-card'));
+        cards.sort((a,b) => parseInt(a.dataset.origPage) - parseInt(b.dataset.origPage));
+        cards.forEach(c => grid.appendChild(c));
+        updateIncUI();
+    }
+    function incSortDesc() {
+        const grid = document.getElementById('incThumbnailsGrid');
+        const cards = Array.from(grid.querySelectorAll('.inc-page-card'));
+        cards.sort((a,b) => parseInt(b.dataset.origPage) - parseInt(a.dataset.origPage));
+        cards.forEach(c => grid.appendChild(c));
+        updateIncUI();
+    }
+    function incRotateSelected() {
+        const selected = Array.from(document.querySelectorAll('#incThumbnailsGrid .inc-page-card.selected'));
+        if (selected.length === 0) {
+            const warn = document.getElementById('incWarningAlert');
+            if (warn) {
+                warn.classList.remove('d-none');
+                warn.textContent = 'Please select at least one page to rotate using checkboxes or by clicking thumbnails.';
+                setTimeout(() => {
+                    const count = document.querySelectorAll('#incThumbnailsGrid .inc-page-card').length;
+                    if (count > 0 && warn.textContent.includes('Please select')) {
+                        warn.classList.add('d-none');
+                    }
+                }, 4000);
+            }
+            return;
+        }
+        selected.forEach(card => {
+            let rot = (parseInt(card.dataset.rotation) || 0) + 90;
+            rot = rot % 360;
+            card.dataset.rotation = rot;
+            const canvas = card.querySelector('canvas');
+            if (canvas) canvas.style.transform = `rotate(${rot}deg)`;
+        });
+    }
+    function incRotateAll() {
+        document.querySelectorAll('.inc-page-card').forEach(card => {
+            let rot = (parseInt(card.dataset.rotation) || 0) + 90;
+            rot = rot % 360;
+            card.dataset.rotation = rot;
+            const canvas = card.querySelector('canvas');
+            if (canvas) canvas.style.transform = `rotate(${rot}deg)`;
+        });
+    }
+    function updateIncUI() {
+        const cards = Array.from(document.querySelectorAll('#incThumbnailsGrid .inc-page-card'));
+        cards.forEach((card, idx) => {
+            const badge = document.getElementById(`inc-pos-${card.id}`);
+            if (badge) badge.textContent = `#${idx + 1}`;
+        });
+        const count = cards.length;
+        document.getElementById('incActiveBadge').textContent = `${count} pages`;
+        const selectedCards = document.querySelectorAll('#incThumbnailsGrid .inc-page-card.selected');
+        const selCount = selectedCards.length;
+        const selBadge = document.getElementById('incSelectedCount');
+        if (selBadge) {
+            selBadge.textContent = selCount;
+            if (selCount > 0) {
+                selBadge.classList.remove('d-none');
+            } else {
+                selBadge.classList.add('d-none');
+            }
+        }
+        const warn = document.getElementById('incWarningAlert');
+        const btn = document.getElementById('incBtnOrganize');
+        if (count === 0) {
+            warn.classList.remove('d-none');
+            warn.textContent = 'Please keep at least 1 page in the document.';
+            btn.disabled = true;
+        } else {
+            warn.classList.add('d-none');
+            btn.disabled = false;
+            btn.textContent = `Organize ${count} Page${count === 1 ? '' : 's'} Now`;
+        }
+    }
+    async function incExecuteOrganize() {
+        const cards = Array.from(document.querySelectorAll('#incThumbnailsGrid .inc-page-card'));
+        if (!incFile || cards.length === 0) return;
+        document.getElementById('includeControlsSection').style.display = 'none';
+        document.getElementById('incProcessing').style.display = 'block';
+        const order = cards.map(c => ({
+            page: parseInt(c.dataset.origPage),
+            rotation: parseInt(c.dataset.rotation) || 0
+        }));
+        const fd = new FormData();
+        fd.append('file', incFile);
+        fd.append('is_ajax', '1');
+        fd.append('pages_order', JSON.stringify(order));
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+        if (csrfToken) fd.append('csrfmiddlewaretoken', csrfToken);
+        try {
+            const res = await fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: fd
+            });
+            const data = await res.json();
+            if (!res.ok || data.status === 'error') throw new Error(data.message || 'Organize failed');
+            document.getElementById('incProcessing').style.display = 'none';
+            document.getElementById('incResult').style.display = 'block';
+            document.getElementById('incDownloadBtn').onclick = () => {
+                downloadBase64(data.file.data, data.file.name);
+            };
+            // Auto download
+            setTimeout(() => downloadBase64(data.file.data, data.file.name), 300);
+        } catch (e) {
+            alert(e.message);
+            document.getElementById('incProcessing').style.display = 'none';
+            document.getElementById('includeControlsSection').style.display = 'block';
+        }
+    }
+    function downloadBase64(b64, name) {
+        const bin = atob(b64);
+        const arr = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        const blob = new Blob([arr], { type: 'application/pdf' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }, 150);
+    }
+    function resetIncludeTool() {
+        incFile = null;
+        incTotalPages = 1;
+        document.getElementById('includeFileInput').value = '';
+        document.getElementById('incThumbnailsGrid').innerHTML = '';
+        document.getElementById('includeControlsSection').style.display = 'none';
+        document.getElementById('incResult').style.display = 'none';
+        document.getElementById('incProcessing').style.display = 'none';
+        document.getElementById('includeUploadSection').style.display = 'block';
+        incDeselectAll();
+    }
+</script>
+{% endblock %}

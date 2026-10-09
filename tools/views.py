@@ -27,7 +27,22 @@ from .forms import PDFUploadForm, RotatePDFForm, UploadFileForm
 from .forms import RotatePDFForm
 
 # from .tools.word_counter import word_counter_text
-from .extra.split_pdf import split_pdf_by_page
+# from .extra.split_pdf import split_pdf_by_page
+# For the split_pdf_by_page function, you can implement it in a separate module (e.g., extra/split_pdf.py) and import it here.
+import io
+
+from django.views.decorators.csrf import csrf_protect
+
+# Import the new in-memory split engine
+try:
+    from .extra.split_pdf import split_pdf_in_memory, split_pdf_by_page
+except ImportError:
+    from tools.extra.split_pdf import split_pdf_in_memory, split_pdf_by_page
+
+# End Split pdf import
+
+
+
 from .extra.lorem_ipsum_generator import generate_lorem_ipsum
 
 from .pdfto.pdf_to_docx_converter import pdf_to_docx_converter
@@ -183,52 +198,169 @@ def merge_pdf_include(request):
     return render(request, 'tools/merge_pdf_include.html', context)
 
 # -----------------------------------------================================
-
+# SPLIT PDF TOOL
 def split_pdf_logic(view_func):
+    """
+    Decorator that intercepts POST submissions for splitting PDF files.
+    Works seamlessly with AJAX (multi-file client-side download without zipping)
+    and standard form POST.
+    """
+    @wraps(view_func)
     def wrapper_function(request, *args, **kwargs):
         if request.method == "POST":
-            form = Form(request.POST, request.FILES)
-            if form.is_valid():
-                file = request.FILES['file']
-                page_numbers = request.POST.get('page_numbers', '')
-                output_files = split_pdf_by_page(file, page_numbers)
+            pdf_file = request.FILES.get('file')
+            if not pdf_file:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
+                    return JsonResponse({'status': 'error', 'message': 'Please upload a PDF file.'}, status=400)
+                return view_func(request, *args, **kwargs)
 
-                response = HttpResponse(content_type='application/zip')
-                zip_file = zipfile.ZipFile(response, 'w')
-                for output_file in output_files:
-                    zip_file.write(output_file, os.path.basename(output_file))
-                zip_file.close()
-                response['Content-Disposition'] = f'attachment; filename={file.name}.zip'
-                return response
-        else:
-            return view_func(request, *args, **kwargs)  
+            # Determine split mode: 'range' or 'extract'
+            split_mode = request.POST.get('split_mode', 'range').strip().lower()
+
+            # Range parameters
+            range_type = request.POST.get('range_type', 'custom').strip().lower()
+            ranges_json = request.POST.get('ranges', '')
+            range_starts = request.POST.getlist('range_start[]') or request.POST.getlist('range_start')
+            range_ends = request.POST.getlist('range_end[]') or request.POST.getlist('range_end')
+            page_numbers = request.POST.get('page_numbers', '').strip()
+            fixed_range_size = request.POST.get('fixed_range_size', 1)
+            merge_ranges = request.POST.get('merge_ranges') in ['true', '1', 'on', True]
+
+            # Extract parameters
+            extract_type = request.POST.get('extract_type', 'select').strip().lower()
+            extract_pages = request.POST.get('extract_pages', '').strip() or page_numbers
+            merge_extract = request.POST.get('merge_extract') in ['true', '1', 'on', True]
+
+            # Build custom ranges structure if submitted as separate input arrays
+            ranges_payload = None
+            if range_starts and range_ends:
+                ranges_payload = [
+                    {'start': s, 'end': e}
+                    for s, e in zip(range_starts, range_ends)
+                    if str(s).strip() and str(e).strip()
+                ]
+            elif ranges_json:
+                ranges_payload = ranges_json
+            elif page_numbers and split_mode == 'range':
+                ranges_payload = page_numbers
+
+            try:
+                # Perform 100% in-memory split (zero disk storage)
+                output_files = split_pdf_in_memory(
+                    pdf_file=pdf_file,
+                    split_mode=split_mode,
+                    range_type=range_type,
+                    ranges=ranges_payload,
+                    fixed_range_size=fixed_range_size,
+                    merge_ranges=merge_ranges,
+                    extract_type=extract_type,
+                    extract_pages_str=extract_pages,
+                    merge_extract=merge_extract
+                )
+
+                # Check if client requested JSON/AJAX
+                is_ajax = (
+                    request.headers.get('x-requested-with') == 'XMLHttpRequest'
+                    or 'application/json' in request.headers.get('Accept', '')
+                    or request.POST.get('is_ajax') == '1'
+                )
+
+                if is_ajax:
+                    # Return base64-encoded PDF files. The browser directly downloads each
+                    # file independently without zipping them!
+                    encoded_files = [
+                        {
+                            'name': f['name'],
+                            'data': base64.b64encode(f['bytes']).decode('utf-8'),
+                            'size': f['size'],
+                            'page_count': f['page_count']
+                        }
+                        for f in output_files
+                    ]
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': f'Successfully split into {len(output_files)} PDF file(s).',
+                        'file_count': len(output_files),
+                        'files': encoded_files
+                    })
+
+                # Fallback for standard synchronous HTML form POST
+                if len(output_files) == 1:
+                    # If single PDF created, download directly
+                    single_file = output_files[0]
+                    response = HttpResponse(single_file['bytes'], content_type='application/pdf')
+                    response['Content-Disposition'] = f'attachment; filename="{single_file["name"]}"'
+                    return response
+                else:
+                    # If multiple files generated in standard POST, pass to context
+                    context = {
+                        'output_files_data': [
+                            {
+                                'name': f['name'],
+                                'data': base64.b64encode(f['bytes']).decode('utf-8'),
+                                'size': f['size'],
+                                'page_count': f['page_count']
+                            }
+                            for f in output_files
+                        ]
+                    }
+                    return render(request, 'tools/split_pdf.html', context)
+
+            except Exception as e:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
+                    return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+                # Re-render with error message
+                return render(request, 'tools/split_pdf.html', {'error': str(e)})
+
+        # GET request: render the tool template
+        return view_func(request, *args, **kwargs)
+
     return wrapper_function
 
 
 @split_pdf_logic
 def split_pdf_view(request):
-    meta = Meta(
-        title='Split PDF document online',
-        description='Split PDF or Unmerge PDF in Order you want just within clicks.',
-        keywords=['split', 'unmerge', 'remove'],
-        og_title='Split PDF document online',
-        og_description='Split PDF or Unmerge PDF in Order you want just within clicks.',
-    )
-    tool_attachment = ToolAttachment.objects.get(function_name='split_pdf_view')
-    context = {'meta': meta, 'tool_attachment':tool_attachment}
+    """Main view for Split PDF tool."""
+    # Preserves your project's Meta & ToolAttachment models
+    meta = None
+    tool_attachment = None
+    try:
+        from .models import Meta, ToolAttachment  # or your project's model path
+        meta = Meta(
+            title='Split PDF document online - iLovePDF Style',
+            description='Split PDF by page ranges or extract pages into separate PDF files. Fast, secure, and free.',
+            keywords=['split', 'unmerge', 'extract pages', 'split by range', 'pdf'],
+            og_title='Split PDF document online',
+            og_description='Split PDF by page ranges or extract pages into separate PDF files.',
+        )
+        tool_attachment = ToolAttachment.objects.filter(function_name='split_pdf_view').first()
+    except Exception:
+        pass
+
+    context = {'meta': meta, 'tool_attachment': tool_attachment}
     return render(request, 'tools/split_pdf.html', context)
+
 
 @split_pdf_logic
 def split_pdf_include(request):
-    meta = Meta(
-        title='iLovePdfConverterOnline - Split PDF',
-        description='Split PDF or Unmerge PDF in Order you want just within clicks.',
-        keywords=['split', 'unmerge', 'remove'],
-        og_title='iLovePdfConverterOnline - Split PDF',
-        og_description='Split PDF or Unmerge PDF in Order you want just within clicks.',
-    )
-    context = {'meta': meta}  
+    """Include / alternative view for Split PDF tool."""
+    meta = None
+    try:
+        from .models import Meta
+        meta = Meta(
+            title='iLovePdfConverterOnline - Split PDF',
+            description='Split PDF by page ranges or extract pages into independent PDF files.',
+            keywords=['split', 'unmerge', 'extract', 'pdf'],
+            og_title='iLovePdfConverterOnline - Split PDF',
+            og_description='Split PDF by page ranges or extract pages into independent PDF files.',
+        )
+    except Exception:
+        pass
+
+    context = {'meta': meta}
     return render(request, 'tools/split_pdf_include.html', context)
+
+
 
 # -----------------------------------------================================
 
@@ -1633,7 +1765,6 @@ def pdf_to_pptx_include(request):
 import os
 import logging
 from django.conf import settings
-from django.shortcuts import render
 from django.http import HttpResponse
 
 # Import converter (adjust module path based on your folder structure)
@@ -1733,7 +1864,6 @@ def excel_to_pdf_include(request):
 
 
 # By Gemini 3.8
-import io
 import logging
 import os
 import re
@@ -3911,3 +4041,1614 @@ def pptx_to_odp_include(request):
 
 #####################################################################
 
+# CROP PDF TOOL
+import io
+import json
+import base64
+from functools import wraps
+
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_protect
+
+# Import crop engine
+try:
+    from .extra.crop_pdf import crop_pdf_in_memory
+except ImportError:
+    try:
+        from tools.extra.crop_pdf import crop_pdf_in_memory
+    except ImportError:
+        from tools.extra.crop_pdf import crop_pdf_in_memory
+
+
+def crop_pdf_logic(view_func):
+    """
+    Decorator that handles POST submissions for cropping PDF files.
+    Supports both instant client-side AJAX/Fetch base64 download
+    and standard multi-part form submissions.
+    """
+    @wraps(view_func)
+    def wrapper(request, *args, **kwargs):
+        if request.method == "POST":
+            pdf_file = request.FILES.get('file')
+            is_ajax = (
+                request.headers.get('x-requested-with') == 'XMLHttpRequest'
+                or 'application/json' in request.headers.get('Accept', '')
+                or request.POST.get('is_ajax') == '1'
+            )
+
+            if not pdf_file:
+                if is_ajax:
+                    return JsonResponse({'status': 'error', 'message': 'Please upload a PDF file.'}, status=400)
+                return view_func(request, *args, **kwargs)
+
+            try:
+                # Retrieve coordinates & settings
+                crop_x = float(request.POST.get('crop_x', 0) or 0)
+                crop_y = float(request.POST.get('crop_y', 0) or 0)
+                crop_width = float(request.POST.get('crop_width', 0) or 0)
+                crop_height = float(request.POST.get('crop_height', 0) or 0)
+                preview_width = float(request.POST.get('preview_width', 0) or 0)
+                preview_height = float(request.POST.get('preview_height', 0) or 0)
+
+                crop_mode = request.POST.get('crop_mode', 'all').strip().lower()
+                target_pages = request.POST.get('target_pages', '').strip()
+                current_page_num = int(request.POST.get('current_page', 1) or 1)
+
+                # Process 100% in-memory
+                result = crop_pdf_in_memory(
+                    pdf_file=pdf_file,
+                    crop_x=crop_x,
+                    crop_y=crop_y,
+                    crop_width=crop_width,
+                    crop_height=crop_height,
+                    preview_width=preview_width,
+                    preview_height=preview_height,
+                    crop_mode=crop_mode,
+                    target_pages=target_pages,
+                    current_page_num=current_page_num
+                )
+
+                if is_ajax:
+                    encoded_data = base64.b64encode(result['bytes']).decode('utf-8')
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'PDF successfully cropped.',
+                        'file': {
+                            'name': result['name'],
+                            'data': encoded_data,
+                            'size': result['size'],
+                            'page_count': result['page_count']
+                        }
+                    })
+
+                # Standard POST synchronous fallback
+                response = HttpResponse(result['bytes'], content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="{result["name"]}"'
+                return response
+
+            except Exception as e:
+                if is_ajax:
+                    return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+                return render(request, 'tools/crop_pdf.html', {'error': str(e)})
+
+        return view_func(request, *args, **kwargs)
+
+    return wrapper
+
+
+@crop_pdf_logic
+def crop_pdf_view(request):
+    """Main view for Crop PDF tool."""
+    meta = None
+    tool_attachment = None
+    try:
+        from .models import Meta, ToolAttachment
+        meta = Meta(
+            title='Crop PDF document online - iLovePDF Style',
+            description='Trim and crop PDF margins, select areas to crop across all pages or custom ranges. Fast and free.',
+            keywords=['crop pdf', 'trim pdf', 'cut pdf margins', 'crop pages', 'pdf'],
+            og_title='Crop PDF document online',
+            og_description='Crop PDF margins and select custom crop areas easily.',
+        )
+        tool_attachment = ToolAttachment.objects.filter(function_name='crop_pdf_view').first()
+    except Exception:
+        pass
+
+    context = {'meta': meta, 'tool_attachment': tool_attachment}
+    return render(request, 'tools/crop_pdf.html', context)
+
+
+@crop_pdf_logic
+def crop_pdf_include(request):
+    """Include / alternative view for Crop PDF tool."""
+    meta = None
+    try:
+        from .models import Meta
+        meta = Meta(
+            title='iLovePdfConverterOnline - Crop PDF',
+            description='Trim and crop PDF pages with visual preview.',
+            keywords=['crop pdf', 'trim pdf', 'pdf editor', 'crop margins'],
+            og_title='iLovePdfConverterOnline - Crop PDF',
+            og_description='Trim and crop PDF pages with visual preview.',
+        )
+    except Exception:
+        pass
+
+    context = {'meta': meta}
+    return render(request, 'tools/crop_pdf_include.html', context)
+
+#-----------------------------------------------------------------------------
+
+# Edit PDF Tool
+
+import io
+import json
+import base64
+from functools import wraps
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_protect
+# Import in-memory edit engine
+try:
+    from .extra.edit_pdf import apply_edits_to_pdf_in_memory
+except ImportError:
+    try:
+        from ilovepdftools.extra.edit_pdf import apply_edits_to_pdf_in_memory
+    except ImportError:
+        # Fallback inline or raise
+        apply_edits_to_pdf_in_memory = None
+def edit_pdf_logic(view_func):
+    """
+    Decorator that intercepts POST submissions for editing PDF documents.
+    Works seamlessly with AJAX (instant client-side download) and standard form POST.
+    """
+    @wraps(view_func)
+    def wrapper_function(request, *args, **kwargs):
+        if request.method == "POST":
+            pdf_file = request.FILES.get('file')
+            if not pdf_file:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
+                    return JsonResponse({'status': 'error', 'message': 'Please upload a PDF file.'}, status=400)
+                return view_func(request, *args, **kwargs)
+            # Overlays payload: JSON string containing rendered canvas images per page
+            overlays_data = request.POST.get('overlays_data', '[]')
+            # If client already generated the edited PDF directly via pdf-lib in browser
+            client_edited_pdf_b64 = request.POST.get('client_edited_pdf_b64', '')
+            is_ajax = (
+                request.headers.get('x-requested-with') == 'XMLHttpRequest'
+                or 'application/json' in request.headers.get('Accept', '')
+                or request.POST.get('is_ajax') == '1'
+            )
+            try:
+                # If client provided pre-compiled PDF from client-side vector engine
+                if client_edited_pdf_b64:
+                    pdf_bytes = base64.b64decode(client_edited_pdf_b64)
+                    filename = getattr(pdf_file, 'name', 'document.pdf')
+                    base_name = os.path.splitext(filename)[0]
+                    output_filename = f"{base_name}_edited.pdf"
+                    result = {
+                        'name': output_filename,
+                        'bytes': pdf_bytes,
+                        'page_count': 1,
+                        'size': len(pdf_bytes)
+                    }
+                else:
+                    # Perform 100% in-memory overlay merging via Python engine
+                    if apply_edits_to_pdf_in_memory is None:
+                        raise RuntimeError("PDF edit engine is not available. Check tools/extra/edit_pdf.py.")
+                    result = apply_edits_to_pdf_in_memory(
+                        pdf_file=pdf_file,
+                        overlays_data=overlays_data
+                    )
+                if is_ajax:
+                    # Return base64-encoded PDF for direct browser download
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'PDF successfully edited!',
+                        'file': {
+                            'name': result['name'],
+                            'data': base64.b64encode(result['bytes']).decode('utf-8'),
+                            'size': result['size'],
+                            'page_count': result['page_count']
+                        }
+                    })
+                # Standard POST response: direct download
+                response = HttpResponse(result['bytes'], content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="{result["name"]}"'
+                return response
+            except Exception as e:
+                if is_ajax:
+                    return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+                return render(request, 'tools/edit_pdf.html', {'error': str(e)})
+        # GET request: render the tool template
+        return view_func(request, *args, **kwargs)
+    return wrapper_function
+@edit_pdf_logic
+def edit_pdf_view(request):
+    """Main view for Edit PDF tool."""
+    meta = None
+    tool_attachment = None
+    try:
+        from .models import Meta, ToolAttachment
+        meta = Meta(
+            title='Edit PDF document online - iLovePDF Style',
+            description='Add text, images, shapes and freehand annotations to your PDF document. Edit font, color and opacity online.',
+            keywords=['edit pdf', 'pdf editor', 'add text to pdf', 'annotate pdf', 'draw on pdf', 'insert image in pdf'],
+            og_title='Edit PDF document online - Free Online PDF Editor',
+            og_description='Free online PDF editor. Add text, shapes, signatures, comments and freehand drawings to your PDF files with ease.',
+        )
+        tool_attachment = ToolAttachment.objects.filter(function_name='edit_pdf_view').first()
+    except Exception:
+        pass
+    context = {'meta': meta, 'tool_attachment': tool_attachment}
+    return render(request, 'tools/edit_pdf.html', context)
+@edit_pdf_logic
+def edit_pdf_include(request):
+    """Include / embedded view for Edit PDF tool."""
+    meta = None
+    try:
+        from .models import Meta
+        meta = Meta(
+            title='iLovePdfConverterOnline - Edit PDF',
+            description='Edit PDF documents online by adding text, images, and shapes.',
+            keywords=['edit pdf', 'pdf editor', 'annotate', 'pdf'],
+            og_title='iLovePdfConverterOnline - Edit PDF',
+            og_description='Edit PDF documents online by adding text, images, and shapes.',
+        )
+    except Exception:
+        pass
+    context = {'meta': meta}
+    return render(request, 'tools/edit_pdf_include.html', context)
+
+
+# ==============================================================================
+#   FORMS PDF FILLING TOOL
+# ==============================================================================
+
+"""
+Django Views & Decorator for 'PDF Forms' Tool (iLovePDF Style)
+- Supports creating fillable PDF forms & filling existing AcroForms.
+- Supports both AJAX (instant client-side Base64 download) and standard POST.
+- 100% In-Memory processing (zero disk storage leak).
+- Integrates with Meta and ToolAttachment models.
+"""
+import io
+import json
+import base64
+import os
+from functools import wraps
+
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_protect
+
+# In-memory forms engine
+try:
+    from .extra.forms_pdf import process_pdf_forms_in_memory
+except ImportError:
+    try:
+        from tools.extra.forms_pdf import process_pdf_forms_in_memory
+    except ImportError:
+        process_pdf_forms_in_memory = None
+
+
+def forms_pdf_logic(view_func):
+    """
+    Decorator that intercepts POST submissions for PDF Forms tool.
+    Handles client-side compiled PDF payloads (pdf-lib) or performs
+    in-memory Python processing via pypdf/ReportLab.
+    """
+    @wraps(view_func)
+    def wrapper_function(request, *args, **kwargs):
+        if request.method == "POST":
+            pdf_file = request.FILES.get('file')
+            is_ajax = (
+                request.headers.get('x-requested-with') == 'XMLHttpRequest'
+                or 'application/json' in request.headers.get('Accept', '')
+                or request.POST.get('is_ajax') == '1'
+            )
+
+            if not pdf_file:
+                if is_ajax:
+                    return JsonResponse({'status': 'error', 'message': 'Please upload a PDF file.'}, status=400)
+                return view_func(request, *args, **kwargs)
+
+            fields_data = request.POST.get('fields_data', '[]')
+            export_mode = request.POST.get('export_mode', 'interactive')
+            client_edited_pdf_b64 = request.POST.get('client_edited_pdf_b64', '')
+
+            try:
+                # If client-side engine (pdf-lib) generated the true AcroForm directly
+                if client_edited_pdf_b64:
+                    pdf_bytes = base64.b64decode(client_edited_pdf_b64)
+                    filename = getattr(pdf_file, 'name', 'document.pdf')
+                    base_name = os.path.splitext(filename)[0]
+                    mode_suffix = "filled" if export_mode == "flatten" else "form"
+                    output_filename = f"{base_name}_{mode_suffix}.pdf"
+                    result = {
+                        'name': output_filename,
+                        'bytes': pdf_bytes,
+                        'page_count': 1,
+                        'size': len(pdf_bytes)
+                    }
+                else:
+                    # In-memory server-side processing
+                    if process_pdf_forms_in_memory is None:
+                        raise RuntimeError("PDF Forms engine is not available. Please verify tools/extra/forms_pdf.py.")
+
+                    result = process_pdf_forms_in_memory(
+                        pdf_file=pdf_file,
+                        fields_data=fields_data,
+                        export_mode=export_mode
+                    )
+
+                if is_ajax:
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'PDF Form successfully generated!',
+                        'file': {
+                            'name': result['name'],
+                            'data': base64.b64encode(result['bytes']).decode('utf-8'),
+                            'size': result['size'],
+                            'page_count': result['page_count']
+                        }
+                    })
+
+                response = HttpResponse(result['bytes'], content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="{result["name"]}"'
+                return response
+
+            except Exception as e:
+                if is_ajax:
+                    return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+                return render(request, 'tools/forms_pdf.html', {'error': str(e)})
+
+        return view_func(request, *args, **kwargs)
+
+    return wrapper_function
+
+
+@forms_pdf_logic
+def forms_pdf_view(request):
+    """Main view for the PDF Forms tool."""
+    meta = None
+    tool_attachment = None
+    try:
+        from .models import Meta, ToolAttachment
+        meta = Meta(
+            title='PDF Forms | Fill Form Online & Create Fillable PDFs - iLovePDF',
+            description='Fill PDF forms online or automatically create fillable PDFs. Add text fields, checkboxes, radio buttons, and dropdown lists with our free PDF tool.',
+            keywords=['pdf forms', 'fill pdf form', 'create fillable pdf', 'pdf form builder', 'fillable form creator', 'interactive pdf form'],
+            og_title='PDF Forms | Fill Form Online & Create Fillable PDFs',
+            og_description='Fill PDF forms online or automatically create fillable PDFs with interactive text fields, checkboxes, and lists.',
+        )
+        tool_attachment = ToolAttachment.objects.filter(function_name='forms_pdf_view').first()
+    except Exception:
+        pass
+
+    context = {'meta': meta, 'tool_attachment': tool_attachment}
+    return render(request, 'tools/forms_pdf.html', context)
+
+
+@forms_pdf_logic
+def forms_pdf_include(request):
+    """Include / widget view for PDF Forms tool."""
+    meta = None
+    try:
+        from .models import Meta
+        meta = Meta(
+            title='PDF Forms - Fill & Create Fillable PDFs',
+            description='Fill PDF forms online or create interactive fillable PDF forms.',
+            keywords=['pdf forms', 'fillable pdf', 'form builder'],
+            og_title='PDF Forms - Fill & Create Fillable PDFs',
+            og_description='Fill PDF forms online or create interactive fillable PDF forms.',
+        )
+    except Exception:
+        pass
+
+    context = {'meta': meta}
+    return render(request, 'tools/forms_pdf_include.html', context)
+
+
+#=========================================================================================
+#---------  Remove PDF Pages Tool  ------------------------------------------------------------
+#==========================================================================================
+"""
+Django Views & Decorator for Remove PDF Tool
+- Handles both AJAX (fetch) and traditional POST.
+- Returns files as base64 JSON payload for instant, direct client-side download.
+- Zero disk usage: no files written to MEDIA_ROOT or server temp directories.
+"""
+import io
+import json
+import base64
+from functools import wraps
+
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_protect
+
+try:
+    from .extra.remove_pdf import remove_pdf_in_memory, parse_pages_to_remove
+except ImportError:
+    try:
+        from ilovepdftools.extra.remove_pdf import remove_pdf_in_memory, parse_pages_to_remove
+    except ImportError:
+        pass
+
+
+def remove_pdf_logic(view_func):
+    """
+    Decorator that intercepts POST submissions for removing pages from PDF files.
+    Supports AJAX (instant direct base64 download) and standard HTML form POST.
+    """
+    @wraps(view_func)
+    def wrapper_function(request, *args, **kwargs):
+        if request.method == "POST":
+            pdf_file = request.FILES.get('file')
+            if not pdf_file:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
+                    return JsonResponse({'status': 'error', 'message': 'Please upload a PDF file.'}, status=400)
+                return view_func(request, *args, **kwargs)
+
+            # Retrieve pages to remove (supports pages_to_remove, remove_pages, or page_numbers)
+            pages_to_remove_input = (
+                request.POST.get('pages_to_remove')
+                or request.POST.get('remove_pages')
+                or request.POST.get('page_numbers')
+                or request.POST.getlist('remove_pages[]')
+                or ''
+            )
+
+            try:
+                # Perform 100% in-memory page removal (zero disk storage)
+                result = remove_pdf_in_memory(pdf_file, pages_to_remove_input)
+
+                is_ajax = (
+                    request.headers.get('x-requested-with') == 'XMLHttpRequest'
+                    or 'application/json' in request.headers.get('Accept', '')
+                    or request.POST.get('is_ajax') == '1'
+                )
+
+                if is_ajax:
+                    encoded_file = {
+                        'name': result['name'],
+                        'data': base64.b64encode(result['bytes']).decode('utf-8'),
+                        'size': result['size'],
+                        'original_pages': result['original_pages'],
+                        'removed_pages_count': result['removed_pages_count'],
+                        'removed_pages_list': result['removed_pages_list'],
+                        'removed_pages_str': result['removed_pages_str'],
+                        'final_page_count': result['final_page_count'],
+                    }
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': f"Successfully removed {result['removed_pages_count']} page(s).",
+                        'file': encoded_file
+                    })
+
+                # Fallback for standard synchronous form POST: stream attachment
+                response = HttpResponse(result['bytes'], content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="{result["name"]}"'
+                return response
+
+            except Exception as e:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
+                    return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+                return render(request, 'tools/remove_pdf.html', {'error': str(e)})
+
+        # GET request: render the tool template
+        return view_func(request, *args, **kwargs)
+
+    return wrapper_function
+
+
+@remove_pdf_logic
+def remove_pdf_view(request):
+    """Main view for Remove PDF (Delete Pages) tool."""
+    meta = None
+    tool_attachment = None
+    try:
+        from .models import Meta, ToolAttachment
+        meta = Meta(
+            title='Remove PDF Pages Online - iLovePDF Style',
+            description='Select and remove pages from your PDF document easily online. Fast, secure, and 100% free.',
+            keywords=['remove pdf pages', 'delete pages from pdf', 'delete pdf page', 'extract pdf', 'remove pages'],
+            og_title='Remove PDF Pages Online',
+            og_description='Delete pages from your PDF document easily and download the result instantly.',
+        )
+        tool_attachment = ToolAttachment.objects.filter(function_name='remove_pdf_view').first()
+    except Exception:
+        pass
+
+    context = {'meta': meta, 'tool_attachment': tool_attachment}
+    return render(request, 'tools/remove_pdf.html', context)
+
+
+@remove_pdf_logic
+def remove_pdf_include(request):
+    """Include / alternative view for Remove PDF tool."""
+    meta = None
+    try:
+        from .models import Meta
+        meta = Meta(
+            title='iLovePdfConverterOnline - Remove PDF Pages',
+            description='Select and remove pages from your PDF document online for free.',
+            keywords=['remove pdf', 'delete pages', 'remove pages from pdf'],
+            og_title='iLovePdfConverterOnline - Remove PDF Pages',
+            og_description='Select and remove pages from your PDF document online for free.',
+        )
+    except Exception:
+        pass
+
+    context = {'meta': meta}
+    return render(request, 'tools/remove_pdf_include.html', context)
+
+
+#========================================================================
+#------- Organize / Reorder PDF Pages Tool -----------------------------------
+#========================================================================
+# """
+# Django Views & Decorator for Organize PDF Tool
+# - Handles both AJAX (fetch) and traditional POST.
+# - Returns files as base64 JSON payload for instant, direct client-side download.
+# - Zero disk usage: no files written to MEDIA_ROOT or server temp directories.
+# """
+# import io
+# import json
+# import base64
+# from functools import wraps
+
+# from django.http import HttpResponse, JsonResponse
+# from django.shortcuts import render
+# from django.views.decorators.csrf import csrf_protect
+
+# # Import in-memory organize PDF engine
+# try:
+#     from .extra.organize_pdf import organize_pdf_in_memory, parse_pages_order
+# except ImportError:
+#     try:
+#         from tools.extra.organize_pdf import organize_pdf_in_memory, parse_pages_order
+#     except ImportError:
+#         pass
+
+
+# def organize_pdf_logic(view_func):
+#     """
+#     Decorator that intercepts POST submissions for organizing/reordering PDF pages.
+#     Supports AJAX (instant direct base64 download) and standard HTML form POST.
+#     """
+#     @wraps(view_func)
+#     def wrapper_function(request, *args, **kwargs):
+#         if request.method == "POST":
+#             pdf_file = request.FILES.get('file')
+#             if not pdf_file:
+#                 if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
+#                     return JsonResponse({'status': 'error', 'message': 'Please upload a PDF file.'}, status=400)
+#                 return view_func(request, *args, **kwargs)
+
+#             # Extract page order configuration
+#             pages_order_input = (
+#                 request.POST.get('pages_order')
+#                 or request.POST.get('order_data')
+#                 or request.POST.get('pages')
+#                 or request.POST.get('page_numbers')
+#                 or ''
+#             )
+
+#             try:
+#                 # Perform 100% in-memory page reordering and rotation
+#                 result = organize_pdf_in_memory(pdf_file, pages_order_input)
+
+#                 is_ajax = (
+#                     request.headers.get('x-requested-with') == 'XMLHttpRequest'
+#                     or 'application/json' in request.headers.get('Accept', '')
+#                     or request.POST.get('is_ajax') == '1'
+#                 )
+
+#                 if is_ajax:
+#                     encoded_file = {
+#                         'name': result['name'],
+#                         'data': base64.b64encode(result['bytes']).decode('utf-8'),
+#                         'size': result['size'],
+#                         'original_pages': result['original_pages'],
+#                         'organized_pages_count': result['organized_pages_count'],
+#                         'rotated_count': result['rotated_count'],
+#                         'order_summary': result['order_summary'],
+#                     }
+#                     return JsonResponse({
+#                         'status': 'success',
+#                         'message': f"Successfully organized {result['organized_pages_count']} page(s).",
+#                         'file': encoded_file
+#                     })
+
+#                 # Fallback for standard synchronous HTML form POST: stream directly
+#                 response = HttpResponse(result['bytes'], content_type='application/pdf')
+#                 response['Content-Disposition'] = f'attachment; filename="{result["name"]}"'
+#                 return response
+
+#             except Exception as e:
+#                 if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
+#                     return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+#                 return render(request, 'tools/organize_pdf.html', {'error': str(e)})
+
+#         # GET request: render the tool template
+#         return view_func(request, *args, **kwargs)
+
+#     return wrapper_function
+
+
+# @organize_pdf_logic
+# def organize_pdf_view(request):
+#     """Main view for Organize PDF tool."""
+#     meta = None
+#     tool_attachment = None
+#     try:
+#         from .models import Meta, ToolAttachment
+#         meta = Meta(
+#             title='Organize PDF Pages Online - Rearrange, Rotate & Delete Pages | iLovePDF',
+#             description='Sort, rotate and delete PDF pages easily online. Drag and drop page thumbnails to switch page order. 100% free and secure.',
+#             keywords=['organize pdf', 'reorder pdf pages', 'rearrange pdf pages', 'rotate pdf pages', 'delete pdf pages', 'sort pdf pages'],
+#             og_title='Organize PDF Pages Online — Free & Fast',
+#             og_description='Drag and drop page thumbnails to switch page order, rotate pages, or delete unwanted pages online.',
+#         )
+#         tool_attachment = ToolAttachment.objects.filter(function_name='organize_pdf_view').first()
+#     except Exception:
+#         pass
+
+#     context = {'meta': meta, 'tool_attachment': tool_attachment}
+#     return render(request, 'tools/organize_pdf.html', context)
+
+
+# @organize_pdf_logic
+# def organize_pdf_include(request):
+#     """Include / alternative view for Organize PDF tool."""
+#     meta = None
+#     try:
+#         from .models import Meta
+#         meta = Meta(
+#             title='iLovePdfConverterOnline - Organize PDF Pages',
+#             description='Sort, rotate, and delete PDF pages online for free. Drag and drop page thumbnails to reorder.',
+#             keywords=['organize pdf', 'reorder pdf pages', 'sort pdf', 'rotate pdf'],
+#             og_title='iLovePdfConverterOnline - Organize PDF Pages',
+#             og_description='Sort, rotate, and delete PDF pages online for free. Drag and drop page thumbnails to reorder.',
+#         )
+#     except Exception:
+#         pass
+
+#     context = {'meta': meta}
+#     return render(request, 'tools/organize_pdf_include.html', context)
+
+
+import io
+import json
+import base64
+from functools import wraps
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_protect
+# Import in-memory organize PDF engine
+try:
+    from .extra.organize_pdf import organize_pdf_in_memory, parse_pages_order
+except ImportError:
+    try:
+        from ilovepdftools.extra.organize_pdf import organize_pdf_in_memory, parse_pages_order
+    except ImportError:
+        # Fallback if extra folder not used
+        pass
+def organize_pdf_logic(view_func):
+    """
+    Decorator that intercepts POST submissions for organizing/reordering PDF pages.
+    Supports AJAX (instant direct base64 download) and standard HTML form POST.
+    """
+    @wraps(view_func)
+    def wrapper_function(request, *args, **kwargs):
+        if request.method == "POST":
+            pdf_file = request.FILES.get('file')
+            if not pdf_file:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
+                    return JsonResponse({'status': 'error', 'message': 'Please upload a PDF file.'}, status=400)
+                return view_func(request, *args, **kwargs)
+            # Extract page order configuration
+            pages_order_input = (
+                request.POST.get('pages_order')
+                or request.POST.get('order_data')
+                or request.POST.get('pages')
+                or request.POST.get('page_numbers')
+                or ''
+            )
+            try:
+                # Perform 100% in-memory page reordering and rotation
+                result = organize_pdf_in_memory(pdf_file, pages_order_input)
+                is_ajax = (
+                    request.headers.get('x-requested-with') == 'XMLHttpRequest'
+                    or 'application/json' in request.headers.get('Accept', '')
+                    or request.POST.get('is_ajax') == '1'
+                )
+                if is_ajax:
+                    encoded_file = {
+                        'name': result['name'],
+                        'data': base64.b64encode(result['bytes']).decode('utf-8'),
+                        'size': result['size'],
+                        'original_pages': result['original_pages'],
+                        'organized_pages_count': result['organized_pages_count'],
+                        'rotated_count': result['rotated_count'],
+                        'order_summary': result['order_summary'],
+                    }
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': f"Successfully organized {result['organized_pages_count']} page(s).",
+                        'file': encoded_file
+                    })
+                # Fallback for standard synchronous HTML form POST: stream directly
+                response = HttpResponse(result['bytes'], content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="{result["name"]}"'
+                return response
+            except Exception as e:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
+                    return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+                return render(request, 'tools/organize_pdf.html', {'error': str(e)})
+        # GET request: render the tool template
+        return view_func(request, *args, **kwargs)
+    return wrapper_function
+@organize_pdf_logic
+def organize_pdf_view(request):
+    """Main view for Organize PDF tool."""
+    meta = None
+    tool_attachment = None
+    try:
+        from .models import Meta, ToolAttachment
+        meta = Meta(
+            title='Organize PDF Pages Online - Rearrange, Rotate & Delete Pages | iLovePDF',
+            description='Sort, rotate and delete PDF pages easily online. Drag and drop page thumbnails to switch page order. 100% free and secure.',
+            keywords=['organize pdf', 'reorder pdf pages', 'rearrange pdf pages', 'rotate pdf pages', 'delete pdf pages', 'sort pdf pages'],
+            og_title='Organize PDF Pages Online — Free & Fast',
+            og_description='Drag and drop page thumbnails to switch page order, rotate pages, or delete unwanted pages online.',
+        )
+        tool_attachment = ToolAttachment.objects.filter(function_name='organize_pdf_view').first()
+    except Exception:
+        pass
+    context = {'meta': meta, 'tool_attachment': tool_attachment}
+    return render(request, 'tools/organize_pdf.html', context)
+@organize_pdf_logic
+def organize_pdf_include(request):
+    """Include / alternative view for Organize PDF tool."""
+    meta = None
+    try:
+        from .models import Meta
+        meta = Meta(
+            title='iLovePdfConverterOnline - Organize PDF Pages',
+            description='Sort, rotate, and delete PDF pages online for free. Drag and drop page thumbnails to reorder.',
+            keywords=['organize pdf', 'reorder pdf pages', 'sort pdf', 'rotate pdf'],
+            og_title='iLovePdfConverterOnline - Organize PDF Pages',
+            og_description='Sort, rotate, and delete PDF pages online for free. Drag and drop page thumbnails to reorder.',
+        )
+    except Exception:
+        pass
+    context = {'meta': meta}
+    return render(request, 'tools/organize_pdf_include.html', context)
+
+#=============================================================================
+# Unlock PDF Tool
+#=============================================================================
+"""
+Django Views & Decorator for Unlock PDF Tool
+- Handles both AJAX (fetch) and traditional form POST.
+- Returns unlocked PDF as base64 JSON payload for instant, direct client-side download without page reload.
+- Zero disk usage: no files written to MEDIA_ROOT or server temp directories.
+"""
+import io
+import json
+import base64
+from functools import wraps
+
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_protect
+
+# Import in-memory unlock engine
+try:
+    from .extra.unlock_pdf import unlock_pdf_in_memory
+except ImportError:
+    try:
+        from ilovepdftools.extra.unlock_pdf import unlock_pdf_in_memory
+    except ImportError:
+        # Fallback to local import if extra is placed in tools directory
+        from extra.unlock_pdf import unlock_pdf_in_memory
+
+
+def unlock_pdf_logic(view_func):
+    """
+    Decorator that intercepts POST submissions for unlocking PDF files.
+    Works seamlessly with AJAX (instant client-side download) and standard form POST.
+    """
+    @wraps(view_func)
+    def wrapper_function(request, *args, **kwargs):
+        if request.method == "POST":
+            # Support both single file and multi-file uploads
+            pdf_files = request.FILES.getlist('file') or request.FILES.getlist('files[]')
+            if not pdf_files and request.FILES.get('file'):
+                pdf_files = [request.FILES.get('file')]
+
+            is_ajax = (
+                request.headers.get('x-requested-with') == 'XMLHttpRequest'
+                or 'application/json' in request.headers.get('Accept', '')
+                or request.POST.get('is_ajax') == '1'
+            )
+
+            if not pdf_files:
+                if is_ajax:
+                    return JsonResponse({'status': 'error', 'message': 'Please upload a PDF file.'}, status=400)
+                return view_func(request, *args, **kwargs)
+
+            # Retrieve password from request
+            password = request.POST.get('password', '').strip()
+            # Support per-file passwords if passed as JSON mapping: {"filename": "pwd"}
+            passwords_map = {}
+            passwords_json = request.POST.get('passwords_json', '').strip()
+            if passwords_json:
+                try:
+                    passwords_map = json.loads(passwords_json)
+                except Exception:
+                    passwords_map = {}
+
+            unlocked_files = []
+            errors = []
+
+            for pdf_file in pdf_files:
+                file_pwd = passwords_map.get(pdf_file.name, password)
+                try:
+                    result = unlock_pdf_in_memory(pdf_file, password=file_pwd)
+                    unlocked_files.append(result)
+                except Exception as e:
+                    errors.append(f"{pdf_file.name}: {str(e)}")
+
+            if errors and not unlocked_files:
+                error_msg = " | ".join(errors)
+                if is_ajax:
+                    return JsonResponse({'status': 'error', 'message': error_msg}, status=400)
+                return render(request, 'tools/unlock_pdf.html', {'error': error_msg})
+
+            if is_ajax:
+                encoded_files = [
+                    {
+                        'name': f['name'],
+                        'data': base64.b64encode(f['bytes']).decode('utf-8'),
+                        'size': f['size'],
+                        'page_count': f['page_count'],
+                        'was_encrypted': f['was_encrypted']
+                    }
+                    for f in unlocked_files
+                ]
+                return JsonResponse({
+                    'status': 'success',
+                    'message': f'Successfully unlocked {len(unlocked_files)} PDF file(s).',
+                    'file_count': len(unlocked_files),
+                    'files': encoded_files,
+                    'errors': errors
+                })
+
+            # Fallback for standard synchronous HTML form POST
+            if len(unlocked_files) == 1:
+                single_file = unlocked_files[0]
+                response = HttpResponse(single_file['bytes'], content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="{single_file["name"]}"'
+                return response
+            else:
+                context = {
+                    'output_files_data': [
+                        {
+                            'name': f['name'],
+                            'data': base64.b64encode(f['bytes']).decode('utf-8'),
+                            'size': f['size'],
+                            'page_count': f['page_count']
+                        }
+                        for f in unlocked_files
+                    ],
+                    'errors': errors
+                }
+                return render(request, 'tools/unlock_pdf.html', context)
+
+        # GET request: render the tool template
+        return view_func(request, *args, **kwargs)
+
+    return wrapper_function
+
+
+@unlock_pdf_logic
+def unlock_pdf_view(request):
+    """Main view for Unlock PDF tool."""
+    meta = None
+    tool_attachment = None
+    try:
+        from .models import Meta, ToolAttachment
+        meta = Meta(
+            title='Unlock PDF - Remove PDF password security online',
+            description='Unlock password-protected PDF files online for free. Remove PDF security, permissions, and passwords with ease.',
+            keywords=['unlock pdf', 'remove password from pdf', 'decrypt pdf', 'pdf password remover', 'unlock pdf online'],
+            og_title='Unlock PDF - Remove PDF password security online',
+            og_description='Unlock password-protected PDF files online for free. Remove PDF security, permissions, and passwords with ease.',
+        )
+        tool_attachment = ToolAttachment.objects.filter(function_name='unlock_pdf_view').first()
+    except Exception:
+        pass
+
+    context = {'meta': meta, 'tool_attachment': tool_attachment}
+    return render(request, 'tools/unlock_pdf.html', context)
+
+
+@unlock_pdf_logic
+def unlock_pdf_include(request):
+    """Include / alternative lightweight view for Unlock PDF tool."""
+    meta = None
+    try:
+        from .models import Meta
+        meta = Meta(
+            title='iLovePdfConverterOnline - Unlock PDF',
+            description='Remove PDF passwords and security restrictions instantly.',
+            keywords=['unlock', 'decrypt', 'remove password', 'pdf security'],
+            og_title='iLovePdfConverterOnline - Unlock PDF',
+            og_description='Remove PDF passwords and security restrictions instantly.',
+        )
+    except Exception:
+        pass
+
+    context = {'meta': meta}
+    return render(request, 'tools/unlock_pdf_include.html', context)
+
+
+#=============================================================================
+#------------------------ Protect PDF Tool --------------------------------
+#=============================================================================
+import io
+import json
+import base64
+from functools import wraps
+
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_protect
+
+# Import in-memory protection engine
+try:
+    from .extra.protect_pdf import protect_pdf_in_memory
+except ImportError:
+    try:
+        from tools.extra.protect_pdf import protect_pdf_in_memory
+    except ImportError:
+        from ilovepdftools.extra.protect_pdf import protect_pdf_in_memory
+
+
+def protect_pdf_logic(view_func):
+    """
+    Decorator that intercepts POST submissions for protecting PDF files.
+    Works seamlessly with AJAX (instant base64 client-side download)
+    and standard HTML form submissions.
+    """
+    @wraps(view_func)
+    def wrapper_function(request, *args, **kwargs):
+        if request.method == "POST":
+            is_ajax = (
+                request.headers.get('x-requested-with') == 'XMLHttpRequest'
+                or 'application/json' in request.headers.get('Accept', '')
+                or request.POST.get('is_ajax') == '1'
+            )
+
+            pdf_file = request.FILES.get('file')
+            if not pdf_file:
+                if is_ajax:
+                    return JsonResponse({'status': 'error', 'message': 'Please upload a PDF file.'}, status=400)
+                return view_func(request, *args, **kwargs)
+
+            password = request.POST.get('password', '').strip()
+            confirm_password = request.POST.get('confirm_password', '').strip()
+
+            # Validation
+            if not password:
+                msg = 'Please enter a password to protect your PDF.'
+                if is_ajax:
+                    return JsonResponse({'status': 'error', 'message': msg}, status=400)
+                return render(request, 'tools/protect_pdf.html', {'error': msg})
+
+            if confirm_password and password != confirm_password:
+                msg = 'The passwords you entered do not match.'
+                if is_ajax:
+                    return JsonResponse({'status': 'error', 'message': msg}, status=400)
+                return render(request, 'tools/protect_pdf.html', {'error': msg})
+
+            # Optional permission flags
+            allow_printing = request.POST.get('allow_printing') in ['true', '1', 'on', True]
+            allow_copying = request.POST.get('allow_copying') in ['true', '1', 'on', True]
+
+            try:
+                # 100% In-memory encryption
+                result = protect_pdf_in_memory(
+                    pdf_file=pdf_file,
+                    user_password=password,
+                    allow_printing=allow_printing,
+                    allow_copying=allow_copying
+                )
+
+                if is_ajax:
+                    # Return base64 encoded PDF payload for instant browser download
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': 'PDF file has been successfully protected with a password.',
+                        'file': {
+                            'name': result['name'],
+                            'data': base64.b64encode(result['bytes']).decode('utf-8'),
+                            'size': result['size'],
+                            'page_count': result['page_count']
+                        }
+                    })
+
+                # Fallback for standard synchronous POST
+                response = HttpResponse(result['bytes'], content_type='application/pdf')
+                response['Content-Disposition'] = f'attachment; filename="{result["name"]}"'
+                return response
+
+            except Exception as e:
+                if is_ajax:
+                    return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+                return render(request, 'tools/protect_pdf.html', {'error': str(e)})
+
+        # GET request
+        return view_func(request, *args, **kwargs)
+
+    return wrapper_function
+
+
+@protect_pdf_logic
+def protect_pdf_view(request):
+    """Main view for Protect PDF tool."""
+    meta = None
+    tool_attachment = None
+    try:
+        from .models import Meta, ToolAttachment
+        meta = Meta(
+            title='Protect PDF — Set Password & Encrypt PDF Document Online',
+            description='Encrypt your PDF with a strong password to keep sensitive data confidential. Fast, secure, and 100% free with iLovePDF.',
+            keywords=['protect pdf', 'encrypt pdf', 'password protect pdf', 'lock pdf', 'secure pdf'],
+            og_title='Protect PDF — Set Password & Encrypt PDF Online',
+            og_description='Encrypt your PDF with a password to keep sensitive data confidential. Pure in-memory security.',
+        )
+        tool_attachment = ToolAttachment.objects.filter(function_name='protect_pdf_view').first()
+    except Exception:
+        pass
+
+    context = {'meta': meta, 'tool_attachment': tool_attachment}
+    return render(request, 'tools/protect_pdf.html', context)
+
+
+@protect_pdf_logic
+def protect_pdf_include(request):
+    """Include / embeddable view for Protect PDF tool."""
+    meta = None
+    try:
+        from .models import Meta
+        meta = Meta(
+            title='Protect PDF Online — iLovePDF Style',
+            description='Encrypt your PDF with a password. Zero server storage, instant encryption.',
+            keywords=['protect pdf', 'password pdf', 'encrypt pdf online'],
+            og_title='Protect PDF Online — iLovePDF Style',
+            og_description='Encrypt your PDF with a password. Zero server storage.',
+        )
+    except Exception:
+        pass
+
+    context = {'meta': meta}
+    return render(request, 'tools/protect_pdf_include.html', context)
+
+#============================================================================
+#------------------------ MarkitDown Tool --------------------------------
+#============================================================================
+"""
+Django Views for Microsoft MarkItDown Conversion Tools.
+Handles all 11 format conversions with zero disk footprint.
+"""
+import base64
+from functools import wraps
+
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+
+try:
+    from .extra.markdown_converter import markdown_engine
+except ImportError:
+    from tools.extra.markdown_converter import markdown_engine
+
+
+def markdown_tool_handler(format_type: str, template_name: str, include_template: str = None):
+    """Universal decorator handling both AJAX and standard POST with 100% in-memory streaming."""
+    def decorator(view_func):
+        @wraps(view_func)
+        def wrapper(request, *args, **kwargs):
+            if request.method == "POST":
+                is_ajax = (
+                    request.headers.get('x-requested-with') == 'XMLHttpRequest'
+                    or 'application/json' in request.headers.get('Accept', '')
+                    or request.POST.get('is_ajax') == '1'
+                )
+
+                options = {
+                    'enable_ocr': request.POST.get('enable_ocr') in ['1', 'true', 'on', True],
+                    'include_exif': request.POST.get('include_exif') in ['1', 'true', 'on', True],
+                    'transcribe_audio': request.POST.get('transcribe_audio') in ['1', 'true', 'on', True],
+                    'include_toc': request.POST.get('include_toc') in ['1', 'true', 'on', True],
+                }
+
+                try:
+                    if format_type == "youtube":
+                        youtube_url = request.POST.get('youtube_url', '').strip()
+                        if not youtube_url:
+                            if is_ajax:
+                                return JsonResponse({'status': 'error', 'message': 'Please enter a valid YouTube URL.'}, status=400)
+                            return render(request, template_name, {'error': 'Please enter a valid YouTube URL.'})
+                        result = markdown_engine.convert_youtube(youtube_url, options=options)
+                    else:
+                        uploaded_file = request.FILES.get('file')
+                        if not uploaded_file:
+                            if is_ajax:
+                                return JsonResponse({'status': 'error', 'message': 'Please select a file to convert.'}, status=400)
+                            return render(request, template_name, {'error': 'Please select a file to convert.'})
+
+                        result = markdown_engine.convert_file(
+                            file_obj=uploaded_file,
+                            format_type=format_type,
+                            filename=uploaded_file.name,
+                            options=options
+                        )
+
+                    # AJAX Response
+                    if is_ajax:
+                        encoded_data = base64.b64encode(result['bytes']).decode('utf-8')
+                        return JsonResponse({
+                            'status': 'success',
+                            'filename': result['filename'],
+                            'markdown': result['markdown'],
+                            'stats': result['stats'],
+                            'file_data': encoded_data,
+                            'size': result['size'],
+                            'message': f"Successfully converted to {result['filename']}"
+                        })
+
+                    # Synchronous POST fallback: direct file download
+                    response = HttpResponse(result['bytes'], content_type='text/markdown; charset=utf-8')
+                    response['Content-Disposition'] = f'attachment; filename="{result["filename"]}"'
+                    return response
+
+                except Exception as e:
+                    if is_ajax:
+                        return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+                    return render(request, template_name, {'error': str(e)})
+
+            return view_func(request, *args, **kwargs)
+        return wrapper
+    return decorator
+
+
+def _get_tool_context(function_name: str, default_title: str, default_desc: str, default_keywords: list):
+    """Loads Meta and ToolAttachment while safely handling database errors."""
+    meta = None
+    tool_attachment = None
+    try:
+        from .models import Meta, ToolAttachment
+        meta = Meta(
+            title=default_title,
+            description=default_desc,
+            keywords=default_keywords,
+            og_title=default_title,
+            og_description=default_desc,
+        )
+        tool_attachment = ToolAttachment.objects.filter(function_name=function_name).first()
+    except Exception:
+        pass
+    return {'meta': meta, 'tool_attachment': tool_attachment}
+
+
+# 1. PDF to MarkDown
+@markdown_tool_handler(format_type='pdf', template_name='tools/pdf_to_markdown.html')
+def pdf_to_markdown_view(request):
+    context = _get_tool_context(
+        function_name='pdf_to_markdown_view',
+        default_title='PDF to Markdown Converter — Free & In-Memory',
+        default_desc='Convert PDF documents to clean, editable Markdown format with headers, tables, and images.',
+        default_keywords=['pdf to markdown', 'convert pdf to md', 'pdf markdown', 'markitdown pdf']
+    )
+    return render(request, 'tools/pdf_to_markdown.html', context)
+
+
+@markdown_tool_handler(format_type='pdf', template_name='tools/pdf_to_markdown_include.html')
+def pdf_to_markdown_include(request):
+    context = _get_tool_context('pdf_to_markdown_include', 'PDF to Markdown', 'Fast in-memory PDF to Markdown converter.', ['pdf to markdown'])
+    return render(request, 'tools/pdf_to_markdown_include.html', context)
+
+
+# 2. PowerPoint to MarkDown
+@markdown_tool_handler(format_type='powerpoint', template_name='tools/markdown_tool.html')
+def powerpoint_to_markdown_view(request):
+    context = _get_tool_context('powerpoint_to_markdown_view', 'PowerPoint to Markdown', 'Convert slides to markdown.', ['pptx', 'markdown'])
+    context.update({
+        'tool_slug': 'powerpoint-to-markdown',
+        'tool_title': 'PowerPoint to Markdown',
+        'tool_subtitle': 'Convert PPTX slides, speaker notes, and outlines to clean Markdown documents.',
+        'accepted_formats': '.pptx,.ppt',
+        'icon_color': '#d24726'
+    })
+    return render(request, 'tools/markdown_tool.html', context)
+
+
+@markdown_tool_handler(format_type='powerpoint', template_name='tools/markdown_tool_include.html')
+def powerpoint_to_markdown_include(request):
+    context = _get_tool_context('powerpoint_to_markdown_include', 'PowerPoint to Markdown', 'Convert slides to markdown.', ['pptx'])
+    return render(request, 'tools/markdown_tool_include.html', context)
+
+
+# 3. Word to MarkDown
+@markdown_tool_handler(format_type='word', template_name='tools/markdown_tool.html')
+def word_to_markdown_view(request):
+    context = _get_tool_context('word_to_markdown_view', 'Word to Markdown', 'Convert Word to markdown.', ['word', 'docx', 'markdown'])
+    context.update({
+        'tool_slug': 'word-to-markdown',
+        'tool_title': 'Word to Markdown',
+        'tool_subtitle': 'Convert DOCX and DOC files to formatted Markdown retaining headings, tables, and lists.',
+        'accepted_formats': '.docx,.doc',
+        'icon_color': '#2b579a'
+    })
+    return render(request, 'tools/markdown_tool.html', context)
+
+
+@markdown_tool_handler(format_type='word', template_name='tools/markdown_tool_include.html')
+def word_to_markdown_include(request):
+    context = _get_tool_context('word_to_markdown_include', 'Word to Markdown', 'Convert DOCX to markdown.', ['word', 'markdown'])
+    return render(request, 'tools/markdown_tool_include.html', context)
+
+
+# 4. Excel to MarkDown
+@markdown_tool_handler(format_type='excel', template_name='tools/markdown_tool.html')
+def excel_to_markdown_view(request):
+    context = _get_tool_context('excel_to_markdown_view', 'Excel to Markdown', 'Convert Excel sheets to markdown tables.', ['excel', 'xlsx'])
+    context.update({
+        'tool_slug': 'excel-to-markdown',
+        'tool_title': 'Excel to Markdown',
+        'tool_subtitle': 'Convert Excel workbooks into clean, readable GitHub-Flavored Markdown tables.',
+        'accepted_formats': '.xlsx,.xls',
+        'icon_color': '#217346'
+    })
+    return render(request, 'tools/markdown_tool.html', context)
+
+
+@markdown_tool_handler(format_type='excel', template_name='tools/markdown_tool_include.html')
+def excel_to_markdown_include(request):
+    context = _get_tool_context('excel_to_markdown_include', 'Excel to Markdown', 'Convert Excel sheets to markdown.', ['excel'])
+    return render(request, 'tools/markdown_tool_include.html', context)
+
+
+# 5. Images (EXIF metadata and OCR) to MarkDown
+@markdown_tool_handler(format_type='image', template_name='tools/markdown_tool.html')
+def image_to_markdown_view(request):
+    context = _get_tool_context('image_to_markdown_view', 'Image to Markdown with OCR', 'Extract text and EXIF from images.', ['ocr', 'image to markdown'])
+    context.update({
+        'tool_slug': 'image-to-markdown',
+        'tool_title': 'Images to Markdown',
+        'tool_subtitle': 'Extract text from scanned images via OCR and inspect detailed camera EXIF metadata.',
+        'accepted_formats': '.jpg,.jpeg,.png,.webp,.bmp,.tiff,.gif',
+        'icon_color': '#9333ea',
+        'has_ocr_option': True
+    })
+    return render(request, 'tools/markdown_tool.html', context)
+
+
+@markdown_tool_handler(format_type='image', template_name='tools/markdown_tool_include.html')
+def image_to_markdown_include(request):
+    context = _get_tool_context('image_to_markdown_include', 'Images to Markdown', 'Extract OCR and EXIF.', ['ocr', 'image'])
+    return render(request, 'tools/markdown_tool_include.html', context)
+
+
+# 6. Audio (EXIF metadata and speech transcription) to MarkDown
+@markdown_tool_handler(format_type='audio', template_name='tools/markdown_tool.html')
+def audio_to_markdown_view(request):
+    context = _get_tool_context('audio_to_markdown_view', 'Audio to Markdown', 'Speech transcription and audio metadata.', ['audio', 'speech'])
+    context.update({
+        'tool_slug': 'audio-to-markdown',
+        'tool_title': 'Audio to Markdown',
+        'tool_subtitle': 'Transcribe voice recordings into text and extract audio bitrate, duration, and ID3 tags.',
+        'accepted_formats': '.mp3,.wav,.m4a,.aac,.ogg,.flac',
+        'icon_color': '#06b6d4'
+    })
+    return render(request, 'tools/markdown_tool.html', context)
+
+
+@markdown_tool_handler(format_type='audio', template_name='tools/markdown_tool_include.html')
+def audio_to_markdown_include(request):
+    context = _get_tool_context('audio_to_markdown_include', 'Audio to Markdown', 'Audio transcription.', ['audio'])
+    return render(request, 'tools/markdown_tool_include.html', context)
+
+
+# 7. HTML to MarkDown
+@markdown_tool_handler(format_type='html', template_name='tools/markdown_tool.html')
+def html_to_markdown_view(request):
+    context = _get_tool_context('html_to_markdown_view', 'HTML to Markdown', 'Convert HTML web pages to markdown.', ['html', 'markdown'])
+    context.update({
+        'tool_slug': 'html-to-markdown',
+        'tool_title': 'HTML to Markdown',
+        'tool_subtitle': 'Convert web pages and HTML files into readable, well-structured Markdown.',
+        'accepted_formats': '.html,.htm',
+        'icon_color': '#f97316'
+    })
+    return render(request, 'tools/markdown_tool.html', context)
+
+
+@markdown_tool_handler(format_type='html', template_name='tools/markdown_tool_include.html')
+def html_to_markdown_include(request):
+    context = _get_tool_context('html_to_markdown_include', 'HTML to Markdown', 'Convert HTML to markdown.', ['html'])
+    return render(request, 'tools/markdown_tool_include.html', context)
+
+
+# 8. Text-based formats (CSV, JSON, XML) to MarkDown
+@markdown_tool_handler(format_type='text', template_name='tools/markdown_tool.html')
+def text_to_markdown_view(request):
+    context = _get_tool_context('text_to_markdown_view', 'Text & Data to Markdown', 'Convert CSV, JSON, XML to markdown.', ['csv', 'json', 'xml'])
+    context.update({
+        'tool_slug': 'text-to-markdown',
+        'tool_title': 'Text & Data to Markdown',
+        'tool_subtitle': 'Transform structured CSV, JSON, and XML files into clean tables and code blocks.',
+        'accepted_formats': '.csv,.json,.xml,.tsv,.txt,.yaml',
+        'icon_color': '#64748b'
+    })
+    return render(request, 'tools/markdown_tool.html', context)
+
+
+@markdown_tool_handler(format_type='text', template_name='tools/markdown_tool_include.html')
+def text_to_markdown_include(request):
+    context = _get_tool_context('text_to_markdown_include', 'Text to Markdown', 'Convert CSV, JSON to markdown.', ['data'])
+    return render(request, 'tools/markdown_tool_include.html', context)
+
+
+# 9. ZIP files to MarkDown
+@markdown_tool_handler(format_type='zip', template_name='tools/markdown_tool.html')
+def zip_to_markdown_view(request):
+    context = _get_tool_context('zip_to_markdown_view', 'ZIP to Markdown', 'Iterate over archive contents.', ['zip', 'archive'])
+    context.update({
+        'tool_slug': 'zip-to-markdown',
+        'tool_title': 'ZIP Archive to Markdown',
+        'tool_subtitle': 'Recursively process files inside a ZIP archive and generate a consolidated Markdown document.',
+        'accepted_formats': '.zip',
+        'icon_color': '#eab308'
+    })
+    return render(request, 'tools/markdown_tool.html', context)
+
+
+@markdown_tool_handler(format_type='zip', template_name='tools/markdown_tool_include.html')
+def zip_to_markdown_include(request):
+    context = _get_tool_context('zip_to_markdown_include', 'ZIP to Markdown', 'Batch convert zip.', ['zip'])
+    return render(request, 'tools/markdown_tool_include.html', context)
+
+
+# 10. YouTube URLs to MarkDown
+@markdown_tool_handler(format_type='youtube', template_name='tools/markdown_tool.html')
+def youtube_to_markdown_view(request):
+    context = _get_tool_context('youtube_to_markdown_view', 'YouTube to Markdown', 'Convert video transcripts to markdown notes.', ['youtube', 'transcript'])
+    context.update({
+        'tool_slug': 'youtube-to-markdown',
+        'tool_title': 'YouTube to Markdown',
+        'tool_subtitle': 'Fetch video transcripts with precise timestamps and convert them into readable Markdown.',
+        'is_url_tool': True,
+        'icon_color': '#ff0000'
+    })
+    return render(request, 'tools/markdown_tool.html', context)
+
+
+@markdown_tool_handler(format_type='youtube', template_name='tools/markdown_tool_include.html')
+def youtube_to_markdown_include(request):
+    context = _get_tool_context('youtube_to_markdown_include', 'YouTube to Markdown', 'YouTube transcript notes.', ['youtube'])
+    return render(request, 'tools/markdown_tool_include.html', context)
+
+
+# 11. EPubs to MarkDown
+@markdown_tool_handler(format_type='epub', template_name='tools/markdown_tool.html')
+def epub_to_markdown_view(request):
+    context = _get_tool_context('epub_to_markdown_view', 'EPUB to Markdown', 'Convert eBooks to markdown chapters.', ['epub', 'ebook'])
+    context.update({
+        'tool_slug': 'epub-to-markdown',
+        'tool_title': 'EPUB to Markdown',
+        'tool_subtitle': 'Convert digital EPUB books into organized chapters in clean Markdown.',
+        'accepted_formats': '.epub',
+        'icon_color': '#10b981'
+    })
+    return render(request, 'tools/markdown_tool.html', context)
+
+
+@markdown_tool_handler(format_type='epub', template_name='tools/markdown_tool_include.html')
+def epub_to_markdown_include(request):
+    context = _get_tool_context('epub_to_markdown_include', 'EPUB to Markdown', 'Convert epub to markdown.', ['epub'])
+    return render(request, 'tools/markdown_tool_include.html', context)
+
+
+# ==============================================================================
+# ------------------- Scan to PDF Tool ----------------------------------------------
+# ==============================================================================
+"""
+Django Views & Decorator for Scan to PDF Tool
+- Handles both AJAX (fetch) and traditional POST.
+- Supports multi-file multipart uploads and base64 camera image streams from PWA.
+- Returns files as base64 JSON payload for instant, multi-file client-side download without zipping.
+- Zero disk usage: no files written to MEDIA_ROOT, uploads/, or server temp directories.
+"""
+import io
+import json
+import base64
+from functools import wraps
+from django.http import HttpResponse, JsonResponse
+from django.shortcuts import render
+from django.views.decorators.csrf import csrf_protect
+# Import the in-memory scan engine
+try:
+    from .extra.scan_to_pdf import scan_to_pdf_in_memory
+except ImportError:
+    try:
+        from tools.extra.scan_to_pdf import scan_to_pdf_in_memory
+    except ImportError:
+        # Fallback if extra package is in a different relative path
+        from extra.scan_to_pdf import scan_to_pdf_in_memory
+def scan_to_pdf_logic(view_func):
+    """
+    Decorator that intercepts POST submissions for scanning images to PDF.
+    Works seamlessly with AJAX (multi-file client-side download without zipping),
+    PWA camera capture payloads, and standard form POST.
+    """
+    @wraps(view_func)
+    def wrapper_function(request, *args, **kwargs):
+        if request.method == "POST":
+            # 1. Collect images from multipart uploads or base64 payloads
+            images_list = []
+            # Check for standard multipart file uploads (e.g. 'images' or 'files')
+            uploaded_files = request.FILES.getlist('images') or request.FILES.getlist('files') or request.FILES.getlist('file')
+            if uploaded_files:
+                images_list.extend(uploaded_files)
+            # Check for base64 JSON array from PWA mobile camera capture
+            images_json = request.POST.get('images_json', '').strip()
+            if images_json:
+                try:
+                    b64_items = json.loads(images_json)
+                    if isinstance(b64_items, list):
+                        images_list.extend(b64_items)
+                except Exception:
+                    pass
+            # Check for repeated POST fields (e.g. images_base64[] or images_base64)
+            b64_list = request.POST.getlist('images_base64[]') or request.POST.getlist('images_base64')
+            if b64_list:
+                images_list.extend(b64_list)
+            # Validate that at least one image was received
+            if not images_list:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
+                    return JsonResponse({'status': 'error', 'message': 'Please scan or upload at least one image.'}, status=400)
+                return view_func(request, *args, **kwargs)
+            # 2. Extract configuration parameters
+            output_filename = request.POST.get('output_filename', 'Scan.pdf').strip() or 'Scan.pdf'
+            page_size = request.POST.get('page_size', 'a4').strip().lower()
+            orientation = request.POST.get('orientation', 'portrait').strip().lower()
+            margin = request.POST.get('margin', 'none').strip().lower()
+            filter_type = request.POST.get('filter_type', 'original').strip().lower()
+            quality = request.POST.get('quality', 'recommended').strip().lower()
+            merge_pdf = request.POST.get('merge_pdf', '1') in ['true', '1', 'on', True]
+            # Extract per-page rotations if supplied
+            rotations = []
+            rotations_json = request.POST.get('rotations', '').strip()
+            if rotations_json:
+                try:
+                    rotations = json.loads(rotations_json)
+                except Exception:
+                    rotations = [int(r.strip()) for r in rotations_json.split(',') if r.strip().isdigit()]
+            elif request.POST.getlist('rotations[]'):
+                rotations = [int(r) for r in request.POST.getlist('rotations[]') if str(r).isdigit()]
+            # Extract per-page filters if supplied
+            filters = []
+            filters_json = request.POST.get('filters', '').strip()
+            if filters_json:
+                try:
+                    filters = json.loads(filters_json)
+                except Exception:
+                    filters = [f.strip() for f in filters_json.split(',') if f.strip()]
+            elif request.POST.getlist('filters[]'):
+                filters = [f.strip() for f in request.POST.getlist('filters[]')]
+            try:
+                # 3. Perform 100% in-memory processing (zero disk storage)
+                output_files = scan_to_pdf_in_memory(
+                    images=images_list,
+                    output_filename=output_filename,
+                    page_size=page_size,
+                    orientation=orientation,
+                    margin=margin,
+                    filter_type=filter_type,
+                    quality=quality,
+                    rotations=rotations,
+                    filters=filters,
+                    merge_pdf=merge_pdf
+                )
+                # Check if client requested JSON/AJAX
+                is_ajax = (
+                    request.headers.get('x-requested-with') == 'XMLHttpRequest'
+                    or 'application/json' in request.headers.get('Accept', '')
+                    or request.POST.get('is_ajax') == '1'
+                )
+                if is_ajax:
+                    # Return base64-encoded PDF files for direct client-side download without zipping
+                    encoded_files = [
+                        {
+                            'name': f['name'],
+                            'data': base64.b64encode(f['bytes']).decode('utf-8'),
+                            'size': f['size'],
+                            'page_count': f['page_count']
+                        }
+                        for f in output_files
+                    ]
+                    return JsonResponse({
+                        'status': 'success',
+                        'message': f'Successfully generated {len(output_files)} PDF file(s).',
+                        'file_count': len(output_files),
+                        'files': encoded_files
+                    })
+                # Fallback for standard synchronous HTML form POST
+                if len(output_files) == 1:
+                    single_file = output_files[0]
+                    response = HttpResponse(single_file['bytes'], content_type='application/pdf')
+                    response['Content-Disposition'] = f'attachment; filename="{single_file["name"]}"'
+                    return response
+                else:
+                    context = {
+                        'output_files_data': [
+                            {
+                                'name': f['name'],
+                                'data': base64.b64encode(f['bytes']).decode('utf-8'),
+                                'size': f['size'],
+                                'page_count': f['page_count']
+                            }
+                            for f in output_files
+                        ]
+                    }
+                    return render(request, 'tools/scan_to_pdf.html', context)
+            except Exception as e:
+                if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
+                    return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+                return render(request, 'tools/scan_to_pdf.html', {'error': str(e)})
+        # GET request: render the tool template
+        return view_func(request, *args, **kwargs)
+    return wrapper_function
+@scan_to_pdf_logic
+def scan_to_pdf_view(request):
+    """Main view for Scan to PDF tool."""
+    meta = None
+    tool_attachment = None
+    try:
+        from .models import Meta, ToolAttachment
+        meta = Meta(
+            title='Scan to PDF - Convert Document Photos & Camera Scans to PDF Online',
+            description='Scan documents with your mobile camera or webcam and convert them into high quality PDF files instantly. Free, secure, and fast.',
+            keywords=['scan to pdf', 'mobile scanner', 'camera to pdf', 'document scanner', 'pwa scanner', 'pdf'],
+            og_title='Scan to PDF - Convert Camera Scans to PDF Online',
+            og_description='Scan documents with your mobile camera or webcam and convert them into high quality PDF files instantly.',
+        )
+        tool_attachment = ToolAttachment.objects.filter(function_name='scan_to_pdf_view').first()
+    except Exception:
+        pass
+    context = {'meta': meta, 'tool_attachment': tool_attachment}
+    return render(request, 'tools/scan_to_pdf.html', context)
+@scan_to_pdf_logic
+def scan_to_pdf_include(request):
+    """Include / alternative view for Scan to PDF tool."""
+    meta = None
+    try:
+        from .models import Meta
+        meta = Meta(
+            title='iLovePdfConverterOnline - Scan to PDF',
+            description='Scan documents and camera photos to high-quality PDF files online.',
+            keywords=['scan', 'camera', 'document scanner', 'pdf converter'],
+            og_title='iLovePdfConverterOnline - Scan to PDF',
+            og_description='Scan documents and camera photos to high-quality PDF files online.',
+        )
+    except Exception:
+        pass
+    context = {'meta': meta}
+    return render(request, 'tools/scan_to_pdf_include.html', context)

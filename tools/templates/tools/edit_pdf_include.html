@@ -1,0 +1,319 @@
+{% extends 'base2.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+{% block title %}Edit PDF Online — iLovePDF Style{% endblock %}
+{% block extraheads %}
+    <link rel="canonical" href="https://ilovepdfconverteronline.com/tools/edit-pdf" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/fabric.js/5.3.1/fabric.min.js"></script>
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <style>
+        .edit-card-wrapper {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            padding: 1.5rem;
+            max-width: 950px;
+            margin: 0 auto;
+        }
+        .upload-drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .upload-drop-zone:hover {
+            border-color: #e5322d;
+            background: #fff8f8;
+        }
+        .btn-ilove {
+            background: #e5322d;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 10px;
+            padding: 0.75rem 1.75rem;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-ilove:hover {
+            background: #c9231f;
+            color: #fff;
+        }
+        .inc-editor-canvas-box {
+            position: relative;
+            background: #cbd5e1;
+            padding: 1rem;
+            border-radius: 8px;
+            display: flex;
+            justify-content: center;
+            overflow: auto;
+            max-height: 520px;
+        }
+        .inc-editor-canvas-box #incPdfCanvas {
+            display: block;
+            position: relative;
+            z-index: 1;
+        }
+        .inc-editor-canvas-box .canvas-container {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+            z-index: 2 !important;
+        }
+        .inc-editor-canvas-box .canvas-container .lower-canvas,
+        .inc-editor-canvas-box .canvas-container .upper-canvas {
+            position: absolute !important;
+            left: 0 !important;
+            top: 0 !important;
+        }
+    </style>
+{% endblock %}
+{% block content %}
+<div class="container py-4">
+    <div class="edit-card-wrapper">
+        <h3 class="fw-bold text-center mb-1">Edit PDF Document</h3>
+        <p class="text-secondary text-center mb-4">Add text, annotations, shapes, and drawings directly to your PDF file.</p>
+        <!-- Upload View -->
+        <div id="incUploadSection">
+            <div class="upload-drop-zone" onclick="document.getElementById('includeFileInput').click();">
+                <input type="file" id="includeFileInput" accept=".pdf" class="d-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="#e5322d" stroke-width="2" viewBox="0 0 24 24" class="mb-2">
+                    <path d="M12 20h9"></path>
+                    <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path>
+                </svg>
+                <div class="fw-bold fs-5 mb-1">Choose PDF file</div>
+                <div class="text-muted small">or drop PDF here</div>
+                <button type="button" class="btn btn-ilove mt-3">Select PDF file</button>
+            </div>
+        </div>
+        <!-- Controls Section -->
+        <div id="incControlsSection" style="display: none;">
+            <div class="d-flex justify-content-between align-items-center mb-3 p-2 bg-light rounded">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="fw-bold" id="incFileName">document.pdf</span>
+                    <span class="badge bg-danger" id="incPageCount">1 page</span>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="incPrevPage();">‹ Prev</button>
+                    <span class="small fw-bold" id="incPageNumDisplay">1/1</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" onclick="incNextPage();">Next ›</button>
+                    <button type="button" class="btn btn-sm btn-link text-danger" onclick="resetIncludeTool();">Change</button>
+                </div>
+            </div>
+            <!-- Mini Toolbar -->
+            <div class="d-flex align-items-center gap-2 mb-3 flex-wrap">
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="incAddText();">+ Add Text</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="incAddRect();">⬛ Rectangle</button>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="incToggleDraw();">✏️ Draw</button>
+                <button type="button" class="btn btn-sm btn-outline-danger ms-auto" onclick="incDeleteActive();">Delete</button>
+            </div>
+            <div class="inc-editor-canvas-box mb-3">
+                <div style="position: relative; box-shadow: 0 4px 15px rgba(0,0,0,0.2); line-height: 0;">
+                    <canvas id="incPdfCanvas"></canvas>
+                    <canvas id="incFabricCanvas"></canvas>
+                </div>
+            </div>
+            <button type="button" class="btn btn-ilove w-100 py-2 fs-5" onclick="incExecuteEdit();">
+                Edit & Download PDF
+            </button>
+        </div>
+        <!-- Processing -->
+        <div id="incProcessing" style="display: none;" class="text-center py-4">
+            <div class="spinner-border text-danger mb-2" role="status"></div>
+            <div>Processing PDF edits in memory...</div>
+        </div>
+        <!-- Result -->
+        <div id="incResult" style="display: none;" class="mt-4 text-center">
+            <div class="alert alert-success">
+                <strong>Success!</strong> Your PDF has been edited and downloaded.
+            </div>
+            <button type="button" class="btn btn-outline-secondary" onclick="resetIncludeTool();">Edit another file</button>
+        </div>
+    </div>
+</div>
+<script>
+    let incFile = null;
+    let incPdf = null;
+    let incTotalPages = 1;
+    let incCurrentPage = 1;
+    let incFabric = null;
+    let incPageStates = {};
+    document.getElementById('includeFileInput').addEventListener('change', async function() {
+        if (!this.files.length) return;
+        incFile = this.files[0];
+        document.getElementById('incFileName').textContent = incFile.name;
+        try {
+            const buf = await incFile.arrayBuffer();
+            incPdf = await pdfjsLib.getDocument({ data: buf }).promise;
+            incTotalPages = incPdf.numPages;
+        } catch (e) {
+            incTotalPages = 1;
+        }
+        document.getElementById('incPageCount').textContent = `${incTotalPages} pages`;
+        document.getElementById('incUploadSection').style.display = 'none';
+        document.getElementById('incControlsSection').style.display = 'block';
+        incPageStates = {};
+        incCurrentPage = 1;
+        await incRenderPage(1);
+    });
+    async function incRenderPage(pageNum) {
+        incSaveState();
+        incCurrentPage = pageNum;
+        document.getElementById('incPageNumDisplay').textContent = `${pageNum}/${incTotalPages}`;
+        const page = await incPdf.getPage(pageNum);
+        const viewport = page.getViewport({ scale: 1.0 });
+        const pdfCanvas = document.getElementById('incPdfCanvas');
+        pdfCanvas.width = viewport.width;
+        pdfCanvas.height = viewport.height;
+        await page.render({ canvasContext: pdfCanvas.getContext('2d'), viewport: viewport }).promise;
+        if (!incFabric) {
+            incFabric = new fabric.Canvas('incFabricCanvas');
+        }
+        incFabric.setWidth(viewport.width);
+        incFabric.setHeight(viewport.height);
+        if (incPageStates[pageNum]) {
+            incFabric.loadFromJSON(incPageStates[pageNum], () => incFabric.renderAll());
+        } else {
+            incFabric.clear();
+        }
+    }
+    function incSaveState() {
+        if (incFabric && incCurrentPage) {
+            const json = incFabric.toJSON();
+            if (json.objects && json.objects.length > 0) {
+                incPageStates[incCurrentPage] = json;
+            } else {
+                delete incPageStates[incCurrentPage];
+            }
+        }
+    }
+    function incPrevPage() {
+        if (incCurrentPage > 1) incRenderPage(incCurrentPage - 1);
+    }
+    function incNextPage() {
+        if (incCurrentPage < incTotalPages) incRenderPage(incCurrentPage + 1);
+    }
+    function incAddText() {
+        incFabric.isDrawingMode = false;
+        const text = new fabric.IText('Edit text', {
+            left: 50,
+            top: 50,
+            fontFamily: 'Arial',
+            fontSize: 20,
+            fill: '#e5322d'
+        });
+        incFabric.add(text);
+        incFabric.setActiveObject(text);
+    }
+    function incAddRect() {
+        incFabric.isDrawingMode = false;
+        const rect = new fabric.Rect({
+            left: 50,
+            top: 50,
+            width: 120,
+            height: 70,
+            fill: 'rgba(229,50,45,0.2)',
+            stroke: '#e5322d',
+            strokeWidth: 2
+        });
+        incFabric.add(rect);
+        incFabric.setActiveObject(rect);
+    }
+    function incToggleDraw() {
+        incFabric.isDrawingMode = !incFabric.isDrawingMode;
+        if (incFabric.isDrawingMode) {
+            incFabric.freeDrawingBrush.color = '#e5322d';
+            incFabric.freeDrawingBrush.width = 3;
+        }
+    }
+    function incDeleteActive() {
+        const obj = incFabric.getActiveObject();
+        if (obj) {
+            incFabric.remove(obj);
+            incSaveState();
+        }
+    }
+    async function incExecuteEdit() {
+        incSaveState();
+        document.getElementById('incControlsSection').style.display = 'none';
+        document.getElementById('incProcessing').style.display = 'block';
+        try {
+            const editedPages = Object.keys(incPageStates).map(Number);
+            const overlays = [];
+            for (const p of editedPages) {
+                const tempEl = document.createElement('canvas');
+                const tempFab = new fabric.StaticCanvas(tempEl);
+                await new Promise((res) => {
+                    tempFab.loadFromJSON(incPageStates[p], async () => {
+                        const page = await incPdf.getPage(p);
+                        const vp = page.getViewport({ scale: 1.0 });
+                        tempFab.setWidth(vp.width);
+                        tempFab.setHeight(vp.height);
+                        tempFab.renderAll();
+                        overlays.push({
+                            page: p,
+                            dataUrl: tempFab.toDataURL({ format: 'png' }),
+                            width: vp.width,
+                            height: vp.height
+                        });
+                        tempFab.dispose();
+                        res();
+                    });
+                });
+            }
+            const fd = new FormData();
+            fd.append('file', incFile);
+            fd.append('overlays_data', JSON.stringify(overlays));
+            fd.append('is_ajax', '1');
+            const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+            if (csrfToken) fd.append('csrfmiddlewaretoken', csrfToken);
+            const res = await fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: fd
+            });
+            const data = await res.json();
+            if (!res.ok || data.status === 'error') throw new Error(data.message || 'Edit failed');
+            document.getElementById('incProcessing').style.display = 'none';
+            document.getElementById('incResult').style.display = 'block';
+            // Download
+            downloadBase64(data.file.data, data.file.name);
+        } catch (e) {
+            alert(e.message);
+            document.getElementById('incProcessing').style.display = 'none';
+            document.getElementById('incControlsSection').style.display = 'block';
+        }
+    }
+    function downloadBase64(b64, name) {
+        const bin = atob(b64);
+        const arr = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        const blob = new Blob([arr], { type: 'application/pdf' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }, 150);
+    }
+    function resetIncludeTool() {
+        incFile = null;
+        document.getElementById('includeFileInput').value = '';
+        document.getElementById('incControlsSection').style.display = 'none';
+        document.getElementById('incResult').style.display = 'none';
+        document.getElementById('incUploadSection').style.display = 'block';
+    }
+</script>
+{% endblock %}

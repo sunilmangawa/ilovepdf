@@ -1,0 +1,209 @@
+{% extends 'base2.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title %}Crop PDF Online — iLovePDF Style{% endblock %}
+
+{% block extraheads %}
+    <link rel="canonical" href="https://ilovepdfconverteronline.com/tools/crop-pdf" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    </script>
+    <style>
+        .crop-inc-wrapper {
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            padding: 2rem;
+            max-width: 950px;
+            margin: 0 auto;
+        }
+        .upload-inc-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .upload-inc-zone:hover {
+            border-color: #e5322d;
+            background: #fff8f8;
+        }
+        .btn-inc-crop {
+            background: #e5322d;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            border: none;
+            width: 100%;
+        }
+        .btn-inc-crop:hover {
+            background: #c9231f;
+            color: #fff;
+        }
+        .canvas-box-inc {
+            position: relative;
+            background: #0f172a;
+            border-radius: 8px;
+            padding: 1.5rem;
+            display: flex;
+            justify-content: center;
+            overflow: hidden;
+        }
+        .crop-box-inc {
+            position: absolute;
+            border: 2px dashed #e5322d;
+            box-shadow: 0 0 0 9999px rgba(0, 0, 0, 0.5);
+            cursor: move;
+            z-index: 10;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container my-5">
+    <div class="crop-inc-wrapper">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold text-gradient">Crop PDF Document</h2>
+            <p class="text-muted">Trim margins and define precise crop areas online.</p>
+        </div>
+
+        
+        <div id="incAlert" class="alert alert-danger d-none"></div>
+
+        <!-- Upload View -->
+        <div id="incUploadView">
+            <div class="upload-inc-zone" onclick="document.getElementById('incFile').click();">
+                <input type="file" id="incFile" accept=".pdf" class="d-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="#e5322d" stroke-width="2" viewBox="0 0 24 24" class="mb-2">
+                    <path d="M6 2v14a2 2 0 0 0 2 2h14"></path>
+                    <path d="M18 22V8a2 2 0 0 0-2-2H2"></path>
+                </svg>
+                <div class="fw-bold fs-5">Choose PDF to Crop</div>
+                <small class="text-muted">or drop file here</small>
+            </div>
+        </div>
+
+        <!-- Workspace View -->
+        <div id="incWorkspace" style="display: none;">
+            <div class="row g-3">
+                <div class="col-md-7">
+                    <div class="canvas-box-inc">
+                        <div style="position: relative;" id="incCanvasContainer">
+                            <canvas id="incPdfCanvas"></canvas>
+                            <div class="crop-box-inc" id="incCropBox"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5 d-flex flex-column justify-content-between">
+                    <div>
+                        <h6 class="fw-bold mb-3">Crop Options</h6>
+                        <div class="mb-3">
+                            <label class="form-label small fw-bold">Apply to:</label>
+                            <select id="incCropMode" class="form-select form-select-sm">
+                                <option value="all">All Pages</option>
+                                <option value="current">Current Page</option>
+                            </select>
+                        </div>
+                        <div class="p-3 bg-light rounded small text-secondary">
+                            Drag or resize the red dashed box on the preview to trim the desired area.
+                        </div>
+                    </div>
+                    <button type="button" class="btn-inc-crop mt-3" onclick="submitIncCrop();">
+                        Apply & Download
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Processing -->
+        <div id="incProcessing" class="text-center py-5" style="display: none;">
+            <div class="spinner-border text-danger mb-2" role="status"></div>
+            <div class="fw-bold">Processing PDF in memory...</div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let incFile = null;
+    let incPdfDoc = null;
+    let incBox = { x: 30, y: 30, w: 220, h: 300 };
+    let incW = 0, incH = 0;
+
+    document.getElementById('incFile').addEventListener('change', async function() {
+        if (!this.files.length) return;
+        incFile = this.files[0];
+        document.getElementById('incUploadView').style.display = 'none';
+        document.getElementById('incWorkspace').style.display = 'block';
+
+        const buf = await incFile.arrayBuffer();
+        incPdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
+        const page = await incPdfDoc.getPage(1);
+        const vp1 = page.getViewport({ scale: 1.0 });
+        const scale = 360 / vp1.width;
+        const vp = page.getViewport({ scale });
+
+        const canvas = document.getElementById('incPdfCanvas');
+        canvas.width = vp.width;
+        canvas.height = vp.height;
+        incW = vp.width;
+        incH = vp.height;
+
+        const container = document.getElementById('incCanvasContainer');
+        container.style.width = vp.width + 'px';
+        container.style.height = vp.height + 'px';
+
+        await page.render({ canvasContext: canvas.getContext('2d'), viewport: vp }).promise;
+
+        const cropEl = document.getElementById('incCropBox');
+        cropEl.style.left = incBox.x + 'px';
+        cropEl.style.top = incBox.y + 'px';
+        cropEl.style.width = incBox.w + 'px';
+        cropEl.style.height = incBox.h + 'px';
+    });
+
+    async function submitIncCrop() {
+        document.getElementById('incWorkspace').style.display = 'none';
+        document.getElementById('incProcessing').style.display = 'block';
+
+        const fd = new FormData();
+        fd.append('file', incFile);
+        fd.append('is_ajax', '1');
+        fd.append('crop_x', incBox.x);
+        fd.append('crop_y', incBox.y);
+        fd.append('crop_width', incBox.w);
+        fd.append('crop_height', incBox.h);
+        fd.append('preview_width', incW);
+        fd.append('preview_height', incH);
+        fd.append('crop_mode', document.getElementById('incCropMode').value);
+
+        const res = await fetch(window.location.href, {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: fd
+        });
+        const data = await res.json();
+        if (data.status === 'success') {
+            const byteCharacters = atob(data.file.data);
+            const byteNumbers = new Array(byteCharacters.length);
+            for (let i = 0; i < byteCharacters.length; i++) byteNumbers[i] = byteCharacters.charCodeAt(i);
+            const blob = new Blob([new Uint8Array(byteNumbers)], { type: 'application/pdf' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = data.file.name;
+            link.click();
+            location.reload();
+        } else {
+            alert(data.message || 'Error occurred');
+            location.reload();
+        }
+    }
+</script>
+{% endblock %}

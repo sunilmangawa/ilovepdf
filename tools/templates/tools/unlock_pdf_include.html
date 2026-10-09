@@ -1,0 +1,174 @@
+{% extends 'base2.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title %}Unlock PDF Online — iLovePDF Style{% endblock %}
+
+{% block extraheads %}
+    <link rel="canonical" href="https://ilovepdfconverteronline.com/tools/unlock-pdf" />
+    <style>
+        .unlock-card-wrapper {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            padding: 2rem;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .btn-ilove {
+            background: #e5322d;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            border: none;
+            transition: all 0.2s;
+        }
+        .btn-ilove:hover {
+            background: #c9231f;
+            color: #fff;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="unlock-card-wrapper">
+        <h2 class="fw-bold text-center mb-2">Unlock PDF Document</h2>
+        <p class="text-secondary text-center mb-4">Remove password security and usage restrictions from your PDF file.</p>
+
+        <!-- Upload View -->
+        <div id="incUploadSection" class="text-center py-4 border rounded-3 bg-light">
+            <input type="file" id="incFileInput" accept=".pdf" class="d-none">
+            <svg xmlns="http://www.w3.org/2000/svg" width="52" height="52" fill="none" stroke="#e5322d" stroke-width="2" viewBox="0 0 24 24" class="mb-2">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+            </svg>
+            <div class="mb-3 fw-bold">Select password-protected PDF</div>
+            <button type="button" class="btn btn-ilove" onclick="document.getElementById('incFileInput').click();">
+                Choose PDF File
+            </button>
+        </div>
+
+        <!-- Controls Section -->
+        <div id="incControlsSection" style="display: none;" class="mt-4">
+            <div class="alert alert-light border d-flex justify-content-between align-items-center">
+                <div>
+                    <strong id="incFileName">document.pdf</strong>
+                    <div class="text-muted small" id="incFileSize">—</div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetIncTool();">Change</button>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold">PDF Password (if required to view):</label>
+                <input type="password" id="incPasswordInput" class="form-control" placeholder="Enter password or leave blank for restrictions removal">
+                <small class="text-muted d-block mt-1">If the PDF only has print/copy restrictions, leave this field blank.</small>
+            </div>
+
+            <button type="button" class="btn btn-ilove w-100" id="incBtnUnlock" onclick="executeIncUnlock();">
+                Unlock PDF Now
+            </button>
+        </div>
+
+        <!-- Processing State -->
+        <div id="incProcessing" style="display: none;" class="text-center py-4">
+            <div class="spinner-border text-danger mb-2" role="status"></div>
+            <div>Unlocking PDF in memory...</div>
+        </div>
+
+        <!-- Result State -->
+        <div id="incResult" style="display: none;" class="mt-4 text-center">
+            <div class="alert alert-success">
+                <strong>Success!</strong> Password and restrictions successfully removed.
+            </div>
+            <button type="button" class="btn btn-ilove mb-3" id="incDownloadBtn">Download Unlocked PDF</button>
+            <br>
+            <button type="button" class="btn btn-sm btn-link text-secondary" onclick="resetIncTool();">Unlock another file</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let incSelectedFile = null;
+    let incUnlockedData = null;
+    let incUnlockedName = 'unlocked.pdf';
+
+    document.getElementById('incFileInput').addEventListener('change', function() {
+        if (!this.files.length) return;
+        incSelectedFile = this.files[0];
+        document.getElementById('incFileName').textContent = incSelectedFile.name;
+        document.getElementById('incFileSize').textContent = (incSelectedFile.size / 1024).toFixed(1) + ' KB';
+
+        document.getElementById('incUploadSection').style.display = 'none';
+        document.getElementById('incControlsSection').style.display = 'block';
+    });
+
+    async function executeIncUnlock() {
+        document.getElementById('incControlsSection').style.display = 'none';
+        document.getElementById('incProcessing').style.display = 'block';
+
+        const fd = new FormData();
+        fd.append('file', incSelectedFile);
+        fd.append('password', document.getElementById('incPasswordInput').value);
+        fd.append('is_ajax', '1');
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+        if (csrfToken) fd.append('csrfmiddlewaretoken', csrfToken);
+
+        try {
+            const res = await fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: fd
+            });
+            const data = await res.json();
+            if (!res.ok || data.status === 'error') throw new Error(data.message || 'Unlock failed');
+
+            document.getElementById('incProcessing').style.display = 'none';
+            document.getElementById('incResult').style.display = 'block';
+
+            incUnlockedData = data.files[0].data;
+            incUnlockedName = data.files[0].name;
+
+            document.getElementById('incDownloadBtn').onclick = () => downloadIncBase64(incUnlockedData, incUnlockedName);
+
+            // Auto-trigger download
+            downloadIncBase64(incUnlockedData, incUnlockedName);
+
+        } catch (e) {
+            alert(e.message);
+            document.getElementById('incProcessing').style.display = 'none';
+            document.getElementById('incControlsSection').style.display = 'block';
+        }
+    }
+
+    function downloadIncBase64(b64, name) {
+        const bin = atob(b64);
+        const arr = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        const blob = new Blob([arr], { type: 'application/pdf' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }, 150);
+    }
+
+    function resetIncTool() {
+        incSelectedFile = null;
+        incUnlockedData = null;
+        document.getElementById('incFileInput').value = '';
+        document.getElementById('incPasswordInput').value = '';
+        document.getElementById('incControlsSection').style.display = 'none';
+        document.getElementById('incResult').style.display = 'none';
+        document.getElementById('incUploadSection').style.display = 'block';
+    }
+</script>
+{% endblock %}

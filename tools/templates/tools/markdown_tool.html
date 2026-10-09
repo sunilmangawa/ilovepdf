@@ -1,0 +1,369 @@
+{% extends 'base.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title %}{{ tool_title|default:"Convert to Markdown" }} — iLovePDF{% endblock %}
+
+{% block extraheads %}
+<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+<style>
+    :root {
+        --tool-accent: {{ icon_color|default:"#e5322d" }};
+    }
+    .tool-hero { text-align: center; margin-bottom: 2.5rem; }
+    .tool-hero h1 { font-size: 2.5rem; font-weight: 800; color: #1a1a1a; margin-bottom: 0.5rem; }
+    .tool-hero p { font-size: 1.15rem; color: #64748b; max-width: 720px; margin: 0 auto; }
+    
+    .universal-upload-zone {
+        border: 2px dashed #cbd5e1;
+        border-radius: 16px;
+        padding: 3.5rem 2rem;
+        text-align: center;
+        background: #ffffff;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+    }
+    .universal-upload-zone:hover, .universal-upload-zone.dragover {
+        border-color: var(--tool-accent);
+        background: #fafafa;
+        transform: translateY(-2px);
+    }
+    .universal-action-btn {
+        background: var(--tool-accent);
+        color: #fff;
+        font-weight: 700;
+        padding: 0.9rem 2.2rem;
+        border-radius: 50px;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.6rem;
+        font-size: 1.1rem;
+        border: none;
+        transition: background 0.2s;
+        box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+        cursor: pointer;
+    }
+    .universal-action-btn:hover {
+        opacity: 0.92;
+        color: #fff;
+    }
+    .url-input-card {
+        background: #ffffff;
+        border-radius: 16px;
+        border: 1px solid #e2e8f0;
+        padding: 2.5rem;
+        box-shadow: 0 6px 25px rgba(0,0,0,0.04);
+        max-width: 750px;
+        margin: 0 auto;
+    }
+    .viewer-card {
+        border: 1px solid #e2e8f0;
+        border-radius: 12px;
+        overflow: hidden;
+        background: #fff;
+        margin-top: 1.5rem;
+        text-align: left;
+    }
+    .viewer-header {
+        background: #f8fafc;
+        border-bottom: 1px solid #e2e8f0;
+        padding: 0.6rem 1rem;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+    .viewer-body {
+        max-height: 520px;
+        overflow-y: auto;
+        padding: 1.5rem;
+    }
+    .raw-md {
+        font-family: monospace;
+        font-size: 0.9rem;
+        white-space: pre-wrap;
+        word-break: break-word;
+    }
+    .stats-pill-row {
+        display: flex;
+        gap: 0.75rem;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin: 1.2rem 0;
+    }
+    .stats-pill {
+        background: #f1f5f9;
+        border-radius: 20px;
+        padding: 0.4rem 1rem;
+        font-size: 0.9rem;
+        font-weight: 600;
+        color: #475569;
+    }
+    .stats-pill strong {
+        color: var(--tool-accent);
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5 mt-5">
+    <div class="tool-hero">
+        <h1 class="display-5 fw-bold text-gradient">{{ tool_title|default:"Convert to MarkDown" }}</h1>
+        <p class="lead text-gradient">{{ tool_subtitle|default:"Fast, high-fidelity Markdown converter powered by Microsoft MarkItDown." }}</p>
+    </div>
+
+    <div id="uInputView" class="row justify-content-center">
+        <div class="col-lg-8">
+            {% if is_url_tool %}
+                <!-- YouTube URL Mode -->
+                <div class="url-input-card text-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" fill="var(--tool-accent)" viewBox="0 0 24 24" class="mb-3">
+                        <path d="M19.615 3.184c-3.604-.246-11.631-.245-15.23 0-3.897.266-4.356 2.62-4.385 8.816.029 6.185.484 8.549 4.385 8.816 3.6.245 11.626.246 15.23 0 3.897-.266 4.356-2.62 4.385-8.816-.029-6.185-.484-8.549-4.385-8.816zm-10.615 12.816v-8l8 3.993-8 4.007z"/>
+                    </svg>
+                    <h3 class="fw-bold mb-3">Enter YouTube Video URL</h3>
+                    <div class="input-group input-group-lg mb-3">
+                        <input type="url" id="uYoutubeUrlInput" class="form-control" placeholder="https://www.youtube.com/watch?v=..." required>
+                        <button class="btn universal-action-btn rounded-end" type="button" onclick="executeUrlConversion();">
+                            Convert Video
+                        </button>
+                    </div>
+                    <small class="text-muted">Fetches video metadata and speech transcript with timestamps.</small>
+                </div>
+            {% else %}
+                <!-- File Upload Mode -->
+                <div class="universal-upload-zone" id="uDropZone" onclick="document.getElementById('uFileInput').click();">
+                    <input type="file" id="uFileInput" accept="{{ accepted_formats|default:'*/*' }}" class="d-none">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="68" height="68" fill="none" stroke="var(--tool-accent)" stroke-width="1.8" viewBox="0 0 24 24" class="mb-3">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                        <polyline points="14 2 14 8 20 8"></polyline>
+                        <line x1="12" y1="18" x2="12" y2="12"></line>
+                        <polyline points="9 15 12 12 15 15"></polyline>
+                    </svg>
+                    <h3 class="fw-bold mb-2">Select {{ tool_title|default:"File" }}</h3>
+                    <p class="text-secondary mb-3">or drag and drop your file here</p>
+                    <button type="button" class="universal-action-btn" onclick="event.stopPropagation(); document.getElementById('uFileInput').click();">
+                        Choose File
+                    </button>
+                    <div class="mt-3 text-muted small">Accepted: <code>{{ accepted_formats|default:"All files" }}</code></div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- File Selected Options -->
+    <div id="uWorkspaceView" style="display: none;" class="row justify-content-center">
+        <div class="col-lg-8">
+            <div class="card p-4 border rounded-3 shadow-sm bg-white">
+                <div class="d-flex justify-content-between align-items-center mb-3 pb-3 border-bottom">
+                    <div>
+                        <h5 class="fw-bold mb-0" id="uSelectedName">document</h5>
+                        <span class="badge bg-secondary" id="uSelectedSize">—</span>
+                    </div>
+                    <button class="btn btn-sm btn-outline-secondary" onclick="resetUniversalTool();">Change</button>
+                </div>
+
+                {% if has_ocr_option %}
+                <div class="form-check form-switch mb-3">
+                    <input class="form-check-input" type="checkbox" id="uEnableOcr" checked>
+                    <label class="form-check-label fw-bold" for="uEnableOcr">Enable OCR (Text Extraction from Image)</label>
+                </div>
+                {% endif %}
+
+                <button type="button" class="universal-action-btn w-100 justify-content-center" onclick="executeFileConversion();">
+                    Convert to Markdown
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Processing -->
+    <div id="uProcessingView" style="display: none;" class="text-center py-5">
+        <div class="spinner-border" style="width: 3.5rem; height: 3.5rem; color: var(--tool-accent);" role="status"></div>
+        <h4 class="fw-bold mt-3">Converting to Markdown...</h4>
+        <p class="text-secondary">Extracting content and structure via Microsoft MarkItDown...</p>
+    </div>
+
+    <!-- Success View -->
+    <div id="uSuccessView" style="display: none;">
+        <div class="text-center mb-4">
+            <h2 class="fw-bold">Conversion Completed!</h2>
+            <div class="stats-pill-row">
+                <div class="stats-pill"><strong id="uStatWords">0</strong> Words</div>
+                <div class="stats-pill"><strong id="uStatChars">0</strong> Characters</div>
+                <div class="stats-pill"><strong id="uStatLines">0</strong> Lines</div>
+                <div class="stats-pill">Est. Reading: <strong id="uStatReading">0 min</strong></div>
+            </div>
+        </div>
+
+        <div class="viewer-card">
+            <div class="viewer-header">
+                <ul class="nav nav-pills" role="tablist">
+                    <li class="nav-item">
+                        <button class="nav-link active py-1 px-3" data-bs-toggle="pill" data-bs-target="#uTabPreview" type="button">Preview</button>
+                    </li>
+                    <li class="nav-item">
+                        <button class="nav-link py-1 px-3" data-bs-toggle="pill" data-bs-target="#uTabRaw" type="button">Raw Markdown</button>
+                    </li>
+                </ul>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="copyUniversalMarkdown();">
+                    <span id="uCopyBtnText">Copy Markdown</span>
+                </button>
+            </div>
+            <div class="tab-content">
+                <div class="tab-pane fade show active viewer-body" id="uTabPreview"></div>
+                <div class="tab-pane fade viewer-body" id="uTabRaw">
+                    <pre class="raw-md" id="uRawCode"></pre>
+                </div>
+            </div>
+        </div>
+
+        <div class="d-flex justify-content-center gap-3 mt-4">
+            <button type="button" class="btn btn-danger btn-lg px-4 fw-bold" onclick="downloadUniversalMarkdown();">
+                Download .md File
+            </button>
+            <button type="button" class="btn btn-outline-secondary btn-lg px-4" onclick="resetUniversalTool();">
+                Convert another
+            </button>
+        </div>
+    </div>
+
+    {% if tool_attachment %}
+    <div class="card mt-5 p-4 border rounded-3 bg-white shadow-sm">
+        <h3 class="card-title fw-bold mb-3">About {{ tool_title|default:"This Tool" }}</h3>
+        <div class="card-text text-secondary">
+            {{ tool_attachment.body|markdown }}
+        </div>
+    </div>
+    {% endif %}
+</div>
+
+<script>
+    let uCurrentFile = null;
+    let uMarkdownText = "";
+    let uOutputFilename = "converted.md";
+
+    const uDropZone = document.getElementById('uDropZone');
+    const uFileInput = document.getElementById('uFileInput');
+
+    if (uDropZone && uFileInput) {
+        ['dragenter', 'dragover'].forEach(n => uDropZone.addEventListener(n, e => { e.preventDefault(); uDropZone.classList.add('dragover'); }));
+        ['dragleave', 'drop'].forEach(n => uDropZone.addEventListener(n, e => { e.preventDefault(); uDropZone.classList.remove('dragover'); }));
+        uDropZone.addEventListener('drop', e => { if (e.dataTransfer.files.length) handleUniversalFile(e.dataTransfer.files[0]); });
+        uFileInput.addEventListener('change', function() { if (this.files.length) handleUniversalFile(this.files[0]); });
+    }
+
+    function handleUniversalFile(file) {
+        uCurrentFile = file;
+        document.getElementById('uSelectedName').textContent = file.name;
+        document.getElementById('uSelectedSize').textContent = `${(file.size / 1024).toFixed(1)} KB`;
+        document.getElementById('uInputView').style.display = 'none';
+        document.getElementById('uWorkspaceView').style.display = 'flex';
+    }
+
+    async function executeFileConversion() {
+        if (!uCurrentFile) return;
+        const fd = new FormData();
+        fd.append('file', uCurrentFile);
+        fd.append('is_ajax', '1');
+        const ocrCheck = document.getElementById('uEnableOcr');
+        if (ocrCheck) fd.append('enable_ocr', ocrCheck.checked ? '1' : '0');
+        await sendConversionRequest(fd);
+    }
+
+    async function executeUrlConversion() {
+        const urlInput = document.getElementById('uYoutubeUrlInput');
+        if (!urlInput || !urlInput.value.trim()) {
+            alert('Please enter a YouTube video URL.');
+            return;
+        }
+        const fd = new FormData();
+        fd.append('youtube_url', urlInput.value.trim());
+        fd.append('is_ajax', '1');
+        await sendConversionRequest(fd);
+    }
+
+    async function sendConversionRequest(formData) {
+        document.getElementById('uWorkspaceView').style.display = 'none';
+        document.getElementById('uInputView').style.display = 'none';
+        document.getElementById('uProcessingView').style.display = 'block';
+
+        const csrf = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+        if (csrf) formData.append('csrfmiddlewaretoken', csrf);
+
+        try {
+            const res = await fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: formData
+            });
+            const data = await res.json();
+            if (!res.ok || data.status === 'error') throw new Error(data.message || 'Conversion failed');
+
+            uMarkdownText = data.markdown || '';
+            uOutputFilename = data.filename || 'converted.md';
+
+            if (data.stats) {
+                document.getElementById('uStatWords').textContent = data.stats.words;
+                document.getElementById('uStatChars').textContent = data.stats.characters;
+                document.getElementById('uStatLines').textContent = data.stats.lines;
+                document.getElementById('uStatReading').textContent = data.stats.reading_time;
+            }
+
+            document.getElementById('uRawCode').textContent = uMarkdownText;
+            if (typeof marked !== 'undefined') {
+                document.getElementById('uTabPreview').innerHTML = marked.parse(uMarkdownText);
+                if (typeof hljs !== 'undefined') {
+                    document.querySelectorAll('#uTabPreview pre code').forEach(el => hljs.highlightElement(el));
+                }
+            } else {
+                document.getElementById('uTabPreview').textContent = uMarkdownText;
+            }
+
+            document.getElementById('uProcessingView').style.display = 'none';
+            document.getElementById('uSuccessView').style.display = 'block';
+            downloadUniversalMarkdown();
+        } catch (e) {
+            alert(e.message || 'Error occurred during conversion.');
+            document.getElementById('uProcessingView').style.display = 'none';
+            document.getElementById('uInputView').style.display = 'flex';
+        }
+    }
+
+    function downloadUniversalMarkdown() {
+        if (!uMarkdownText) return;
+        const blob = new Blob([uMarkdownText], { type: 'text/markdown;charset=utf-8' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = uOutputFilename;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(a.href); }, 150);
+    }
+
+    function copyUniversalMarkdown() {
+        if (!uMarkdownText) return;
+        navigator.clipboard.writeText(uMarkdownText).then(() => {
+            const el = document.getElementById('uCopyBtnText');
+            el.textContent = 'Copied! ✓';
+            setTimeout(() => { el.textContent = 'Copy Markdown'; }, 2000);
+        });
+    }
+
+    function resetUniversalTool() {
+        uCurrentFile = null;
+        uMarkdownText = "";
+        const fi = document.getElementById('uFileInput');
+        if (fi) fi.value = '';
+        const yi = document.getElementById('uYoutubeUrlInput');
+        if (yi) yi.value = '';
+        document.getElementById('uWorkspaceView').style.display = 'none';
+        document.getElementById('uProcessingView').style.display = 'none';
+        document.getElementById('uSuccessView').style.display = 'none';
+        document.getElementById('uInputView').style.display = 'flex';
+    }
+</script>
+{% endblock %}

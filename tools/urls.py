@@ -133,9 +133,81 @@ urlpatterns = [
     path('xlsx-to-ods-file/', views.xlsx_to_ods_include, name='xlsx_to_ods_include'),
 
     path('pptx-to-odp/', views.pptx_to_odp_view, name='pptx_to_odp'),
-    path('pptx-to-odp-include/', views.pptx_to_odp_include, name='pptx_to_odp_include'),
+    path('pptx-to-odp-file/', views.pptx_to_odp_include, name='pptx_to_odp_include'),
 
+    # Some Extra Tools for PDF Manipulation
 
+    path('crop-pdf/', views.crop_pdf_view, name='crop_pdf'),
+    path('crop-pdf-file/', views.crop_pdf_include, name='crop_pdf_include'),
+
+    path('edit-pdf/', views.edit_pdf_view, name='edit_pdf'),
+    path('edit-pdf-file/', views.edit_pdf_include, name='edit_pdf_include'),
+
+    path('pdf-forms/', views.forms_pdf_view, name='forms_pdf'),
+    path('pdf-forms/file/', views.forms_pdf_include, name='forms_pdf_include'),
+
+    path('remove-pdf/', views.remove_pdf_view, name='remove_pdf'),
+    path('remove-pdf-file/', views.remove_pdf_include, name='remove_pdf_include'),
+
+    path('organize-pdf/', views.organize_pdf_view, name='organize_pdf'),
+    path('organize-pdf-file/', views.organize_pdf_include, name='organize_pdf_include'),
+
+    path('unlock-pdf/', views.unlock_pdf_view, name='unlock_pdf'),
+    path('unlock-pdf-file/', views.unlock_pdf_include, name='unlock_pdf_include'),
+
+    path('protect-pdf/', views.protect_pdf_view, name='protect_pdf'),
+    path('protect-pdf-file/', views.protect_pdf_include, name='protect_pdf_include'),
+
+    # 1. PDF to MarkDown
+    path('pdf-to-markdown/', views.pdf_to_markdown_view, name='pdf_to_markdown'),
+    path('pdf-to-markdown-file/', views.pdf_to_markdown_include, name='pdf_to_markdown_include'),
+
+    # 2. PowerPoint to MarkDown
+    path('powerpoint-to-markdown/', views.powerpoint_to_markdown_view, name='powerpoint_to_markdown'),
+    path('powerpoint-to-markdown-file/', views.powerpoint_to_markdown_include, name='powerpoint_to_markdown_include'),
+
+    # 3. Word to MarkDown
+    path('word-to-markdown/', views.word_to_markdown_view, name='word_to_markdown'),
+    path('word-to-markdown-file/', views.word_to_markdown_include, name='word_to_markdown_include'),
+
+    # 4. Excel to MarkDown
+    path('excel-to-markdown/', views.excel_to_markdown_view, name='excel_to_markdown'),
+    path('excel-to-markdown-file/', views.excel_to_markdown_include, name='excel_to_markdown_include'),
+
+    # 5. Images (EXIF & OCR) to MarkDown
+    path('image-to-markdown/', views.image_to_markdown_view, name='image_to_markdown'),
+    path('image-to-markdown-file/', views.image_to_markdown_include, name='image_to_markdown_include'),
+
+    # 6. Audio (EXIF & Transcription) to MarkDown
+    path('audio-to-markdown/', views.audio_to_markdown_view, name='audio_to_markdown'),
+    path('audio-to-markdown-file/', views.audio_to_markdown_include, name='audio_to_markdown_include'),
+
+    # 7. HTML to MarkDown
+    path('html-to-markdown/', views.html_to_markdown_view, name='html_to_markdown'),
+    path('html-to-markdown-file/', views.html_to_markdown_include, name='html_to_markdown_include'),
+
+    # 8. Text-based formats (CSV, JSON, XML) to MarkDown
+    path('text-to-markdown/', views.text_to_markdown_view, name='text_to_markdown'),
+    path('text-to-markdown-file/', views.text_to_markdown_include, name='text_to_markdown_include'),
+
+    # 9. ZIP files (iterates over contents) to MarkDown
+    path('zip-to-markdown/', views.zip_to_markdown_view, name='zip_to_markdown'),
+    path('zip-to-markdown-file/', views.zip_to_markdown_include, name='zip_to_markdown_include'),
+
+    # 10. YouTube URLs to MarkDown
+    path('youtube-to-markdown/', views.youtube_to_markdown_view, name='youtube_to_markdown'),
+    path('youtube-to-markdown-file/', views.youtube_to_markdown_include, name='youtube_to_markdown_include'),
+
+    # 11. EPubs to MarkDown
+    path('epub-to-markdown/', views.epub_to_markdown_view, name='epub_to_markdown'),
+    path('epub-to-markdown-file/', views.epub_to_markdown_include, name='epub_to_markdown_include'),
+
+    # Scan to PDF Routes
+    path('scan-pdf/', views.scan_to_pdf_view, name='scan_pdf'),
+    path('scan-pdf-file/', views.scan_to_pdf_include, name='scan_pdf_include'),
+    # SEO friendly aliases
+    # path('scan-to-pdf/', views.scan_to_pdf_view, name='scan_to_pdf_alias'),
+    # path('tools/scan-pdf/', views.scan_to_pdf_view, name='scan_to_pdf_full'),
 
 
 ]

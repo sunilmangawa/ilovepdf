@@ -52,6 +52,11 @@
                         <a class="nav-link" href="{% url 'tools:rotate_pdf' %}">{% trans 'Rotate' %} {% trans 'PDF' %}</a>
                     </li>
 
+                    <!-- Scan PDF -->
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'tools:scan_pdf' %}">{% trans 'Scan' %} {% trans 'PDF' %}</a>
+                    </li>
+
                     <!-- To PDF Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="toPdfDropdown" role="button"
@@ -169,21 +174,16 @@
                         </ul>
                     </li>
 
-                    <!-- More Tools Dropdown -->
+                    <!-- Documents Tools Dropdown -->
                     <li class="nav-item dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="moreToolsDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
-                            More Tools
+                            Docs Tools
                         </a>
                         <ul class="dropdown-menu" aria-labelledby="moreToolsDropdown">
-                            <!-- <li><h6 class="dropdown-header">PDF Tools</h6></li>
-                                <li><a class="dropdown-item" href="{% url 'tools:merge_pdf' %}">{% trans 'Merge' %} {% trans 'PDF' %}</a></li>
-                                <li><a class="dropdown-item" href="{% url 'tools:split_pdf' %}">{% trans 'Split' %} {% trans 'PDF' %}</a></li>
-                                <li><a class="dropdown-item" href="{% url 'tools:compress_pdf' %}">{% trans 'Compress' %} {% trans 'PDF' %}</a></li>
-                                <li><a class="dropdown-item" href="{% url 'tools:rotate_pdf' %}">{% trans 'Rotate' %} {% trans 'PDF' %}</a></li>
-                                <li><hr class="dropdown-divider"></li> -->
+                                <!--<li><hr class="dropdown-divider"></li> -->
                             <li>
-                                <h6 class="dropdown-header">Format Converters</h6>
+                                <h6 class="dropdown-header">Docs Converter</h6>
                             </li>
                             <li><a class="dropdown-item" href="{% url 'tools:odt_to_docx' %}">ODT ↔ DOCX</a></li>
                             <li><a class="dropdown-item" href="{% url 'tools:ods_to_xlsx' %}">ODS ↔ XLSX</a></li>
@@ -205,6 +205,63 @@
                             </li>
                         </ul>
                     </li>
+                
+                    <!-- Extra PDF Tools Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="moreToolsDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Extra Tools
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="moreToolsDropdown">
+                                <!--<li><hr class="dropdown-divider"></li> -->
+                            <li>
+                                <h6 class="dropdown-header">Format Converters</h6>
+                            </li>
+                                <li><a class="dropdown-item" href="{% url 'tools:crop_pdf' %}">Crop PDF</a></li>
+                                <li><a class="dropdown-item" href="{% url 'tools:edit_pdf' %}">Edit PDF</a></li>
+                                <li><a class="dropdown-item" href="{% url 'tools:forms_pdf' %}">PDF Forms</a></li>
+                                <li><a class="dropdown-item" href="{% url 'tools:remove_pdf' %}">Remove PDF</a></li>
+                                <li><a class="dropdown-item" href="{% url 'tools:organize_pdf' %}">Organize PDF</a></li>
+                                <li><a class="dropdown-item" href="{% url 'tools:unlock_pdf' %}">Unlock PDF</a></li>
+                                <li><a class="dropdown-item" href="{% url 'tools:protect_pdf' %}">Protect PDF</a></li>
+                        
+                            <!-- </li> -->
+                        </ul>
+                    </li>
+                
+                
+                    <!-- Markdown PDF Tools Dropdown -->
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="moreToolsDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            Markdown
+                        </a>
+                        <ul class="dropdown-menu" aria-labelledby="moreToolsDropdown">
+                                <!--<li><hr class="dropdown-divider"></li> -->
+                            <li>
+                                <h6 class="dropdown-header">Markdown Tools</h6>
+                            </li>
+                            <li><a class="dropdown-item" href="{% url 'tools:pdf_to_markdown' %}">PDF → Markdown</a></li>
+                            <li><a class="dropdown-item" href="{% url 'tools:powerpoint_to_markdown' %}">PowerPoint → Markdown</a></li>
+                            <li><a class="dropdown-item" href="{% url 'tools:word_to_markdown' %}">Word → Markdown</a></li>
+                            <li><a class="dropdown-item" href="{% url 'tools:excel_to_markdown' %}">Excel → Markdown</a></li>
+                            <li><a class="dropdown-item" href="{% url 'tools:image_to_markdown' %}">Image → Markdown</a></li>
+                            <li><a class="dropdown-item" href="{% url 'tools:audio_to_markdown' %}">Audio → Markdown</a></li>
+                            <li><a class="dropdown-item" href="{% url 'tools:html_to_markdown' %}">HTML → Markdown</a></li>
+                            <li><a class="dropdown-item" href="{% url 'tools:text_to_markdown' %}">Text → Markdown</a></li>
+                            <li><a class="dropdown-item" href="{% url 'tools:zip_to_markdown' %}">ZIP → Markdown</a></li>
+                            <li><a class="dropdown-item" href="{% url 'tools:youtube_to_markdown' %}">YouTube Url → Markdown</a></li>
+                            <li><a class="dropdown-item" href="{% url 'tools:epub_to_markdown' %}">EPUB → Markdown</a></li>
+                            
+                        
+                            <!-- </li> -->
+                        </ul>
+                    </li>
+                
+                
+                
+                
+                
                 </ul>
 
                 <!-- Right side: Theme Toggle + Language -->

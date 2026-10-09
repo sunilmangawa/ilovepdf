@@ -1,0 +1,417 @@
+{% extends 'base2.html' %}
+{% load i18n %}
+{% load static %}
+{% load blog_tags %}
+
+{% block title %}Remove PDF Pages Online — iLovePDF Style{% endblock %}
+
+{% block extraheads %}
+    <link rel="canonical" href="https://ilovepdfconverteronline.com/tools/remove-pdf" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+    <script>
+        if (typeof pdfjsLib !== 'undefined') {
+            pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+        }
+    </script>
+    <style>
+        .remove-card-wrapper {
+            background: #fff;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+            padding: 2rem;
+            max-width: 900px;
+            margin: 0 auto;
+        }
+        .upload-drop-zone {
+            border: 2px dashed #cbd5e1;
+            border-radius: 12px;
+            padding: 2.5rem 1.5rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .upload-drop-zone:hover {
+            border-color: #e5322d;
+            background: #fff8f8;
+        }
+        .btn-ilove {
+            background: #e5322d;
+            color: #fff;
+            font-weight: 700;
+            border-radius: 10px;
+            padding: 0.75rem 2rem;
+            border: none;
+            transition: background 0.2s;
+        }
+        .btn-ilove:hover:not(:disabled) {
+            background: #c9231f;
+            color: #fff;
+        }
+        .btn-ilove:disabled {
+            opacity: 0.65;
+            cursor: not-allowed;
+        }
+        .inc-thumbnails-container {
+            max-height: 420px;
+            overflow-y: auto;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 1rem;
+        }
+        .inc-thumbnails-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(95px, 1fr));
+            gap: 0.75rem;
+        }
+        .inc-page-card {
+            background: #fff;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 5px;
+            text-align: center;
+            cursor: pointer;
+            position: relative;
+            user-select: none;
+            transition: all 0.15s ease;
+        }
+        .inc-page-card:hover {
+            border-color: #cbd5e1;
+            transform: translateY(-2px);
+        }
+        .inc-page-card canvas {
+            width: 100% !important;
+            height: auto !important;
+            border-radius: 4px;
+            display: block;
+        }
+        .inc-page-card.marked-for-removal {
+            border-color: #e5322d !important;
+            background: rgba(229, 50, 45, 0.08) !important;
+        }
+        .inc-page-card.marked-for-removal canvas {
+            opacity: 0.45;
+            filter: grayscale(80%);
+        }
+        .inc-page-badge {
+            font-size: 0.72rem;
+            font-weight: 700;
+            margin-top: 4px;
+            color: #475569;
+        }
+        .inc-page-card.marked-for-removal .inc-page-badge {
+            color: #e5322d;
+            text-decoration: line-through;
+        }
+        .inc-remove-icon {
+            display: none;
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background: #e5322d;
+            color: #fff;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 10px;
+            line-height: 18px;
+            text-align: center;
+        }
+        .inc-page-card.marked-for-removal .inc-remove-icon {
+            display: block;
+        }
+    </style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-5 text-center">
+    <h1 class="fw-bold text-uppercase mb-2">Remove PDF Pages</h1>
+    <p class="text-secondary mb-4">Click pages to mark them for removal, or type page numbers. 100% in-memory processing.</p>
+
+    <div class="remove-card-wrapper text-start">
+        <!-- Upload Form -->
+        <div id="includeUploadSection">
+            <div class="upload-drop-zone" onclick="document.getElementById('includeFileInput').click();">
+                <input type="file" id="includeFileInput" accept=".pdf" class="d-none">
+                <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" stroke="#e5322d" stroke-width="2" viewBox="0 0 24 24" class="mb-2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                    <polyline points="17 8 12 3 7 8"></polyline>
+                    <line x1="12" y1="3" x2="12" y2="15"></line>
+                </svg>
+                <h5 class="fw-bold mb-1">Click to select PDF or drag & drop</h5>
+                <span class="text-muted small">Instant in-memory processing &bull; Zero server disk storage</span>
+            </div>
+        </div>
+
+        <!-- Controls Section -->
+        <div id="includeControlsSection" style="display: none;" class="mt-4">
+            <div class="d-flex justify-content-between align-items-center mb-3 p-3 bg-light rounded">
+                <div>
+                    <strong id="incFileName">document.pdf</strong>
+                    <span class="badge bg-secondary ms-2" id="incPageCount">— pages</span>
+                    <span class="badge bg-danger ms-1" id="incRemovedBadge">0 to remove</span>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline-secondary" onclick="resetIncludeTool();">Change</button>
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label fw-bold small">Pages to remove:</label>
+                <input type="text" id="incPagesInput" class="form-control mb-1" placeholder="e.g. 1, 3-5, 8">
+                <small class="text-muted">Click thumbnail cards below or enter page numbers/ranges separated by commas.</small>
+            </div>
+
+            <!-- Thumbnail Grid -->
+            <div class="inc-thumbnails-container mb-3">
+                <div class="inc-thumbnails-grid" id="incThumbnailsGrid">
+                    <!-- Injected thumbnails -->
+                </div>
+            </div>
+
+            <div id="incWarningAlert" class="alert alert-warning py-2 small d-none"></div>
+
+            <button type="button" class="btn btn-ilove w-100" id="incBtnRemove" onclick="incExecuteRemove();" disabled>
+                Remove Pages Now
+            </button>
+        </div>
+
+        <!-- Processing -->
+        <div id="incProcessing" style="display: none;" class="text-center py-4">
+            <div class="spinner-border text-danger mb-2" role="status"></div>
+            <div>Removing selected pages in memory...</div>
+        </div>
+
+        <!-- Result -->
+        <div id="incResult" style="display: none;" class="mt-4 text-center">
+            <div class="alert alert-success">
+                <strong>Success!</strong> Pages removed successfully. Your PDF is ready.
+            </div>
+            <div class="my-3">
+                <button type="button" class="btn btn-ilove px-4 py-2" id="incDownloadBtn">
+                    Download Modified PDF
+                </button>
+            </div>
+            <button type="button" class="btn btn-outline-secondary mt-2" onclick="resetIncludeTool();">
+                Process another file
+            </button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let incFile = null;
+    let incTotalPages = 1;
+    let incRemovedSet = new Set();
+    let incResultData = null;
+
+    document.getElementById('includeFileInput').addEventListener('change', async function() {
+        if (!this.files.length) return;
+        incFile = this.files[0];
+        incRemovedSet.clear();
+        document.getElementById('incFileName').textContent = incFile.name;
+        document.getElementById('incPagesInput').value = '';
+
+        document.getElementById('includeUploadSection').style.display = 'none';
+        document.getElementById('includeControlsSection').style.display = 'block';
+
+        const grid = document.getElementById('incThumbnailsGrid');
+        grid.innerHTML = '<div class="p-3 text-center w-100"><div class="spinner-border spinner-border-sm text-danger me-2"></div>Rendering thumbnails...</div>';
+
+        try {
+            const buf = await incFile.arrayBuffer();
+            const pdf = await pdfjsLib.getDocument({ data: buf }).promise;
+            incTotalPages = pdf.numPages;
+
+            document.getElementById('incPageCount').textContent = `${incTotalPages} pages`;
+            grid.innerHTML = '';
+
+            for (let p = 1; p <= incTotalPages; p++) {
+                const card = document.createElement('div');
+                card.className = 'inc-page-card';
+                card.id = `inc-page-${p}`;
+                card.innerHTML = `
+                    <div class="inc-remove-icon">✕</div>
+                    <canvas id="inc-canvas-${p}"></canvas>
+                    <div class="inc-page-badge" id="inc-badge-${p}">${p}</div>
+                `;
+                card.onclick = () => toggleIncPage(p);
+                grid.appendChild(card);
+
+                pdf.getPage(p).then(page => {
+                    const canvas = document.getElementById(`inc-canvas-${p}`);
+                    if (!canvas) return;
+                    const ctx = canvas.getContext('2d');
+                    const vp = page.getViewport({ scale: 0.28 });
+                    canvas.height = vp.height;
+                    canvas.width = vp.width;
+                    page.render({ canvasContext: ctx, viewport: vp });
+                });
+            }
+            updateIncUI();
+        } catch (e) {
+            console.error(e);
+            incTotalPages = 1;
+            grid.innerHTML = '<div class="p-3 text-muted text-center w-100">Thumbnails unavailable. Enter page numbers manually.</div>';
+            updateIncUI();
+        }
+    });
+
+    function toggleIncPage(p) {
+        if (incRemovedSet.has(p)) {
+            incRemovedSet.delete(p);
+        } else {
+            incRemovedSet.add(p);
+        }
+        syncIncSetToInput();
+        updateIncUI();
+    }
+
+    function syncIncSetToInput() {
+        const sorted = Array.from(incRemovedSet).sort((a,b) => a - b);
+        if (sorted.length === 0) {
+            document.getElementById('incPagesInput').value = '';
+            return;
+        }
+        let ranges = [];
+        let s = sorted[0], e = sorted[0];
+        for (let i = 1; i < sorted.length; i++) {
+            if (sorted[i] === e + 1) {
+                e = sorted[i];
+            } else {
+                ranges.push(s === e ? `${s}` : `${s}-${e}`);
+                s = e = sorted[i];
+            }
+        }
+        ranges.push(s === e ? `${s}` : `${s}-${e}`);
+        document.getElementById('incPagesInput').value = ranges.join(', ');
+    }
+
+    document.getElementById('incPagesInput').addEventListener('input', function() {
+        incRemovedSet.clear();
+        const val = this.value.trim();
+        if (val) {
+            val.split(',').forEach(part => {
+                part = part.trim();
+                if (!part) return;
+                if (part.includes('-')) {
+                    const sub = part.split('-');
+                    if (sub.length === 2 && !isNaN(sub[0]) && !isNaN(sub[1])) {
+                        let s = parseInt(sub[0]), e = parseInt(sub[1]);
+                        if (s > e) [s, e] = [e, s];
+                        s = Math.max(1, Math.min(s, incTotalPages));
+                        e = Math.max(1, Math.min(e, incTotalPages));
+                        for (let p = s; p <= e; p++) incRemovedSet.add(p);
+                    }
+                } else if (!isNaN(part)) {
+                    const p = parseInt(part);
+                    if (p >= 1 && p <= incTotalPages) incRemovedSet.add(p);
+                }
+            });
+        }
+        updateIncUI();
+    });
+
+    function updateIncUI() {
+        const count = incRemovedSet.size;
+        const remain = incTotalPages - count;
+
+        for (let p = 1; p <= incTotalPages; p++) {
+            const card = document.getElementById(`inc-page-${p}`);
+            const badge = document.getElementById(`inc-badge-${p}`);
+            if (card) {
+                const marked = incRemovedSet.has(p);
+                card.classList.toggle('marked-for-removal', marked);
+                if (badge) badge.innerHTML = marked ? `<s>${p}</s> ✕` : `${p}`;
+            }
+        }
+
+        document.getElementById('incRemovedBadge').textContent = `${count} to remove`;
+        const warn = document.getElementById('incWarningAlert');
+        const btn = document.getElementById('incBtnRemove');
+
+        if (count === 0) {
+            warn.classList.remove('d-none');
+            warn.textContent = 'Please select at least 1 page to remove.';
+            btn.disabled = true;
+            btn.textContent = 'Remove Pages Now';
+        } else if (remain === 0) {
+            warn.classList.remove('d-none');
+            warn.textContent = 'Cannot remove all pages. At least 1 page must remain.';
+            btn.disabled = true;
+            btn.textContent = 'Remove Pages Now';
+        } else {
+            warn.classList.add('d-none');
+            btn.disabled = false;
+            btn.textContent = `Remove ${count} Page${count === 1 ? '' : 's'} Now`;
+        }
+    }
+
+    async function incExecuteRemove() {
+        if (!incFile || incRemovedSet.size === 0) return;
+        document.getElementById('includeControlsSection').style.display = 'none';
+        document.getElementById('incProcessing').style.display = 'block';
+
+        const fd = new FormData();
+        fd.append('file', incFile);
+        fd.append('is_ajax', '1');
+        fd.append('pages_to_remove', document.getElementById('incPagesInput').value);
+
+        const csrfToken = document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
+        if (csrfToken) fd.append('csrfmiddlewaretoken', csrfToken);
+
+        try {
+            const res = await fetch(window.location.href, {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest' },
+                body: fd
+            });
+            const data = await res.json();
+            if (!res.ok || data.status === 'error') throw new Error(data.message || 'Operation failed');
+
+            incResultData = data.file;
+            document.getElementById('incProcessing').style.display = 'none';
+            document.getElementById('incResult').style.display = 'block';
+
+            document.getElementById('incDownloadBtn').onclick = () => {
+                downloadBase64(data.file.data, data.file.name);
+            };
+
+            setTimeout(() => downloadBase64(data.file.data, data.file.name), 300);
+
+        } catch (e) {
+            alert(e.message);
+            document.getElementById('incProcessing').style.display = 'none';
+            document.getElementById('includeControlsSection').style.display = 'block';
+        }
+    }
+
+    function downloadBase64(b64, name) {
+        const bin = atob(b64);
+        const arr = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        const blob = new Blob([arr], { type: 'application/pdf' });
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = name;
+        document.body.appendChild(a);
+        a.click();
+        setTimeout(() => {
+            document.body.removeChild(a);
+            URL.revokeObjectURL(a.href);
+        }, 150);
+    }
+
+    function resetIncludeTool() {
+        incFile = null;
+        incTotalPages = 1;
+        incRemovedSet.clear();
+        document.getElementById('includeFileInput').value = '';
+        document.getElementById('incPagesInput').value = '';
+        document.getElementById('incThumbnailsGrid').innerHTML = '';
+        document.getElementById('includeControlsSection').style.display = 'none';
+        document.getElementById('incResult').style.display = 'none';
+        document.getElementById('incProcessing').style.display = 'none';
+        document.getElementById('includeUploadSection').style.display = 'block';
+    }
+</script>
+{% endblock %}
