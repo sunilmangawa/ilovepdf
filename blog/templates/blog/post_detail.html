@@ -1,11 +1,7 @@
 {% extends "base.html" %}
 {% load blog_tags %}
 
-{% block meta %} 
-    <meta name="author" content="{{ meta.author }}">  
-    <link rel="canonical" href="{{meta.url}}">
-        
-{% endblock%}
+{% block meta %}<meta name="author" content="{{ meta.author }}">{% endblock %}
 
 {% comment %} {% block extrahead %}
 {% endblock extrahead %} {% endcomment %}
@@ -16,7 +12,7 @@
 
         <div class="card">
             <div class="card-header">
-                <h2 class="card-title">{{ post.title }}</h2>
+                <h1 class="card-title">{{ post.title }}</h1>
                 <p class="card-subtitle text-muted">Published {{ post.publish }} by {{ post.author }}</p>
             </div>
             {% if post.image %} 

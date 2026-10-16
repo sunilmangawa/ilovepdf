@@ -26,10 +26,10 @@ def offline(request):
 def about(request):
     meta = Meta(
         title='iLovePdfConverterOnline - About Us',
-        description='Aboust us page for iLovePdfConverterOnline.com. We provide convert tools for PDF to convert into Word, Image, PowerPoint, Excel file types and also reverser conversion tools are also available to convert Word, Image, PowerPoint, Excel, HTML to PDF file type. ilovepdfconveronline.com also provide some extrad daily office PDF documentation tools Merge PDF, Split PDF, Compress PDF, Rotate PDF, and etc. to provide you husstle free documentation work and make your day. ',
+        description='Learn about iLovePdfConverterOnline, a free online service for converting, editing, merging, splitting and compressing PDF files.',
         author='iLovePdfConverterOnline',
         og_title='iLovePdfConverterOnline - About Us',
-        og_description='Aboust us page for iLovePdfConverterOnline.com. We provide convert tools for PDF.', 
+        og_description='Learn about iLovePdfConverterOnline and our free online PDF tools.',
         # ... other meta tags as needed
     ) 
 

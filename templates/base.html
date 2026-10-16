@@ -9,12 +9,39 @@
 
 {% get_current_language as LANGUAGE_CODE %}
 {% get_current_language_bidi as LANGUAGE_BIDI %}
-<html lang="{{ LANGUAGE_CODE }}" prefix="og: https://ilovepdfconverteronline.com/" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
+<html lang="{{ LANGUAGE_CODE }}" prefix="og: https://ogp.me/ns#" dir="{% if LANGUAGE_BIDI %}rtl{% else %}ltr{% endif %}">
   {% progressive_web_app_meta %}
 
   <head>  
     {{ meta_namespaces }}
     {% include 'meta/meta.html' %}
+    <title>{% block title %}{{ seo_site_name }}{% endblock %}</title>
+    <meta name="description" content="{% if meta.description %}{{ meta.description|striptags|truncatechars:160 }}{% else %}{{ seo_default_description }}{% endif %}">
+    <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+    <link rel="canonical" href="{{ seo_canonical }}">
+    <meta property="og:type" content="{% if post %}article{% else %}website{% endif %}">
+    <meta property="og:site_name" content="{{ seo_site_name }}">
+    <meta property="og:url" content="{{ seo_canonical }}">
+    <meta property="og:title" content="{% if meta.title %}{{ meta.title }}{% else %}{{ seo_site_name }}{% endif %}">
+    <meta property="og:description" content="{% if meta.description %}{{ meta.description|striptags|truncatechars:160 }}{% else %}{{ seo_default_description }}{% endif %}">
+    <meta property="og:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/iloveicon512x512.png' %}">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% if meta.title %}{{ meta.title }}{% else %}{{ seo_site_name }}{% endif %}">
+    <meta name="twitter:description" content="{% if meta.description %}{{ meta.description|striptags|truncatechars:160 }}{% else %}{{ seo_default_description }}{% endif %}">
+    <meta name="twitter:image" content="{{ request.scheme }}://{{ request.get_host }}{% static 'img/iloveicon512x512.png' %}">
+    <link rel="alternate" hreflang="{{ LANGUAGE_CODE }}" href="{{ seo_canonical }}">
+    <link rel="alternate" hreflang="x-default" href="{{ seo_canonical }}">
+    <meta name="referrer" content="strict-origin-when-cross-origin">
+
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "iLovePdfConverterOnline",
+      "url": "{{ seo_canonical }}",
+      "description": "{{ seo_default_description }}"
+    }
+    </script>
 
     <!-- Google tag (gtag.js) -->
     <!-- <script async src="https://www.googletagmanager.com/gtag/js?id=G-ZKFD04WBN4"></script>

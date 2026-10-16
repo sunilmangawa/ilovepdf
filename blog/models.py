@@ -116,7 +116,7 @@ class Post(ModelMeta,TranslatableModel):
         'og:title': 'get_meta_title',
         'og:description': 'get_meta_description',
         'og:image': 'get_meta_image',  
-        'og:type': 'website',  # Adjust the type if needed
+        'og:type': 'article',
         'og:url': 'get_absolute_url',  # Function for the canonical URL
         'og:site_name': 'ilovepdfconverteronline',  # Set your site name
         # 'twitter:card': 'summary_large_image',  # Adjust if needed 
@@ -152,8 +152,7 @@ class Post(ModelMeta,TranslatableModel):
         lang_code = self.get_current_language()
         try:
             keywords = self.safe_translation_getter('keywords', language_code=lang_code)
-            clean_keywords = set(keywords.split(','))  # Remove duplicates, join into string
-            return clean_keywords
+            return ', '.join(dict.fromkeys(word.strip() for word in keywords.split(',') if word.strip()))
         except AttributeError:
             return None 
 
@@ -163,12 +162,12 @@ class Post(ModelMeta,TranslatableModel):
 
     def get_meta_author(self):
         if self.author:
-            return self.author  # Or other suitable author representation
+            return self.author.get_full_name() or self.author.get_username()
         return None
 
     _schema = {
         '@context': 'https://schema.org',
-        '@type': 'website',
+        '@type': 'BlogPosting',
         'name': 'get_meta_title',
         'keywords': 'get_meta_keywords',
         'description': 'get_meta_description',
@@ -195,4 +194,3 @@ class Comment(models.Model):
 
     def __str__(self):
         return f'Comment by {self.name} on {self.post}'
-

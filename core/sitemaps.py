@@ -12,5 +12,4 @@ class CoreSitemap(Sitemap):
         return ['core:home', 'core:about_us', 'core:contact_us', 'core:terms_and_condition', 'core:privacy_policy']
 
     def location(self, items):
-        # Generate the absolute URL for a given URL name
         return reverse(items)

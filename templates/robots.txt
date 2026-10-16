@@ -1,6 +1,9 @@
 User-Agent: *
 Disallow: /admin/
+Disallow: /rosetta/
+Disallow: /ckeditor/
+Disallow: /*-file/
+Disallow: /*_include/
+Disallow: /*?*
 
-Allow: /blog/
-Allow: /core/
-Allow: /tools/
+Sitemap: https://ilovepdfconverteronline.com/sitemap.xml

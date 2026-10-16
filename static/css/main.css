@@ -419,8 +419,8 @@ h2 {
 }
 
 body {
-  background-color: #fdfdfd;
-  color: #333;
+  background-color: var(--bg-primary, #f7f9fc);
+  color: var(--text-primary, #172033);
 }
 
 /* Hero Section Refinement */
@@ -456,23 +456,23 @@ div[style*="padding-bottom:10px; text-align:center"]::before {
 #toolshome .card-title {
   font-size: 1.1rem;
   font-weight: 700;
-  color: #1a1a1a;
+  color: var(--text-primary, #172033);
   margin-bottom: 12px;
 }
 
 #toolshome .card-text {
   font-size: 0.85rem;
-  color: #666;
+  color: var(--text-secondary, #475569);
   line-height: 1.5;
 }
 
 /* Icon Container */
 .tools__item__icon {
-  background-color: #f8f9fa;
+  background-color: var(--surface-muted, #f1f5f9);
   display: flex;
   justify-content: center;
   align-items: center;
-  border-bottom: 1px solid #eee;
+  border-bottom: 1px solid var(--border-color, #dbe3ee);
 }
 
 /* Modernized Button */
@@ -493,7 +493,7 @@ div[style*="padding-bottom:10px; text-align:center"]::before {
 
 /*17-03-2026*/
 .bg-body-secondary {
-  background-color: #f8f9fa !important;
+  background-color: var(--bg-secondary, #ffffff) !important;
 }
 
 .poppins-regular {
@@ -582,7 +582,7 @@ div[style*="padding-bottom:10px; text-align:center"]::before {
 }
 
 .list-group-item:hover {
-  background-color: #e9ecef;
+  background-color: var(--surface-muted, #f1f5f9);
   transform: translateX(3px);
 }
 

@@ -74,6 +74,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'core.context_processors.seo',
             ],
         },
     },
@@ -364,8 +365,10 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 
-META_SITE_PROTOCOL = os.getenv('META_SITE_PROTOCOL', 'http')
-META_SITE_DOMAIN = os.getenv('META_SITE_DOMAIN', '127.0.0.1:8000')
+SEO_SITE_PROTOCOL = os.getenv('SEO_SITE_PROTOCOL', 'https')
+SEO_SITE_DOMAIN = os.getenv('SEO_SITE_DOMAIN', 'ilovepdfconverteronline.com')
+META_SITE_PROTOCOL = SEO_SITE_PROTOCOL
+META_SITE_DOMAIN = SEO_SITE_DOMAIN
 META_SITE_NAME = 'iLovePdfConverterOnline | Online Convert and Edit Tools for PDF Docs Excel Image PowerPoint HTML etc. files in clicks'
 META_INCLUDE_KEYWORDS = ['pdf', 'i love pdf', 'ilovepdf',  'converter', 'convert', 'online']
 META_SITE_TYPE = 'website'
@@ -379,7 +382,7 @@ META_USE_TITLE_TAG = True
 # META_OG_NAMESPACES = 
 # META_OG_SECURE_URL_ITEMS =        
 META_NAMESPACES = {
-    'og': 'https://ilovepdfconverteronline/',  # Your preferred Open Graph prefix
+    'og': 'https://ogp.me/ns#',
     # ... other namespaces if needed ...
 }
 

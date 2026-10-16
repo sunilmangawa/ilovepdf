@@ -23,12 +23,11 @@ sitemaps = {
 
 urlpatterns = [
     path('offline/', offline, name='offline'),
+    path('robots.txt', TemplateView.as_view(template_name='robots.txt', content_type='text/plain'), name='robots'),
 ]
 
 urlpatterns += i18n_patterns(
     path('set-language/', set_language, name='set_language'),
-    path('robots.txt/', TemplateView.as_view(template_name='robots.txt', content_type='text/plain')),
-
     path('admin/', admin.site.urls),
 
     path('rosetta/', include('rosetta.urls')),
