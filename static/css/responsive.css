@@ -1,6 +1,7 @@
 /* Cross-device layout safeguards shared by both page shells. */
 :root {
   --navbar-height: 4.75rem;
+  --navbar-offset: calc(var(--navbar-height) + env(safe-area-inset-top));
   --mobile-gutter: clamp(1rem, 4vw, 2rem);
 }
 
@@ -21,7 +22,7 @@ body {
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  overflow-x: hidden;
+  overflow: hidden;
   text-rendering: optimizeLegibility;
 }
 
@@ -154,7 +155,7 @@ input[type="file"] {
   margin-top: 0;
 }
 
-/* Fixed navigation must leave room for iOS status-bar safe areas. */
+/* The navbar is fixed, so keep its height outside the page's scroll area. */
 .navbar {
   top: 0;
   min-height: var(--navbar-height);
@@ -242,7 +243,20 @@ input[type="file"] {
 }
 
 .main-content {
-  padding-top: calc(var(--navbar-height) + env(safe-area-inset-top));
+  position: fixed;
+  top: var(--navbar-offset);
+  right: 0;
+  bottom: 0;
+  left: 0;
+  height: auto;
+  min-height: 0;
+  margin: 0;
+  flex: none;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scroll-padding-top: 0;
+  padding-top: 0;
 }
 
 footer {
@@ -439,7 +453,7 @@ footer {
   }
 
   .main-content {
-    padding-top: calc(var(--navbar-height) + env(safe-area-inset-top));
+    padding-top: 0;
   }
 
   .hero-section {

@@ -583,7 +583,6 @@ input[type="file"].form-control::file-selector-button:hover {
 }
 
 @media (max-width: 768px) {
-  .main-content { padding-top: 4.25rem; }
   .hero-section { min-height: auto; padding: 4.5rem 1rem; }
   .hero-section h1 { font-size: clamp(2rem, 8vw, 2.5rem); }
   .hero-section p { font-size: 1rem; }
@@ -764,7 +763,6 @@ footer::before {
 /* Main content — fills remaining space, pushes footer down */
 .main-content {
   flex: 1 0 auto;
-  padding-top: 4.75rem;
 }
 
 .network-status { position: fixed; left: 50%; bottom: max(1rem, env(safe-area-inset-bottom)); transform: translateX(-50%); z-index: 1100; width: min(92vw, 34rem); padding: .75rem 1rem; border-radius: .75rem; background: var(--text-primary); color: var(--bg-primary); text-align: center; box-shadow: 0 8px 24px var(--shadow-hover); }
