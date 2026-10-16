@@ -340,7 +340,7 @@ CELERY_BEAT_SCHEDULE = {
 }
 
 
-META_SITE_PROTOCOL = 'http'
+META_SITE_PROTOCOL = 'https'
 META_SITE_DOMAIN = 'ilovepdfconverteronline.com'
 META_SITE_NAME = 'iLovePdfConverterOnline | Online Convert and Edit Tools for PDF Docs Excel Image PowerPoint HTML etc. files in clicks'
 META_INCLUDE_KEYWORDS = ['pdf', 'i love pdf', 'ilovepdf', 'converter', 'convert', 'online']
@@ -368,7 +368,7 @@ DJANGO_CHECK_SEO_SETTINGS = {
 
 
 PWA_SERVICE_WORKER_PATH = os.path.join(BASE_DIR, "static/js", "serviceworker.js")
-PWA_APP_DEBUG_MODE = True
+PWA_APP_DEBUG_MODE = False
 PWA_APP_NAME = 'ilovepdfconverteronline'
 PWA_APP_DESCRIPTION = "ILovePDFconverteronline PWA"
 PWA_APP_THEME_COLOR = '#000000'
@@ -634,9 +634,9 @@ PWA_APP_DIR = 'ltr'
 PWA_APP_LANG = 'en'
 PWA_APP_SHORTCUTS = [
     {
-        'name': 'Shortcut',
-        'url': '/target',
-        'description': 'Shortcut to a page in my application'
+        'name': 'Merge PDF',
+        'url': '/tools/merge-pdf/',
+        'description': 'Combine PDF files'
     }
 ]
 PWA_APP_SCREENSHOTS = [

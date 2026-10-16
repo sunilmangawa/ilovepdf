@@ -3,8 +3,8 @@
 {% load static %}
 
 <header class="header">
-    <div class="container">
-        <nav class="navbar navbar-expand-lg bg-light fixed-top">
+    <div class="container-fluid px-3">
+        <nav class="navbar navbar-expand-xxl bg-light fixed-top">
             <a class="navbar-brand" href="/" title="iLovePdfConverterOnline">
                 <svg width="180" height="45" xmlns="http://www.w3.org/2000/svg" xmlns:svg="http://www.w3.org/2000/svg">
                     <!-- Created with SVG-edit - https://github.com/SVG-Edit/svgedit-->
@@ -176,11 +176,11 @@
 
                     <!-- Documents Tools Dropdown -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="moreToolsDropdown" role="button"
+                        <a class="nav-link dropdown-toggle" href="#" id="docsToolsDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
                             Docs Tools
                         </a>
-                        <ul class="dropdown-menu" aria-labelledby="moreToolsDropdown">
+                         <ul class="dropdown-menu" aria-labelledby="docsToolsDropdown">
                                 <!--<li><hr class="dropdown-divider"></li> -->
                             <li>
                                 <h6 class="dropdown-header">Docs Converter</h6>
@@ -208,11 +208,11 @@
                 
                     <!-- Extra PDF Tools Dropdown -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="moreToolsDropdown" role="button"
+                         <a class="nav-link dropdown-toggle" href="#" id="extraToolsDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
                             Extra Tools
                         </a>
-                        <ul class="dropdown-menu" aria-labelledby="moreToolsDropdown">
+                         <ul class="dropdown-menu" aria-labelledby="extraToolsDropdown">
                                 <!--<li><hr class="dropdown-divider"></li> -->
                             <li>
                                 <h6 class="dropdown-header">Format Converters</h6>
@@ -232,11 +232,11 @@
                 
                     <!-- Markdown PDF Tools Dropdown -->
                     <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="moreToolsDropdown" role="button"
+                         <a class="nav-link dropdown-toggle" href="#" id="markdownToolsDropdown" role="button"
                             data-bs-toggle="dropdown" aria-expanded="false">
                             Markdown
                         </a>
-                        <ul class="dropdown-menu" aria-labelledby="moreToolsDropdown">
+                         <ul class="dropdown-menu" aria-labelledby="markdownToolsDropdown">
                                 <!--<li><hr class="dropdown-divider"></li> -->
                             <li>
                                 <h6 class="dropdown-header">Markdown Tools</h6>
@@ -268,7 +268,7 @@
                 <div class="navbar-nav align-items-center">
                     <!-- Theme Toggle (small, inline) -->
                     <li class="nav-item me-2" id="navThemeToggle">
-                        <button class="theme-toggle-btn-sm" id="themeToggle" title="Toggle dark/light theme">
+                         <button type="button" class="theme-toggle-btn-sm" id="themeToggle" title="Toggle dark/light theme" aria-label="Toggle dark/light theme" aria-pressed="false">
                             <svg class="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none"
                                 stroke="currentColor" stroke-width="2">
                                 <circle cx="12" cy="12" r="5"></circle>
@@ -318,7 +318,6 @@
                     </div>
                 </div>
             </div>
-    </div>
-    </nav>
+        </nav>
     </div>
 </header>

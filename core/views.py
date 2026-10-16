@@ -19,6 +19,9 @@ def home(request):
     context = {'meta': meta}
     return render(request, 'core/home.html', context)
 
+def offline(request):
+    return render(request, 'offline.html')
+
 
 def about(request):
     meta = Meta(
@@ -71,4 +74,3 @@ def privacypolicy(request):
 
     context = {'meta': meta}
     return render(request, 'core/privacy_policy.html', context)
-

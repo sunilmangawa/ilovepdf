@@ -11,6 +11,7 @@ from blog.sitemaps import PostSitemap
 from core.sitemaps import CoreSitemap
 from tools.sitemaps import ToolsSitemap
 from django.views.generic.base import TemplateView
+from core.views import offline
 
 
 
@@ -21,6 +22,7 @@ sitemaps = {
 }
 
 urlpatterns = [
+    path('offline/', offline, name='offline'),
 ]
 
 urlpatterns += i18n_patterns(

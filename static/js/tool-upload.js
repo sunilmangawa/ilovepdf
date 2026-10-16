@@ -134,6 +134,25 @@ class ToolUpload {
     }
 
     /**
+     * Move a file without relying on HTML5 drag-and-drop. This keeps the
+     * reorder action usable on iOS Safari and Android touch browsers.
+     * @param {number} index - Current file index.
+     * @param {number} direction - -1 for up, 1 for down.
+     */
+    moveFile(index, direction) {
+        const targetIndex = index + direction;
+        if (targetIndex < 0 || targetIndex >= this.files.length) return;
+
+        [this.files[index], this.files[targetIndex]] = [
+            this.files[targetIndex],
+            this.files[index],
+        ];
+        this._syncFileInput();
+        this._render();
+        this._notifyChange();
+    }
+
+    /**
      * Sync internal file list back to the native file input using
      * DataTransfer (allows form submission with correct files).
      */
@@ -302,6 +321,39 @@ class ToolUpload {
                 `${this._truncateName(file.name, 18)}</span>` +
                 `<span class="file-thumb-size">` +
                 `${this._formatSize(file.size)}</span>`;
+
+            // Explicit controls provide a touch-friendly alternative to
+            // desktop-only drag-and-drop reordering.
+            const actions = document.createElement('div');
+            actions.className = 'file-thumb-actions';
+
+            const moveUpButton = document.createElement('button');
+            moveUpButton.type = 'button';
+            moveUpButton.className = 'file-order-btn';
+            moveUpButton.textContent = '↑';
+            moveUpButton.title = 'Move file up';
+            moveUpButton.setAttribute('aria-label', `Move ${file.name} up`);
+            moveUpButton.disabled = index === 0;
+            moveUpButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.moveFile(index, -1);
+            });
+
+            const moveDownButton = document.createElement('button');
+            moveDownButton.type = 'button';
+            moveDownButton.className = 'file-order-btn';
+            moveDownButton.textContent = '↓';
+            moveDownButton.title = 'Move file down';
+            moveDownButton.setAttribute('aria-label', `Move ${file.name} down`);
+            moveDownButton.disabled = index === this.files.length - 1;
+            moveDownButton.addEventListener('click', (e) => {
+                e.stopPropagation();
+                this.moveFile(index, 1);
+            });
+
+            actions.appendChild(moveUpButton);
+            actions.appendChild(moveDownButton);
+            info.appendChild(actions);
             card.appendChild(info);
 
             this.previewContainer.appendChild(card);

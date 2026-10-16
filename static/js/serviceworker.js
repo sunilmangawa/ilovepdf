@@ -1,39 +1,17 @@
-var staticCacheName = "django-pwa-v" + new Date().getTime();
-var filesToCache = [
-    // '/offline',
-    // '/css/django-pwa-app.css',
-    // '/img/favicon.png'
-
-    // '/images/icons/icon-72x72.png',
-    // '/images/icons/icon-96x96.png',
-    // '/images/icons/icon-128x128.png',
-    // '/images/icons/icon-144x144.png',
-    // '/images/icons/icon-152x152.png',
-    // '/images/icons/icon-192x192.png',
-    // '/images/icons/icon-384x384.png',
-    // '/images/icons/icon-512x512.png',
-    // '/static/images/icons/splash-640x1136.png',
-    // '/static/images/icons/splash-750x1334.png',
-    // '/static/images/icons/splash-1242x2208.png',
-    // '/static/images/icons/splash-1125x2436.png',
-    // '/static/images/icons/splash-828x1792.png',
-    // '/static/images/icons/splash-1242x2688.png',
-    // '/static/images/icons/splash-1536x2048.png',
-    // '/static/images/icons/splash-1668x2224.png',
-    // '/static/images/icons/splash-1668x2388.png',
-    // '/static/images/icons/splash-2048x2732.png'
+var CACHE_NAME = 'ilovepdf-shell-v2';
+var APP_SHELL = [
+    '/', '/offline/', '/static/css/modern.css', '/static/js/theme-switcher.js',
+    '/static/js/pwa.js', '/static/img/favicon.ico',
+    '/static/img/maskable/maskable_icon_x192.png', '/static/img/maskable/maskable_icon_x512.png'
 ];
 
 // Cache on install
 
 
 self.addEventListener("install", event => {
-    this.skipWaiting();
+    self.skipWaiting();
     event.waitUntil(
-        caches.open(staticCacheName)
-            .then(cache => {
-                return cache.addAll(filesToCache);
-            })
+        caches.open(CACHE_NAME).then(cache => cache.addAll(APP_SHELL))
     )
 });
 
@@ -43,8 +21,7 @@ self.addEventListener('activate', event => {
         caches.keys().then(cacheNames => {
             return Promise.all(
                 cacheNames
-                    .filter(cacheName => (cacheName.startsWith("django-pwa-")))
-                    .filter(cacheName => (cacheName !== staticCacheName))
+                    .filter(cacheName => cacheName !== CACHE_NAME)
                     .map(cacheName => caches.delete(cacheName))
             );
         })
@@ -53,13 +30,26 @@ self.addEventListener('activate', event => {
 
 // Serve from Cache
 self.addEventListener("fetch", event => {
-    event.respondWith(
-        caches.match(event.request)
-            .then(response => {
-                return response || fetch(event.request);
-            })
-            .catch(() => {
-                return caches.match('offline');
-            })
-    )
+    if (event.request.method !== 'GET') return;
+    var requestUrl = new URL(event.request.url);
+    if (requestUrl.origin !== self.location.origin) return;
+    if (event.request.mode === 'navigate') {
+        event.respondWith(fetch(event.request).then(function (response) {
+            var copy = response.clone();
+            caches.open(CACHE_NAME).then(function (cache) { cache.put(event.request, copy); });
+            return response;
+        }).catch(function () { return caches.match(event.request).then(function (cached) {
+            return cached || caches.match('/offline/');
+        }); }));
+        return;
+    }
+    event.respondWith(caches.match(event.request).then(function (cached) {
+        return cached || fetch(event.request).then(function (response) {
+            if (response.ok) {
+                var copy = response.clone();
+                caches.open(CACHE_NAME).then(function (cache) { cache.put(event.request, copy); });
+            }
+            return response;
+        });
+    }));
 });

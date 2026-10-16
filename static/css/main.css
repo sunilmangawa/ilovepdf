@@ -228,13 +228,14 @@ html {
 }
 .body {
     font-family: 'Poppins', sans-serif;
-    background: #121212;
-    color: white;
+    background: var(--bg-primary, #f8fafc);
+    color: var(--text-primary, #0f172a);
+    transition: background-color 0.3s ease, color 0.3s ease;
 }
 .glass {
-    background: rgba(30,30,30,0.7);
+    background: var(--bg-glass, rgba(255, 255, 255, 0.78));
     backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.05);
+    border: 1px solid var(--border-color, #e2e8f0);
 }
 .gradient {
     background: linear-gradient(135deg,#f97316,#ec4899);
@@ -245,7 +246,7 @@ html {
     -webkit-text-fill-color: transparent;
 }
 .upload-box {
-    border: 2px dashed rgba(255,255,255,0.2);
+    border: 2px dashed var(--border-color, #e2e8f0);
 }
 .upload-box:hover {
     border-color: #f97316;
@@ -355,11 +356,6 @@ html {
   scroll-behavior: smooth;
 }
 
-.form-control {
-  max-width: 80%;
-  margin: 0 auto;
-}
-
 h1,
 h2 {
   font-family: 'Poppins', sans-serif;
@@ -368,13 +364,8 @@ h2 {
 .container-fluid {
   background-color: #f8f9fa;
   padding-top: 10px;
-  padding-bottom: 2-0juhjuu0px;
+  padding-bottom: 20px;
 }
-
-button {
-  margin-top: 20px;
-}
-
 
 .bg-red {
   background-color: #f8f9fa;

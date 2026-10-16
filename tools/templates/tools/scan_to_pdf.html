@@ -4,7 +4,6 @@
 {% load blog_tags %}
 {% block title %}Scan to PDF — Scan Documents from Mobile Camera or Webcam{% endblock %}
 {% block extraheads %}
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <style>
     :root {
         --ilove-primary: #e5322d;
@@ -112,10 +111,10 @@
     #cameraModal {
         display: none;
         position: fixed;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
+        inset: 0;
+        width: 100%;
+        min-height: 100svh;
+        height: 100dvh;
         background: #000000;
         z-index: 99999;
         flex-direction: column;

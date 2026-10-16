@@ -33,6 +33,11 @@
   function applyTheme(theme) {
     document.documentElement.setAttribute('data-theme', theme);
     updateThemeIcon(theme);
+    const toggleBtn = document.getElementById('themeToggle');
+    if (toggleBtn) {
+      toggleBtn.setAttribute('aria-pressed', theme === DARK_THEME ? 'true' : 'false');
+      toggleBtn.setAttribute('aria-label', theme === DARK_THEME ? 'Switch to light theme' : 'Switch to dark theme');
+    }
   }
 
   /**
