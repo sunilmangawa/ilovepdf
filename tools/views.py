@@ -5467,7 +5467,7 @@ def epub_to_markdown_include(request):
 
 
 # ==============================================================================
-# ------------------- Scan to PDF Tool ----------------------------------------------
+# ------------------- Scan to PDF Tool without Crop Function ----------------------------------------------
 # ==============================================================================
 """
 Django Views & Decorator for Scan to PDF Tool
@@ -5476,38 +5476,226 @@ Django Views & Decorator for Scan to PDF Tool
 - Returns files as base64 JSON payload for instant, multi-file client-side download without zipping.
 - Zero disk usage: no files written to MEDIA_ROOT, uploads/, or server temp directories.
 """
+# import io
+# import json
+# import base64
+# from functools import wraps
+# from django.http import HttpResponse, JsonResponse
+# from django.shortcuts import render
+# from django.views.decorators.csrf import csrf_protect
+# # Import the in-memory scan engine
+# try:
+#     from .extra.scan_to_pdf import scan_to_pdf_in_memory
+# except ImportError:
+#     try:
+#         from tools.extra.scan_to_pdf import scan_to_pdf_in_memory
+#     except ImportError:
+#         # Fallback if extra package is in a different relative path
+#         from extra.scan_to_pdf import scan_to_pdf_in_memory
+# def scan_to_pdf_logic(view_func):
+#     """
+#     Decorator that intercepts POST submissions for scanning images to PDF.
+#     Works seamlessly with AJAX (multi-file client-side download without zipping),
+#     PWA camera capture payloads, and standard form POST.
+#     """
+#     @wraps(view_func)
+#     def wrapper_function(request, *args, **kwargs):
+#         if request.method == "POST":
+#             # 1. Collect images from multipart uploads or base64 payloads
+#             images_list = []
+#             # Check for standard multipart file uploads (e.g. 'images' or 'files')
+#             uploaded_files = request.FILES.getlist('images') or request.FILES.getlist('files') or request.FILES.getlist('file')
+#             if uploaded_files:
+#                 images_list.extend(uploaded_files)
+#             # Check for base64 JSON array from PWA mobile camera capture
+#             images_json = request.POST.get('images_json', '').strip()
+#             if images_json:
+#                 try:
+#                     b64_items = json.loads(images_json)
+#                     if isinstance(b64_items, list):
+#                         images_list.extend(b64_items)
+#                 except Exception:
+#                     pass
+#             # Check for repeated POST fields (e.g. images_base64[] or images_base64)
+#             b64_list = request.POST.getlist('images_base64[]') or request.POST.getlist('images_base64')
+#             if b64_list:
+#                 images_list.extend(b64_list)
+#             # Validate that at least one image was received
+#             if not images_list:
+#                 if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
+#                     return JsonResponse({'status': 'error', 'message': 'Please scan or upload at least one image.'}, status=400)
+#                 return view_func(request, *args, **kwargs)
+#             # 2. Extract configuration parameters
+#             output_filename = request.POST.get('output_filename', 'Scan.pdf').strip() or 'Scan.pdf'
+#             page_size = request.POST.get('page_size', 'a4').strip().lower()
+#             orientation = request.POST.get('orientation', 'portrait').strip().lower()
+#             margin = request.POST.get('margin', 'none').strip().lower()
+#             filter_type = request.POST.get('filter_type', 'original').strip().lower()
+#             quality = request.POST.get('quality', 'recommended').strip().lower()
+#             merge_pdf = request.POST.get('merge_pdf', '1') in ['true', '1', 'on', True]
+#             # Extract per-page rotations if supplied
+#             rotations = []
+#             rotations_json = request.POST.get('rotations', '').strip()
+#             if rotations_json:
+#                 try:
+#                     rotations = json.loads(rotations_json)
+#                 except Exception:
+#                     rotations = [int(r.strip()) for r in rotations_json.split(',') if r.strip().isdigit()]
+#             elif request.POST.getlist('rotations[]'):
+#                 rotations = [int(r) for r in request.POST.getlist('rotations[]') if str(r).isdigit()]
+#             # Extract per-page filters if supplied
+#             filters = []
+#             filters_json = request.POST.get('filters', '').strip()
+#             if filters_json:
+#                 try:
+#                     filters = json.loads(filters_json)
+#                 except Exception:
+#                     filters = [f.strip() for f in filters_json.split(',') if f.strip()]
+#             elif request.POST.getlist('filters[]'):
+#                 filters = [f.strip() for f in request.POST.getlist('filters[]')]
+#             try:
+#                 # 3. Perform 100% in-memory processing (zero disk storage)
+#                 output_files = scan_to_pdf_in_memory(
+#                     images=images_list,
+#                     output_filename=output_filename,
+#                     page_size=page_size,
+#                     orientation=orientation,
+#                     margin=margin,
+#                     filter_type=filter_type,
+#                     quality=quality,
+#                     rotations=rotations,
+#                     filters=filters,
+#                     merge_pdf=merge_pdf
+#                 )
+#                 # Check if client requested JSON/AJAX
+#                 is_ajax = (
+#                     request.headers.get('x-requested-with') == 'XMLHttpRequest'
+#                     or 'application/json' in request.headers.get('Accept', '')
+#                     or request.POST.get('is_ajax') == '1'
+#                 )
+#                 if is_ajax:
+#                     # Return base64-encoded PDF files for direct client-side download without zipping
+#                     encoded_files = [
+#                         {
+#                             'name': f['name'],
+#                             'data': base64.b64encode(f['bytes']).decode('utf-8'),
+#                             'size': f['size'],
+#                             'page_count': f['page_count']
+#                         }
+#                         for f in output_files
+#                     ]
+#                     return JsonResponse({
+#                         'status': 'success',
+#                         'message': f'Successfully generated {len(output_files)} PDF file(s).',
+#                         'file_count': len(output_files),
+#                         'files': encoded_files
+#                     })
+#                 # Fallback for standard synchronous HTML form POST
+#                 if len(output_files) == 1:
+#                     single_file = output_files[0]
+#                     response = HttpResponse(single_file['bytes'], content_type='application/pdf')
+#                     response['Content-Disposition'] = f'attachment; filename="{single_file["name"]}"'
+#                     return response
+#                 else:
+#                     context = {
+#                         'output_files_data': [
+#                             {
+#                                 'name': f['name'],
+#                                 'data': base64.b64encode(f['bytes']).decode('utf-8'),
+#                                 'size': f['size'],
+#                                 'page_count': f['page_count']
+#                             }
+#                             for f in output_files
+#                         ]
+#                     }
+#                     return render(request, 'tools/scan_to_pdf.html', context)
+#             except Exception as e:
+#                 if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
+#                     return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
+#                 return render(request, 'tools/scan_to_pdf.html', {'error': str(e)})
+#         # GET request: render the tool template
+#         return view_func(request, *args, **kwargs)
+#     return wrapper_function
+# @scan_to_pdf_logic
+# def scan_to_pdf_view(request):
+#     """Main view for Scan to PDF tool."""
+#     meta = None
+#     tool_attachment = None
+#     try:
+#         from .models import Meta, ToolAttachment
+#         meta = Meta(
+#             title='Scan to PDF - Convert Document Photos & Camera Scans to PDF Online',
+#             description='Scan documents with your mobile camera or webcam and convert them into high quality PDF files instantly. Free, secure, and fast.',
+#             keywords=['scan to pdf', 'mobile scanner', 'camera to pdf', 'document scanner', 'pwa scanner', 'pdf'],
+#             og_title='Scan to PDF - Convert Camera Scans to PDF Online',
+#             og_description='Scan documents with your mobile camera or webcam and convert them into high quality PDF files instantly.',
+#         )
+#         tool_attachment = ToolAttachment.objects.filter(function_name='scan_to_pdf_view').first()
+#     except Exception:
+#         pass
+#     context = {'meta': meta, 'tool_attachment': tool_attachment}
+#     return render(request, 'tools/scan_to_pdf.html', context)
+# @scan_to_pdf_logic
+# def scan_to_pdf_include(request):
+#     """Include / alternative view for Scan to PDF tool."""
+#     meta = None
+#     try:
+#         from .models import Meta
+#         meta = Meta(
+#             title='iLovePdfConverterOnline - Scan to PDF',
+#             description='Scan documents and camera photos to high-quality PDF files online.',
+#             keywords=['scan', 'camera', 'document scanner', 'pdf converter'],
+#             og_title='iLovePdfConverterOnline - Scan to PDF',
+#             og_description='Scan documents and camera photos to high-quality PDF files online.',
+#         )
+#     except Exception:
+#         pass
+#     context = {'meta': meta}
+#     return render(request, 'tools/scan_to_pdf_include.html', context)
+
+
+
+# ==============================================================================
+# ------------------- Scan to PDF Tool with Crop Function ----------------------------------------------
+# ==============================================================================
+
 import io
 import json
 import base64
 from functools import wraps
+
 from django.http import HttpResponse, JsonResponse
 from django.shortcuts import render
 from django.views.decorators.csrf import csrf_protect
+
 # Import the in-memory scan engine
 try:
     from .extra.scan_to_pdf import scan_to_pdf_in_memory
 except ImportError:
     try:
-        from tools.extra.scan_to_pdf import scan_to_pdf_in_memory
+        from ilovepdftools.extra.scan_to_pdf import scan_to_pdf_in_memory
     except ImportError:
-        # Fallback if extra package is in a different relative path
         from extra.scan_to_pdf import scan_to_pdf_in_memory
+
+
 def scan_to_pdf_logic(view_func):
     """
     Decorator that intercepts POST submissions for scanning images to PDF.
     Works seamlessly with AJAX (multi-file client-side download without zipping),
-    PWA camera capture payloads, and standard form POST.
+    PWA camera capture payloads, cropped images, and standard form POST.
     """
     @wraps(view_func)
     def wrapper_function(request, *args, **kwargs):
         if request.method == "POST":
             # 1. Collect images from multipart uploads or base64 payloads
             images_list = []
+
             # Check for standard multipart file uploads (e.g. 'images' or 'files')
             uploaded_files = request.FILES.getlist('images') or request.FILES.getlist('files') or request.FILES.getlist('file')
             if uploaded_files:
                 images_list.extend(uploaded_files)
-            # Check for base64 JSON array from PWA mobile camera capture
+
+            # Check for base64 JSON array from PWA mobile camera capture & cropper
             images_json = request.POST.get('images_json', '').strip()
             if images_json:
                 try:
@@ -5516,15 +5704,18 @@ def scan_to_pdf_logic(view_func):
                         images_list.extend(b64_items)
                 except Exception:
                     pass
+
             # Check for repeated POST fields (e.g. images_base64[] or images_base64)
             b64_list = request.POST.getlist('images_base64[]') or request.POST.getlist('images_base64')
             if b64_list:
                 images_list.extend(b64_list)
+
             # Validate that at least one image was received
             if not images_list:
                 if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
                     return JsonResponse({'status': 'error', 'message': 'Please scan or upload at least one image.'}, status=400)
                 return view_func(request, *args, **kwargs)
+
             # 2. Extract configuration parameters
             output_filename = request.POST.get('output_filename', 'Scan.pdf').strip() or 'Scan.pdf'
             page_size = request.POST.get('page_size', 'a4').strip().lower()
@@ -5533,6 +5724,7 @@ def scan_to_pdf_logic(view_func):
             filter_type = request.POST.get('filter_type', 'original').strip().lower()
             quality = request.POST.get('quality', 'recommended').strip().lower()
             merge_pdf = request.POST.get('merge_pdf', '1') in ['true', '1', 'on', True]
+
             # Extract per-page rotations if supplied
             rotations = []
             rotations_json = request.POST.get('rotations', '').strip()
@@ -5543,6 +5735,7 @@ def scan_to_pdf_logic(view_func):
                     rotations = [int(r.strip()) for r in rotations_json.split(',') if r.strip().isdigit()]
             elif request.POST.getlist('rotations[]'):
                 rotations = [int(r) for r in request.POST.getlist('rotations[]') if str(r).isdigit()]
+
             # Extract per-page filters if supplied
             filters = []
             filters_json = request.POST.get('filters', '').strip()
@@ -5553,6 +5746,16 @@ def scan_to_pdf_logic(view_func):
                     filters = [f.strip() for f in filters_json.split(',') if f.strip()]
             elif request.POST.getlist('filters[]'):
                 filters = [f.strip() for f in request.POST.getlist('filters[]')]
+
+            # Extract per-page crop coordinates if supplied
+            crops = []
+            crops_json = request.POST.get('crops', '').strip()
+            if crops_json:
+                try:
+                    crops = json.loads(crops_json)
+                except Exception:
+                    crops = []
+
             try:
                 # 3. Perform 100% in-memory processing (zero disk storage)
                 output_files = scan_to_pdf_in_memory(
@@ -5565,14 +5768,17 @@ def scan_to_pdf_logic(view_func):
                     quality=quality,
                     rotations=rotations,
                     filters=filters,
+                    crops=crops,
                     merge_pdf=merge_pdf
                 )
+
                 # Check if client requested JSON/AJAX
                 is_ajax = (
                     request.headers.get('x-requested-with') == 'XMLHttpRequest'
                     or 'application/json' in request.headers.get('Accept', '')
                     or request.POST.get('is_ajax') == '1'
                 )
+
                 if is_ajax:
                     # Return base64-encoded PDF files for direct client-side download without zipping
                     encoded_files = [
@@ -5590,6 +5796,7 @@ def scan_to_pdf_logic(view_func):
                         'file_count': len(output_files),
                         'files': encoded_files
                     })
+
                 # Fallback for standard synchronous HTML form POST
                 if len(output_files) == 1:
                     single_file = output_files[0]
@@ -5609,13 +5816,18 @@ def scan_to_pdf_logic(view_func):
                         ]
                     }
                     return render(request, 'tools/scan_to_pdf.html', context)
+
             except Exception as e:
                 if request.headers.get('x-requested-with') == 'XMLHttpRequest' or request.POST.get('is_ajax') == '1':
                     return JsonResponse({'status': 'error', 'message': str(e)}, status=400)
                 return render(request, 'tools/scan_to_pdf.html', {'error': str(e)})
+
         # GET request: render the tool template
         return view_func(request, *args, **kwargs)
+
     return wrapper_function
+
+
 @scan_to_pdf_logic
 def scan_to_pdf_view(request):
     """Main view for Scan to PDF tool."""
@@ -5625,16 +5837,19 @@ def scan_to_pdf_view(request):
         from .models import Meta, ToolAttachment
         meta = Meta(
             title='Scan to PDF - Convert Document Photos & Camera Scans to PDF Online',
-            description='Scan documents with your mobile camera or webcam and convert them into high quality PDF files instantly. Free, secure, and fast.',
-            keywords=['scan to pdf', 'mobile scanner', 'camera to pdf', 'document scanner', 'pwa scanner', 'pdf'],
+            description='Scan documents with your mobile camera or webcam, crop page areas, and convert them into high quality PDF files instantly. Free, secure, and fast.',
+            keywords=['scan to pdf', 'mobile scanner', 'camera to pdf', 'document scanner', 'crop document', 'pwa scanner', 'pdf'],
             og_title='Scan to PDF - Convert Camera Scans to PDF Online',
-            og_description='Scan documents with your mobile camera or webcam and convert them into high quality PDF files instantly.',
+            og_description='Scan documents with your mobile camera or webcam, crop page areas, and convert them into high quality PDF files instantly.',
         )
         tool_attachment = ToolAttachment.objects.filter(function_name='scan_to_pdf_view').first()
     except Exception:
         pass
+
     context = {'meta': meta, 'tool_attachment': tool_attachment}
     return render(request, 'tools/scan_to_pdf.html', context)
+
+
 @scan_to_pdf_logic
 def scan_to_pdf_include(request):
     """Include / alternative view for Scan to PDF tool."""
@@ -5643,12 +5858,15 @@ def scan_to_pdf_include(request):
         from .models import Meta
         meta = Meta(
             title='iLovePdfConverterOnline - Scan to PDF',
-            description='Scan documents and camera photos to high-quality PDF files online.',
-            keywords=['scan', 'camera', 'document scanner', 'pdf converter'],
+            description='Scan documents and camera photos to high-quality PDF files online with interactive cropping.',
+            keywords=['scan', 'camera', 'document scanner', 'crop', 'pdf converter'],
             og_title='iLovePdfConverterOnline - Scan to PDF',
-            og_description='Scan documents and camera photos to high-quality PDF files online.',
+            og_description='Scan documents and camera photos to high-quality PDF files online with interactive cropping.',
         )
     except Exception:
         pass
+
     context = {'meta': meta}
     return render(request, 'tools/scan_to_pdf_include.html', context)
+
+

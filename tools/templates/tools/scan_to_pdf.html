@@ -2,8 +2,16 @@
 {% load i18n %}
 {% load static %}
 {% load blog_tags %}
+
 {% block title %}Scan to PDF — Scan Documents from Mobile Camera or Webcam{% endblock %}
+
 {% block extraheads %}
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+
+<!-- Cropper.js CDN for interactive document page cropping -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.1/cropper.min.js"></script>
+
 <style>
     :root {
         --ilove-primary: #e5322d;
@@ -13,6 +21,7 @@
         --ilove-text-dark: #1e293b;
         --ilove-text-muted: #64748b;
     }
+
     /* Hero Section */
     .scan-hero {
         text-align: center;
@@ -30,6 +39,7 @@
         max-width: 680px;
         margin: 0 auto;
     }
+
     /* Initial Landing / Launch Cards */
     .scan-launch-card {
         background: #ffffff;
@@ -91,6 +101,7 @@
         background: #e2e8f0;
         color: #1e293b;
     }
+
     /* Mobile QR Card (Desktop View) */
     .mobile-sync-card {
         background: #ffffff;
@@ -107,14 +118,15 @@
         display: inline-block;
         border: 1px solid #e2e8f0;
     }
+
     /* Live Camera Modal (PWA Viewfinder) */
     #cameraModal {
         display: none;
         position: fixed;
-        inset: 0;
-        width: 100%;
-        min-height: 100svh;
-        height: 100dvh;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
         background: #000000;
         z-index: 99999;
         flex-direction: column;
@@ -170,6 +182,7 @@
     .cb-top-right { top: -2px; right: -2px; border-width: 4px 4px 0 0; border-top-right-radius: 10px; }
     .cb-bottom-left { bottom: -2px; left: -2px; border-width: 0 0 4px 4px; border-bottom-left-radius: 10px; }
     .cb-bottom-right { bottom: -2px; right: -2px; border-width: 0 4px 4px 0; border-bottom-right-radius: 10px; }
+
     .camera-shutter-bar {
         position: absolute;
         bottom: 0;
@@ -230,6 +243,7 @@
         transition: opacity 0.1s ease;
         z-index: 20;
     }
+
     /* Workspace Card (File/Pages Loaded) */
     #workspaceArea {
         display: none;
@@ -251,6 +265,7 @@
         flex-wrap: wrap;
         gap: 1rem;
     }
+
     /* Thumbnails Grid */
     .pages-scroll-area {
         max-height: 560px;
@@ -290,6 +305,7 @@
         align-items: center;
         justify-content: center;
         position: relative;
+        cursor: pointer;
     }
     .page-preview-img {
         max-width: 100%;
@@ -297,6 +313,24 @@
         object-fit: contain;
         display: block;
         transition: transform 0.2s ease, filter 0.2s ease;
+    }
+    .crop-hover-hint {
+        position: absolute;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.5);
+        color: #ffffff;
+        font-size: 12px;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.2s ease;
+        border-radius: 8px;
+        pointer-events: none;
+    }
+    .page-preview-box:hover .crop-hover-hint {
+        opacity: 1;
     }
     .page-badge-number {
         font-size: 0.8rem;
@@ -329,11 +363,17 @@
         background: #e2e8f0;
         color: var(--ilove-text-dark);
     }
+    .btn-page-tool.active-crop {
+        background: #dcfce7;
+        color: #16a34a;
+        border-color: #86efac;
+    }
     .btn-page-tool.danger:hover {
         background: #fee2e2;
         color: #ef4444;
         border-color: #fca5a5;
     }
+
     /* Options Panel (Right Column) */
     .options-container {
         padding: 1.5rem;
@@ -346,6 +386,7 @@
         letter-spacing: 0.6px;
         margin-bottom: 0.6rem;
     }
+
     /* Visual Selection Grids */
     .visual-choice-grid {
         display: grid;
@@ -379,6 +420,7 @@
         color: var(--ilove-primary);
         box-shadow: 0 0 0 1px var(--ilove-primary);
     }
+
     /* Main Convert CTA */
     .btn-convert-action {
         background: var(--ilove-primary);
@@ -407,6 +449,7 @@
         opacity: 0.65;
         cursor: not-allowed;
     }
+
     /* Processing Animation */
     #processingState {
         display: none;
@@ -426,6 +469,7 @@
         0% { transform: rotate(0deg); }
         100% { transform: rotate(360deg); }
     }
+
     /* Success / Result Screen */
     #successArea {
         display: none;
@@ -454,22 +498,128 @@
         max-width: 600px;
         margin: 0.75rem auto;
     }
+
     /* Filter effects applied live on preview thumbnails */
     .filter-preview-original { filter: none; }
     .filter-preview-grayscale { filter: grayscale(100%); }
     .filter-preview-bw_document { filter: grayscale(100%) contrast(220%) brightness(105%); }
     .filter-preview-magic_color { filter: contrast(135%) saturate(140%) brightness(105%); }
+
+    /* =========================================================================
+       INTERACTIVE DOCUMENT CROP MODAL STYLES
+       ========================================================================= */
+    .crop-modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: rgba(15, 23, 42, 0.75);
+        backdrop-filter: blur(4px);
+        z-index: 100000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+    }
+    .crop-modal-dialog {
+        background: #ffffff;
+        border-radius: 18px;
+        width: 100%;
+        max-width: 960px;
+        max-height: 94vh;
+        display: flex;
+        flex-direction: column;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        overflow: hidden;
+        animation: cropModalFadeIn 0.2s ease-out;
+    }
+    @keyframes cropModalFadeIn {
+        from { opacity: 0; transform: scale(0.97); }
+        to { opacity: 1; transform: scale(1); }
+    }
+    .crop-modal-header {
+        padding: 1rem 1.5rem;
+        border-bottom: 1px solid var(--ilove-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        background: #f8fafc;
+    }
+    .crop-modal-body {
+        padding: 1rem 1.5rem;
+        flex: 1;
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        background: #0f172a;
+    }
+    .cropper-canvas-wrapper {
+        width: 100%;
+        height: 55vh;
+        min-height: 320px;
+        max-height: 600px;
+        background: #090d16;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        border-radius: 12px;
+    }
+    .cropper-canvas-wrapper img {
+        max-width: 100%;
+        max-height: 100%;
+        display: block;
+    }
+    .crop-toolbar {
+        padding: 0.75rem 0.25rem 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.5rem;
+    }
+    .crop-modal-footer {
+        padding: 1rem 1.5rem;
+        border-top: 1px solid var(--ilove-border);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        background: #f8fafc;
+    }
+    .btn-crop-ratio {
+        font-size: 0.8rem;
+        padding: 0.2rem 0.6rem;
+        border-radius: 50px;
+        border: none;
+        background: transparent;
+        color: #475569;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .btn-crop-ratio.active {
+        background: var(--ilove-primary);
+        color: #ffffff;
+    }
 </style>
 {% endblock %}
+
 {% block content %}
-<div class="container py-5 mt-5">
+<div class="container py-5 mt-2">
+
     <!-- Hero Header -->
-    <div class="scan-hero text-gradient">
+    <div class="scan-hero">
         <h1>Scan to PDF</h1>
         <p>Scan documents from your mobile camera, webcam, or upload photos to compile high-quality PDF files in seconds.</p>
     </div>
+
     <!-- Alert Box -->
     <div id="alertBox" class="alert alert-danger d-none" role="alert"></div>
+
     <!-- 1. LANDING & SCAN INITIATION VIEW -->
     <div id="uploadView" class="row justify-content-center g-4">
         <!-- Option A: Live Camera Scanner (PWA Optimized) -->
@@ -490,6 +640,7 @@
                 </button>
             </div>
         </div>
+
         <!-- Option B: Upload Photos / Scans -->
         <div class="col-md-6 col-lg-5">
             <div class="scan-launch-card" id="dropZone" onclick="document.getElementById('imageFileInput').click();">
@@ -514,6 +665,7 @@
                 </button>
             </div>
         </div>
+
         <!-- Desktop Feature: Scan with Mobile Device via QR Code -->
         <div class="col-lg-10" id="desktopQrContainer">
             <div class="mobile-sync-card d-flex align-items-center justify-content-between flex-wrap gap-3">
@@ -535,10 +687,12 @@
             </div>
         </div>
     </div>
+
     <!-- 2. LIVE PWA CAMERA SCANNER MODAL -->
     <div id="cameraModal">
         <!-- Visual Flash Animation -->
         <div class="flash-overlay" id="flashOverlay"></div>
+
         <!-- Camera Top Control Bar -->
         <div class="camera-top-bar">
             <button type="button" class="btn btn-sm btn-dark text-white rounded-circle p-2" onclick="closeCameraScanner();" title="Close Camera">
@@ -566,6 +720,7 @@
                 </button>
             </div>
         </div>
+
         <!-- Live Camera Viewfinder -->
         <div class="camera-view-container">
             <video id="cameraVideo" playsinline autoplay muted></video>
@@ -576,19 +731,23 @@
                 <div class="corner-bracket cb-bottom-right"></div>
             </div>
         </div>
+
         <!-- Shutter & Controls Bottom Bar -->
         <div class="camera-shutter-bar">
             <!-- Scanned Pages Mini Strip -->
             <div class="camera-pages-strip" id="cameraMiniStrip"></div>
+
             <div class="d-flex align-items-center justify-content-between w-100 px-3" style="max-width: 480px;">
                 <!-- Native Camera App Button -->
                 <button type="button" class="btn btn-outline-light btn-sm rounded-pill px-3" onclick="document.getElementById('nativeCameraInput').click();">
                     Native Camera
                 </button>
+
                 <!-- Center Shutter Capture Button -->
                 <div class="shutter-btn-outer" onclick="captureShutter();">
                     <div class="shutter-btn-inner"></div>
                 </div>
+
                 <!-- Done Scanning Button -->
                 <button type="button" id="btnDoneScanning" class="btn btn-light btn-sm fw-bold rounded-pill px-3" onclick="finishCameraScanning();" disabled>
                     Done (0)
@@ -596,6 +755,7 @@
             </div>
         </div>
     </div>
+
     <!-- 3. WORKSPACE VIEW (PAGES LOADED & ORGANIZER) -->
     <div id="workspaceArea">
         <div class="workspace-card">
@@ -616,6 +776,14 @@
                         </svg>
                         + Add Pages
                     </button>
+                    <!-- Quick Crop Pages Button -->
+                    <button type="button" class="btn btn-sm btn-outline-primary" onclick="openCropper(0);" title="Crop & adjust page areas">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" class="me-1" viewBox="0 0 24 24">
+                            <path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"></path>
+                            <path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"></path>
+                        </svg>
+                        Crop Pages
+                    </button>
                     <button type="button" class="btn btn-sm btn-outline-secondary" onclick="rotateAllPages();" title="Rotate all pages 90 degrees">
                         Rotate All
                     </button>
@@ -624,20 +792,22 @@
                     </button>
                 </div>
             </div>
+
             <!-- Main Body: Two Columns -->
             <div class="row g-0">
                 <!-- Left: Thumbnails Grid -->
                 <div class="col-lg-7 col-xl-8 border-end">
                     <div class="p-3">
                         <div class="d-flex align-items-center justify-content-between mb-2">
-                            <span class="small text-muted fw-bold">PAGES ORDER & FILTERS</span>
-                            <small class="text-muted">Use arrows to reorder pages</small>
+                            <span class="small text-muted fw-bold">PAGES ORDER, CROP & FILTERS</span>
+                            <small class="text-muted">Click any page or crop icon to trim edges</small>
                         </div>
                         <div class="pages-scroll-area">
                             <div class="pages-grid" id="pagesGrid"></div>
                         </div>
                     </div>
                 </div>
+
                 <!-- Right: Options Sidebar -->
                 <div class="col-lg-5 col-xl-4">
                     <div class="options-container">
@@ -657,6 +827,7 @@
                                 <small style="font-size: 10px;">Fit to Image</small>
                             </div>
                         </div>
+
                         <!-- 2. Page Orientation -->
                         <div class="option-group-title">Page Orientation</div>
                         <div class="visual-choice-grid" id="orientationChoice">
@@ -679,6 +850,7 @@
                                 <span>Auto</span>
                             </div>
                         </div>
+
                         <!-- 3. Page Margins -->
                         <div class="option-group-title">Margin</div>
                         <div class="visual-choice-grid" id="marginChoice">
@@ -686,6 +858,7 @@
                             <div class="visual-choice-btn" data-value="small">Small</div>
                             <div class="visual-choice-btn" data-value="normal">Normal</div>
                         </div>
+
                         <!-- 4. Global Document Enhancement Filter -->
                         <div class="option-group-title">Document Enhancement Filter</div>
                         <div class="mb-3">
@@ -697,6 +870,7 @@
                             </select>
                             <small class="text-muted d-block mt-1">Enhance text sharpness and remove shadows from camera shots.</small>
                         </div>
+
                         <!-- 5. Compression / Quality -->
                         <div class="option-group-title">Quality & File Size</div>
                         <div class="mb-3">
@@ -706,16 +880,19 @@
                                 <option value="compact">Compact (150 DPI - Small Size)</option>
                             </select>
                         </div>
+
                         <!-- 6. Output PDF Name -->
                         <div class="mb-3">
                             <label class="form-label fw-bold small text-muted">PDF FILENAME</label>
                             <input type="text" id="outputFileName" class="form-control" value="Scan_Document.pdf">
                         </div>
+
                         <!-- 7. Merge Switch -->
                         <div class="form-check form-switch mb-4">
                             <input class="form-check-input" type="checkbox" id="mergePdfCheck" checked>
                             <label class="form-check-label fw-bold" for="mergePdfCheck">Merge all pages in one PDF file</label>
                         </div>
+
                         <!-- Submit Button -->
                         <button type="button" class="btn-convert-action" id="btnExecuteScan" onclick="executeScanToPdf();">
                             <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
@@ -732,13 +909,104 @@
             </div>
         </div>
     </div>
-    <!-- 4. PROCESSING STATE (IN-MEMORY) -->
+
+    <!-- 4. INTERACTIVE DOCUMENT CROP MODAL -->
+    <div id="cropModal" class="crop-modal-overlay" style="display: none;">
+        <div class="crop-modal-dialog">
+            <!-- Header -->
+            <div class="crop-modal-header">
+                <div class="d-flex align-items-center gap-2">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" fill="none" stroke="var(--ilove-primary)" stroke-width="2" viewBox="0 0 24 24">
+                        <path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"></path>
+                        <path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"></path>
+                    </svg>
+                    <h5 class="fw-bold mb-0 text-dark" id="cropModalTitle">Crop Page 1 of 1</h5>
+                </div>
+                
+                <!-- Quick Page Switcher -->
+                <div class="d-flex align-items-center gap-2">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnCropPrev" onclick="navigateCrop(-1);" title="Previous Page">
+                        ‹ Prev
+                    </button>
+                    <span class="badge bg-light text-dark border small px-2 py-1" id="cropPageIndicator">1 / 1</span>
+                    <button type="button" class="btn btn-sm btn-outline-secondary" id="btnCropNext" onclick="navigateCrop(1);" title="Next Page">
+                        Next ›
+                    </button>
+                </div>
+
+                <!-- Aspect Ratio Selector -->
+                <div class="crop-aspect-group d-none d-md-flex align-items-center gap-1 bg-light p-1 rounded-pill border">
+                    <span class="small text-muted px-2 fw-semibold">Ratio:</span>
+                    <button type="button" class="btn btn-sm btn-crop-ratio active" onclick="setCropRatio(NaN, this);">Free</button>
+                    <button type="button" class="btn btn-sm btn-crop-ratio" onclick="setCropRatio(210/297, this);">A4</button>
+                    <button type="button" class="btn btn-sm btn-crop-ratio" onclick="setCropRatio(8.5/11, this);">Letter</button>
+                    <button type="button" class="btn btn-sm btn-crop-ratio" onclick="setCropRatio('original', this);">Original</button>
+                </div>
+
+                <button type="button" class="btn-close" onclick="closeCropper();" aria-label="Close"></button>
+            </div>
+
+            <!-- Body -->
+            <div class="crop-modal-body">
+                <div class="cropper-canvas-wrapper">
+                    <img id="cropperImage" src="" alt="Page for Cropping">
+                </div>
+
+                <!-- Toolbar below cropper -->
+                <div class="crop-toolbar">
+                    <div class="d-flex align-items-center gap-2">
+                        <button type="button" class="btn btn-sm btn-light border" onclick="rotateCropper(-90);" title="Rotate 90° Left">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M8 3a5 5 0 1 0 4.546 2.914.5.5 0 0 1 .908-.417A6 6 0 1 1 8 2v1z"/>
+                                <path d="M8 4.466V.534a.25.25 0 0 1 .41-.192l2.36 1.966c.12.1.12.284 0 .384L8.41 4.658A.25.25 0 0 1 8 4.466z"/>
+                            </svg>
+                            -90°
+                        </button>
+                        <button type="button" class="btn btn-sm btn-light border" onclick="rotateCropper(90);" title="Rotate 90° Right">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" class="me-1" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M8 3a5 5 0 1 1-4.546 2.914.5.5 0 0 0-.908-.417A6 6 0 1 0 8 2v1z"/>
+                                <path d="M8 4.466V.534a.25.25 0 0 0-.41-.192L5.23 2.308c-.12.1-.12.284 0 .384l2.36 1.966A.25.25 0 0 0 8 4.466z"/>
+                            </svg>
+                            +90°
+                        </button>
+                        <button type="button" class="btn btn-sm btn-light border" onclick="resetCropperBox();" title="Reset Selection Box">
+                            Reset Box
+                        </button>
+                    </div>
+                    <div class="text-white-50 small d-none d-sm-block">
+                        <span>💡 Drag corners or borders to fix the page boundaries and crop out tables/shadows.</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="crop-modal-footer">
+                <button type="button" class="btn btn-outline-secondary btn-sm" onclick="resetCropToOriginal();">
+                    Reset to Original Photo
+                </button>
+                <div class="d-flex gap-2">
+                    <button type="button" class="btn btn-light border btn-sm" onclick="closeCropper();">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm px-3" onclick="applyCrop(false);">
+                        Apply Crop
+                    </button>
+                    <button type="button" class="btn btn-danger btn-sm px-3 fw-bold" id="btnApplyAndNext" onclick="applyCrop(true);">
+                        Apply & Next Page ›
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. PROCESSING STATE (IN-MEMORY) -->
     <div id="processingState">
         <div class="spinner-ilove"></div>
         <h3 class="fw-bold mb-2">Processing Scan in Memory...</h3>
         <p class="text-secondary" id="processingStatusText">Optimizing document pages, applying filters, and generating PDF...</p>
     </div>
-    <!-- 5. SUCCESS & DOWNLOAD STATE -->
+
+    <!-- 6. SUCCESS & DOWNLOAD STATE -->
     <div id="successArea">
         <div class="success-badge-icon">
             <svg xmlns="http://www.w3.org/2000/svg" width="42" height="42" fill="none" stroke="currentColor" stroke-width="2.4" viewBox="0 0 24 24">
@@ -747,7 +1015,9 @@
         </div>
         <h2 class="fw-bold mb-2">Your PDF is ready!</h2>
         <p class="text-secondary mb-4">Your scanned document has been compiled and downloaded automatically.</p>
+
         <div id="downloadCardsContainer"></div>
+
         <div class="d-flex justify-content-center gap-3 mt-4">
             <button type="button" class="btn btn-outline-danger px-4" id="btnDownloadAllAgain">
                 Download Again
@@ -757,38 +1027,71 @@
             </button>
         </div>
     </div>
+
 </div>
+
 <!-- QR Code Library for Desktop-to-Mobile synchronization -->
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
 <script>
     /**
      * Application State
      */
-    let scannedPages = [];       // Array of { id, dataUrl, rotation, filter }
+    let scannedPages = [];       // Array of { id, dataUrl, originalDataUrl, rotation, filter, isCropped }
     let mediaStream = null;      // Active WebRTC camera stream
     let currentFacingMode = 'environment'; // Rear camera preferred
     let torchActive = false;     // Flash/Torch state
     let wakeLock = null;         // Screen wake lock
     let audioCtx = null;         // Web Audio for shutter sound
     let generatedFiles = [];     // Result files
+
+    // Cropper State
+    let currentCropIndex = 0;
+    let cropperInstance = null;
+
     // Settings
     let selectedPageSize = 'a4';
     let selectedOrientation = 'portrait';
     let selectedMargin = 'none';
+
     document.addEventListener('DOMContentLoaded', () => {
         initDragAndDrop();
         initVisualSelectors();
         generateMobileQrCode();
+        initKeyboardShortcuts();
+
         // Native Camera Input change listener
         document.getElementById('nativeCameraInput').addEventListener('change', handleNativeFileInput);
         document.getElementById('imageFileInput').addEventListener('change', handleNativeFileInput);
     });
+
+    /**
+     * Keyboard shortcuts for cropper modal navigation
+     */
+    function initKeyboardShortcuts() {
+        document.addEventListener('keydown', (e) => {
+            const cropModal = document.getElementById('cropModal');
+            if (cropModal && cropModal.style.display === 'flex') {
+                if (e.key === 'Escape') {
+                    closeCropper();
+                } else if (e.key === 'Enter' && !e.shiftKey) {
+                    applyCrop(false);
+                } else if (e.key === 'ArrowLeft' && e.altKey) {
+                    navigateCrop(-1);
+                } else if (e.key === 'ArrowRight' && e.altKey) {
+                    navigateCrop(1);
+                }
+            }
+        });
+    }
+
     /**
      * Generate dynamic QR code pointing to current URL for desktop users
      */
     function generateMobileQrCode() {
         const qrContainer = document.getElementById('qrCodeTarget');
         if (!qrContainer || typeof QRCode === 'undefined') return;
+
         qrContainer.innerHTML = '';
         QRCode.toCanvas(window.location.href, {
             width: 88,
@@ -798,6 +1101,7 @@
             if (!err && canvas) qrContainer.appendChild(canvas);
         });
     }
+
     /**
      * Visual button selectors (Page Size, Orientation, Margin)
      */
@@ -806,6 +1110,7 @@
         setupChoiceGrid('orientationChoice', (val) => selectedOrientation = val);
         setupChoiceGrid('marginChoice', (val) => selectedMargin = val);
     }
+
     function setupChoiceGrid(containerId, callback) {
         const container = document.getElementById(containerId);
         if (!container) return;
@@ -818,12 +1123,14 @@
             });
         });
     }
+
     /**
      * Drag & Drop File Upload Handler
      */
     function initDragAndDrop() {
         const zone = document.getElementById('dropZone');
         if (!zone) return;
+
         ['dragenter', 'dragover'].forEach(name => {
             zone.addEventListener(name, (e) => {
                 e.preventDefault();
@@ -843,12 +1150,14 @@
             }
         });
     }
+
     function handleNativeFileInput(e) {
         if (e.target.files && e.target.files.length) {
             loadFilesIntoPages(e.target.files);
             e.target.value = '';
         }
     }
+
     /**
      * Read File objects into scannedPages array
      */
@@ -862,8 +1171,10 @@
                 scannedPages.push({
                     id: 'page_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
                     dataUrl: dataUrl,
+                    originalDataUrl: dataUrl,
                     rotation: 0,
-                    filter: document.getElementById('globalFilterSelect').value || 'original'
+                    filter: document.getElementById('globalFilterSelect').value || 'original',
+                    isCropped: false
                 });
             } catch (err) {
                 console.error('Error loading file:', file.name, err);
@@ -874,6 +1185,7 @@
             transitionToWorkspace();
         }
     }
+
     function readFileAsDataURL(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
@@ -882,6 +1194,7 @@
             reader.readAsDataURL(file);
         });
     }
+
     /**
      * =========================================================================
      * PWA Mobile Camera Scanner (WebRTC + WakeLock + Torch + Audio Feedback)
@@ -890,6 +1203,7 @@
     async function openCameraScanner() {
         const modal = document.getElementById('cameraModal');
         modal.style.display = 'flex';
+
         // Acquire Screen Wake Lock if supported
         try {
             if ('wakeLock' in navigator) {
@@ -898,10 +1212,13 @@
         } catch (e) {
             console.log('WakeLock not available:', e);
         }
+
         await startCameraStream();
     }
+
     async function startCameraStream() {
         stopCameraStream();
+
         const constraints = {
             audio: false,
             video: {
@@ -910,27 +1227,30 @@
                 height: { ideal: 1080 }
             }
         };
+
         try {
             mediaStream = await navigator.mediaDevices.getUserMedia(constraints);
             const video = document.getElementById('cameraVideo');
             video.srcObject = mediaStream;
             await video.play();
+
             // Detect torch capability
             checkTorchSupport();
         } catch (err) {
             console.error('Camera access error:', err);
-            // If getUserMedia fails (e.g. desktop without cam or permission denied), offer native fallback
             alert('Camera could not be accessed directly. Opening native file/camera selector instead.');
             closeCameraScanner();
             document.getElementById('nativeCameraInput').click();
         }
     }
+
     function stopCameraStream() {
         if (mediaStream) {
             mediaStream.getTracks().forEach(track => track.stop());
             mediaStream = null;
         }
     }
+
     function closeCameraScanner() {
         stopCameraStream();
         if (wakeLock) {
@@ -938,14 +1258,17 @@
             wakeLock = null;
         }
         document.getElementById('cameraModal').style.display = 'none';
+
         if (scannedPages.length > 0) {
             transitionToWorkspace();
         }
     }
+
     function switchCamera() {
         currentFacingMode = (currentFacingMode === 'environment') ? 'user' : 'environment';
         startCameraStream();
     }
+
     function checkTorchSupport() {
         const btnTorch = document.getElementById('btnTorchToggle');
         if (!mediaStream) {
@@ -960,6 +1283,7 @@
             btnTorch.classList.add('d-none');
         }
     }
+
     async function toggleTorch() {
         if (!mediaStream) return;
         const track = mediaStream.getVideoTracks()[0];
@@ -971,6 +1295,7 @@
             console.warn('Torch toggle failed:', e);
         }
     }
+
     /**
      * Synthesize camera shutter sound via Web Audio API
      */
@@ -990,35 +1315,45 @@
             osc.stop(audioCtx.currentTime + 0.08);
         } catch (e) {}
     }
+
     /**
      * Capture Frame from Camera Stream
      */
     function captureShutter() {
         const video = document.getElementById('cameraVideo');
         if (!video || !video.videoWidth) return;
+
         // Visual flash & haptic feedback
         playShutterSound();
         if ('vibrate' in navigator) navigator.vibrate(50);
+
         const flash = document.getElementById('flashOverlay');
         flash.style.opacity = '0.85';
         setTimeout(() => flash.style.opacity = '0', 120);
+
         // Draw video frame to high-resolution canvas
         const canvas = document.createElement('canvas');
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
+
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.94);
+
         // Add to scanned pages list
         scannedPages.push({
             id: 'page_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5),
             dataUrl: dataUrl,
+            originalDataUrl: dataUrl,
             rotation: 0,
-            filter: document.getElementById('globalFilterSelect').value || 'original'
+            filter: document.getElementById('globalFilterSelect').value || 'original',
+            isCropped: false
         });
+
         // Update camera mini strip & UI badges
         updateCameraMiniStrip();
     }
+
     function updateCameraMiniStrip() {
         const strip = document.getElementById('cameraMiniStrip');
         strip.innerHTML = '';
@@ -1028,15 +1363,18 @@
             img.className = 'mini-page-thumb';
             strip.appendChild(img);
         });
+
         const count = scannedPages.length;
         document.getElementById('camPageCounter').textContent = `${count} page${count === 1 ? '' : 's'} scanned`;
         const btnDone = document.getElementById('btnDoneScanning');
         btnDone.disabled = count === 0;
         btnDone.textContent = `Done (${count})`;
     }
+
     function finishCameraScanning() {
         closeCameraScanner();
     }
+
     /**
      * =========================================================================
      * Document Workspace (Thumbnail Grid & Page Management)
@@ -1047,35 +1385,66 @@
         document.getElementById('successArea').style.display = 'none';
         document.getElementById('processingState').style.display = 'none';
         document.getElementById('workspaceArea').style.display = 'block';
+
         renderPagesGrid();
     }
+
     function renderPagesGrid() {
         const grid = document.getElementById('pagesGrid');
         grid.innerHTML = '';
+
         document.getElementById('pageCountBadge').textContent = `${scannedPages.length} page${scannedPages.length === 1 ? '' : 's'}`;
         document.getElementById('btnExecuteScan').disabled = scannedPages.length === 0;
+
         scannedPages.forEach((page, index) => {
             const card = document.createElement('div');
             card.className = 'page-item-card';
             card.id = page.id;
+
             const filterClass = 'filter-preview-' + (page.filter || 'original');
+
+            // Cropped status badge
+            const isCroppedBadge = page.isCropped ? `
+                <span class="badge bg-success position-absolute top-0 start-0 m-2 shadow-sm d-flex align-items-center gap-1" style="font-size: 10px; z-index: 2;">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="10" height="10" fill="currentColor" viewBox="0 0 16 16">
+                        <path d="M12.736 3.97a.733.733 0 0 1 1.047 0c.286.289.29.756.01 1.05L7.88 12.01a.733.733 0 0 1-1.065.02L3.217 8.384a.757.757 0 0 1 0-1.06.733.733 0 0 1 1.047 0l3.052 3.093 5.4-6.425a.247.247 0 0 1 .02-.022z"/>
+                    </svg>
+                    Cropped
+                </span>
+            ` : '';
+
             card.innerHTML = `
-                <div class="page-preview-box">
+                <div class="page-preview-box" onclick="openCropper(${index});" title="Click to crop/adjust page boundaries">
+                    ${isCroppedBadge}
                     <img src="${page.dataUrl}" class="page-preview-img ${filterClass}" style="transform: rotate(${page.rotation}deg);" alt="Page ${index + 1}">
+                    <div class="crop-hover-hint">
+                        <span>✂️ Crop Page</span>
+                    </div>
                 </div>
                 <div class="page-badge-number">Page ${index + 1}</div>
                 <div class="page-card-actions">
+                    <!-- Crop Tool Button -->
+                    <button type="button" class="btn-page-tool ${page.isCropped ? 'active-crop' : ''}" onclick="openCropper(${index});" title="Crop Document Area">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                            <path d="M6.13 1L6 16a2 2 0 0 0 2 2h15"></path>
+                            <path d="M1 6.13L16 6a2 2 0 0 1 2 2v15"></path>
+                        </svg>
+                    </button>
+                    <!-- Rotate Tool Button -->
                     <button type="button" class="btn-page-tool" onclick="rotatePage(${index});" title="Rotate 90°">
                         <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/>
                         </svg>
                     </button>
+                    <!-- Move Left -->
                     <button type="button" class="btn-page-tool" onclick="movePage(${index}, -1);" ${index === 0 ? 'disabled' : ''} title="Move Left">
                         ‹
                     </button>
+                    <!-- Move Right -->
                     <button type="button" class="btn-page-tool" onclick="movePage(${index}, 1);" ${index === scannedPages.length - 1 ? 'disabled' : ''} title="Move Right">
                         ›
                     </button>
+                    <!-- Delete Page -->
                     <button type="button" class="btn-page-tool danger" onclick="deletePage(${index});" title="Delete Page">
                         <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
                             <polyline points="3 6 5 6 21 6"></polyline>
@@ -1087,15 +1456,18 @@
             grid.appendChild(card);
         });
     }
+
     function rotatePage(idx) {
         if (!scannedPages[idx]) return;
         scannedPages[idx].rotation = (scannedPages[idx].rotation + 90) % 360;
         renderPagesGrid();
     }
+
     function rotateAllPages() {
         scannedPages.forEach(p => p.rotation = (p.rotation + 90) % 360);
         renderPagesGrid();
     }
+
     function movePage(idx, delta) {
         const target = idx + delta;
         if (target < 0 || target >= scannedPages.length) return;
@@ -1104,6 +1476,7 @@
         scannedPages[target] = temp;
         renderPagesGrid();
     }
+
     function deletePage(idx) {
         scannedPages.splice(idx, 1);
         if (scannedPages.length === 0) {
@@ -1112,10 +1485,150 @@
             renderPagesGrid();
         }
     }
+
     function applyGlobalFilter(filterName) {
         scannedPages.forEach(p => p.filter = filterName);
         renderPagesGrid();
     }
+
+    /**
+     * =========================================================================
+     * INTERACTIVE DOCUMENT CROPPING LOGIC (CROPPER.JS)
+     * =========================================================================
+     */
+    function openCropper(index) {
+        if (index < 0 || index >= scannedPages.length) return;
+        currentCropIndex = index;
+        const page = scannedPages[index];
+
+        document.getElementById('cropModalTitle').textContent = `Crop Page ${index + 1} of ${scannedPages.length}`;
+        document.getElementById('cropPageIndicator').textContent = `${index + 1} / ${scannedPages.length}`;
+        document.getElementById('btnCropPrev').disabled = (index === 0);
+        document.getElementById('btnCropNext').disabled = (index === scannedPages.length - 1);
+
+        const btnNext = document.getElementById('btnApplyAndNext');
+        if (btnNext) {
+            btnNext.textContent = (index === scannedPages.length - 1) ? 'Apply & Finish' : 'Apply & Next Page ›';
+        }
+
+        const modal = document.getElementById('cropModal');
+        modal.style.display = 'flex';
+
+        const cropperImg = document.getElementById('cropperImage');
+
+        if (cropperInstance) {
+            cropperInstance.destroy();
+            cropperInstance = null;
+        }
+
+        // Use originalDataUrl so cropping can always be cleanly adjusted
+        cropperImg.src = page.originalDataUrl || page.dataUrl;
+
+        cropperImg.onload = () => {
+            if (cropperInstance) {
+                cropperInstance.destroy();
+            }
+            if (typeof Cropper !== 'undefined') {
+                cropperInstance = new Cropper(cropperImg, {
+                    viewMode: 1,
+                    dragMode: 'crop',
+                    autoCropArea: 0.92,
+                    restore: false,
+                    guides: true,
+                    center: true,
+                    highlight: false,
+                    cropBoxMovable: true,
+                    cropBoxResizable: true,
+                    toggleDragModeOnDblclick: false,
+                    responsive: true,
+                    ready() {
+                        if (page.rotation) {
+                            cropperInstance.rotate(page.rotation);
+                        }
+                    }
+                });
+            }
+        };
+    }
+
+    function closeCropper() {
+        if (cropperInstance) {
+            cropperInstance.destroy();
+            cropperInstance = null;
+        }
+        document.getElementById('cropModal').style.display = 'none';
+    }
+
+    function applyCrop(andNext = false) {
+        if (currentCropIndex < 0 || currentCropIndex >= scannedPages.length) return;
+        const page = scannedPages[currentCropIndex];
+
+        if (cropperInstance) {
+            // High quality cropped canvas export
+            const canvas = cropperInstance.getCroppedCanvas({
+                imageSmoothingEnabled: true,
+                imageSmoothingQuality: 'high'
+            });
+
+            if (canvas) {
+                const croppedDataUrl = canvas.toDataURL('image/jpeg', 0.94);
+                page.dataUrl = croppedDataUrl;
+                page.isCropped = true;
+                page.rotation = 0; // Canvas incorporates rotation
+            }
+        }
+
+        renderPagesGrid();
+
+        if (andNext && currentCropIndex < scannedPages.length - 1) {
+            openCropper(currentCropIndex + 1);
+        } else {
+            closeCropper();
+        }
+    }
+
+    function resetCropToOriginal() {
+        if (currentCropIndex < 0 || currentCropIndex >= scannedPages.length) return;
+        const page = scannedPages[currentCropIndex];
+        page.dataUrl = page.originalDataUrl || page.dataUrl;
+        page.isCropped = false;
+        renderPagesGrid();
+        openCropper(currentCropIndex);
+    }
+
+    function rotateCropper(degree) {
+        if (cropperInstance) {
+            cropperInstance.rotate(degree);
+        }
+    }
+
+    function resetCropperBox() {
+        if (cropperInstance) {
+            cropperInstance.reset();
+        }
+    }
+
+    function setCropRatio(ratio, btnElement) {
+        if (cropperInstance) {
+            if (ratio === 'original') {
+                const imgData = cropperInstance.getImageData();
+                cropperInstance.setAspectRatio(imgData.naturalWidth / imgData.naturalHeight);
+            } else {
+                cropperInstance.setAspectRatio(ratio);
+            }
+        }
+        const buttons = document.querySelectorAll('.btn-crop-ratio');
+        buttons.forEach(b => b.classList.remove('active'));
+        if (btnElement) btnElement.classList.add('active');
+    }
+
+    function navigateCrop(delta) {
+        const target = currentCropIndex + delta;
+        if (target >= 0 && target < scannedPages.length) {
+            openCropper(target);
+        }
+    }
+
     /**
      * =========================================================================
      * Server In-Memory Processing & Multi-File Base64 Download
@@ -1126,8 +1639,10 @@
             showAlert('Please scan or upload at least one page.');
             return;
         }
+
         showProcessingState('Compiling high-quality PDF in memory...');
         hideAlert();
+
         const fd = new FormData();
         fd.append('is_ajax', '1');
         fd.append('page_size', selectedPageSize);
@@ -1137,32 +1652,40 @@
         fd.append('quality', document.getElementById('qualitySelect').value || 'recommended');
         fd.append('output_filename', document.getElementById('outputFileName').value || 'Scan.pdf');
         fd.append('merge_pdf', document.getElementById('mergePdfCheck').checked ? '1' : '0');
+
         // Extract rotations and filters
         const rotations = scannedPages.map(p => p.rotation || 0);
         const filters = scannedPages.map(p => p.filter || 'original');
         fd.append('rotations', JSON.stringify(rotations));
         fd.append('filters', JSON.stringify(filters));
-        // Append image data as base64 array (or blobs)
+
+        // Append image data as base64 array (automatically contains cropped image data)
         const imagesBase64 = scannedPages.map(p => p.dataUrl);
         fd.append('images_json', JSON.stringify(imagesBase64));
+
         // Append CSRF Token
         const csrfToken = getCookie('csrftoken') || document.querySelector('[name=csrfmiddlewaretoken]')?.value || '';
         if (csrfToken) fd.append('csrfmiddlewaretoken', csrfToken);
+
         try {
             const response = await fetch(window.location.href, {
                 method: 'POST',
                 headers: { 'X-Requested-With': 'XMLHttpRequest' },
                 body: fd
             });
+
             const data = await response.json();
             if (!response.ok || data.status === 'error') {
                 throw new Error(data.message || 'Scan to PDF conversion failed.');
             }
+
             hideProcessingState();
             generatedFiles = data.files || [];
             showSuccessScreen(generatedFiles);
+
             // Staggered download without zipping!
             downloadAllFilesStaggered(generatedFiles);
+
         } catch (err) {
             console.error('Scan error:', err);
             hideProcessingState();
@@ -1170,6 +1693,7 @@
             showAlert(err.message || 'An unexpected error occurred while compiling PDF.');
         }
     }
+
     /**
      * Staggered client-side download without zipping
      */
@@ -1180,6 +1704,7 @@
             }, index * 350);
         });
     }
+
     function downloadBase64PDF(base64Data, filename) {
         try {
             const byteCharacters = atob(base64Data);
@@ -1202,11 +1727,14 @@
             console.error('Download error for:', filename, e);
         }
     }
+
     function showSuccessScreen(files) {
         document.getElementById('workspaceArea').style.display = 'none';
         document.getElementById('successArea').style.display = 'block';
+
         const container = document.getElementById('downloadCardsContainer');
         container.innerHTML = '';
+
         files.forEach(file => {
             const row = document.createElement('div');
             row.className = 'download-card';
@@ -1229,19 +1757,24 @@
             });
             container.appendChild(row);
         });
+
         document.getElementById('btnDownloadAllAgain').onclick = () => {
             downloadAllFilesStaggered(files);
         };
     }
+
     function resetTool() {
         scannedPages = [];
         generatedFiles = [];
         stopCameraStream();
+
         document.getElementById('imageFileInput').value = '';
         document.getElementById('nativeCameraInput').value = '';
         document.getElementById('cameraMiniStrip').innerHTML = '';
         document.getElementById('pagesGrid').innerHTML = '';
         document.getElementById('downloadCardsContainer').innerHTML = '';
+
+        closeCropper();
         document.getElementById('cameraModal').style.display = 'none';
         document.getElementById('workspaceArea').style.display = 'none';
         document.getElementById('processingState').style.display = 'none';
@@ -1249,24 +1782,29 @@
         document.getElementById('uploadView').style.display = 'flex';
         hideAlert();
     }
+
     function showProcessingState(text) {
         document.getElementById('uploadView').style.display = 'none';
         document.getElementById('workspaceArea').style.display = 'none';
         document.getElementById('processingState').style.display = 'block';
         if (text) document.getElementById('processingStatusText').textContent = text;
     }
+
     function hideProcessingState() {
         document.getElementById('processingState').style.display = 'none';
     }
+
     function showAlert(msg) {
         const el = document.getElementById('alertBox');
         el.textContent = msg;
         el.classList.remove('d-none');
     }
+
     function hideAlert() {
         const el = document.getElementById('alertBox');
         el.classList.add('d-none');
     }
+
     function formatBytes(bytes) {
         if (!bytes || bytes === 0) return '0 B';
         const k = 1024;
@@ -1274,6 +1812,7 @@
         const i = Math.floor(Math.log(bytes) / Math.log(k));
         return parseFloat((bytes / Math.pow(k, i)).toFixed(1)) + ' ' + sizes[i];
     }
+
     function getCookie(name) {
         let cookieValue = null;
         if (document.cookie && document.cookie !== '') {

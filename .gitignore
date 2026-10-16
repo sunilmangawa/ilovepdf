@@ -34,6 +34,7 @@ __pycache__
 *Zone.Identifier
 
 
+
 #Document files
 *.pdf
 *.doc
@@ -53,3 +54,8 @@ django.mo
 PDF_to_JSON.json
 uploaded_json.json
 ghostscript/gs_10.03.1_amd64_snap.tgz
+
+
+old-scan_to_pdf.html
+old-scan_to_pdf_include.html
+old-scan_to_pdf.py
